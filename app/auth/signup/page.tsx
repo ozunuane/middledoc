@@ -3,8 +3,6 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Input } from '@/components/ui/Input'
-import { Button } from '@/components/ui/Button'
 
 export default function SignupPage() {
   const router = useRouter()
@@ -62,83 +60,111 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-900 flex items-center justify-center px-4">
-      <div className="w-full max-w-md bg-white dark:bg-neutral-800 rounded-card border border-neutral-300 dark:border-neutral-700 shadow-light p-8">
-        <h1 className="text-h3 font-serif text-neutral-900 dark:text-neutral-50 mb-2 text-center">Get started</h1>
-        <p className="text-body-sm text-neutral-600 dark:text-neutral-400 text-center mb-6">Create your Accountant Hub account in seconds</p>
+    <div className="min-h-screen bg-neutral-50 flex items-center justify-center px-6">
+      <div className="w-full max-w-sm bg-neutral-50 rounded-lg p-12 flex flex-col justify-center min-h-screen">
+        {/* Logo */}
+        <div className="flex items-center gap-3 mb-10">
+          <div className="w-8 h-8 rounded-lg bg-neutral-900 flex items-center justify-center">
+            <div className="w-3 h-3 rounded-sm bg-primary-500"></div>
+          </div>
+          <span className="text-xl font-semibold text-neutral-900">Ledgerly</span>
+        </div>
+
+        {/* Heading */}
+        <h1 className="text-h3 font-serif text-neutral-900 mb-1">Welcome back</h1>
+        <p className="text-body-md text-neutral-600 mb-8">Sign in to pick up where you left off.</p>
 
         {error && (
-          <div className="mb-4 p-3 bg-danger-50 dark:bg-danger-900/20 border border-danger-200 dark:border-danger-700 text-danger-600 dark:text-danger-400 rounded-input text-sm">
+          <div className="mb-6 p-3 bg-danger-50 border border-danger-200 text-danger-600 rounded-button text-sm">
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4 mb-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Name */}
           <div>
-            <label className="block text-body-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Full name</label>
-            <Input
+            <label className="text-xs font-semibold text-neutral-900 uppercase tracking-wide block mb-2">Full Name</label>
+            <input
               type="text"
               name="name"
               value={formData.name}
               onChange={handleChange}
               required
-              placeholder="John Doe"
+              className="w-full bg-white border border-neutral-300 rounded-button px-3.5 py-3 text-body-md text-neutral-900 placeholder:text-neutral-400"
             />
           </div>
 
+          {/* Email */}
           <div>
-            <label className="block text-body-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Email address</label>
-            <Input
+            <label className="text-xs font-semibold text-neutral-900 uppercase tracking-wide block mb-2">Email</label>
+            <input
               type="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
               required
-              placeholder="you@example.com"
+              className="w-full bg-white border border-neutral-300 rounded-button px-3.5 py-3 text-body-md text-neutral-900 placeholder:text-neutral-400"
             />
           </div>
 
+          {/* Password */}
           <div>
-            <label className="block text-body-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Password</label>
-            <Input
+            <label className="text-xs font-semibold text-neutral-900 uppercase tracking-wide block mb-2">Password</label>
+            <input
               type="password"
               name="password"
               value={formData.password}
               onChange={handleChange}
               required
               minLength={8}
-              placeholder="Minimum 8 characters"
+              className="w-full bg-white border border-neutral-300 rounded-button px-3.5 py-3 text-body-md text-neutral-900 placeholder:text-neutral-400"
             />
           </div>
 
+          {/* Confirm Password */}
           <div>
-            <label className="block text-body-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Confirm password</label>
-            <Input
+            <label className="text-xs font-semibold text-neutral-900 uppercase tracking-wide block mb-2">Confirm Password</label>
+            <input
               type="password"
               name="confirmPassword"
               value={formData.confirmPassword}
               onChange={handleChange}
               required
-              placeholder="Confirm your password"
+              className="w-full bg-white border border-neutral-300 rounded-button px-3.5 py-3 text-body-md text-neutral-900 placeholder:text-neutral-400"
             />
           </div>
 
-          <Button
+          {/* Sign Up Button */}
+          <button
             type="submit"
             disabled={loading}
-            loading={loading}
-            variant="primary"
-            size="md"
-            className="w-full"
+            className="w-full bg-primary-600 text-white text-body-md font-semibold py-3.5 rounded-button hover:bg-primary-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Creating account...' : 'Create account'}
-          </Button>
+          </button>
+
+          {/* Divider */}
+          <div className="flex items-center gap-3">
+            <div className="flex-1 h-px bg-neutral-300"></div>
+            <span className="text-xs text-neutral-500 font-medium">or</span>
+            <div className="flex-1 h-px bg-neutral-300"></div>
+          </div>
+
+          {/* Google Button */}
+          <button
+            type="button"
+            className="w-full bg-white border border-neutral-300 text-neutral-900 text-body-md font-medium py-3 rounded-button hover:bg-neutral-50 transition flex items-center justify-center gap-2.5"
+          >
+            <div className="w-4 h-4 rounded-full bg-gradient-to-br from-red-500 to-amber-500"></div>
+            Continue with Google
+          </button>
         </form>
 
-        <div className="border-t border-neutral-200 dark:border-neutral-700 pt-6">
-          <p className="text-center text-body-sm text-neutral-600 dark:text-neutral-400">
+        {/* Footer */}
+        <div className="mt-auto pt-8 border-t border-neutral-300 text-center">
+          <p className="text-body-sm text-neutral-600">
             Already have an account?{' '}
-            <Link href="/auth/login" className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium">
+            <Link href="/auth/login" className="text-primary-600 font-semibold hover:text-primary-700">
               Sign in
             </Link>
           </p>

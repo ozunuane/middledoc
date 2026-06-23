@@ -4,51 +4,9 @@ import React from 'react'
 import Link from 'next/link'
 import { useApi } from '@/hooks/useApi'
 import { useAuth } from '@/hooks/useAuth'
-import { Button } from '@/components/ui/Button'
 import { StatusBadge } from '@/components/ui/StatusBadge'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import type { Client, DocumentRequest } from '@/types/index'
-
-interface StatsCardProps {
-  label: string
-  value: number | null
-  color?: string
-  icon: React.ReactNode
-  isLoading?: boolean
-}
-
-function StatsCard({ label, value, color = 'text-neutral-900', icon, isLoading }: StatsCardProps) {
-  return (
-    <div className="bg-white dark:bg-neutral-900 rounded-card border border-neutral-300 dark:border-neutral-700 shadow-light p-6">
-      <div className="flex items-center justify-between">
-        <p className="text-tiny font-semibold text-neutral-600 dark:text-neutral-400 uppercase tracking-wide">
-          {label}
-        </p>
-        <div className="bg-primary-50 dark:bg-primary-900/30 rounded-card p-2" aria-hidden="true">
-          {icon}
-        </div>
-      </div>
-      {isLoading ? (
-        <div className="mt-2 h-10 w-16 animate-pulse bg-neutral-200 dark:bg-neutral-700 rounded" />
-      ) : (
-        <p className={`mt-2 text-mono-md font-semibold ${color} dark:text-white`}>{value ?? 0}</p>
-      )}
-    </div>
-  )
-}
-
-function formatRelativeTime(dateStr: string): string {
-  const date = new Date(dateStr)
-  const diffMs = Date.now() - date.getTime()
-  const diffMin = Math.floor(diffMs / 60000)
-  const diffHour = Math.floor(diffMin / 60)
-  const diffDay = Math.floor(diffHour / 24)
-  if (diffMin < 1) return 'just now'
-  if (diffMin < 60) return `${diffMin} min ago`
-  if (diffHour < 24) return `${diffHour} hour${diffHour !== 1 ? 's' : ''} ago`
-  if (diffDay === 1) return 'yesterday'
-  return `${diffDay} days ago`
-}
 
 export default function DashboardPage() {
   const { user, loading: authLoading } = useAuth(true)
@@ -62,222 +20,164 @@ export default function DashboardPage() {
   )
 
   const pendingRequests = allRequests?.filter((r) => r.status === 'pending') ?? []
-  const recentRequests = [...(allRequests ?? [])]
-    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-    .slice(0, 5)
+  const receivedRequests = allRequests?.filter((r) => r.status === 'received') ?? []
+  const overdueRequests = allRequests?.filter((r) => r.status === 'overdue') ?? []
+  const dueThisWeek = allRequests?.filter((r) => {
+    const dueDate = new Date(r.due_date)
+    const today = new Date()
+    const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)
+    return dueDate >= today && dueDate <= nextWeek
+  }) ?? []
 
   if (authLoading) return <LoadingSpinner fullPage />
   if (!user) return null
 
+  const completionPercentage = allRequests ? Math.round((receivedRequests.length / allRequests.length) * 100) : 0
+
   return (
-    <div className="min-h-screen bg-neutral-50 px-4 sm:px-6 py-8">
-      <div className="max-w-6xl mx-auto">
-        {/* Page header */}
+    <div className="min-h-screen bg-neutral-50 px-6 py-8">
+      <div className="max-w-7xl mx-auto">
+        {/* Top Navigation */}
+        <div className="bg-white border-b border-neutral-300 px-9 py-4.5 -mx-6 mb-8 flex items-center justify-between">
+          <div className="flex items-center gap-8">
+            {/* Logo */}
+            <div className="flex items-center gap-3">
+              <div className="w-7 h-7 rounded-lg bg-neutral-900 flex items-center justify-center">
+                <div className="w-2.5 h-2.5 rounded-sm bg-primary-500"></div>
+              </div>
+              <span className="text-lg font-semibold text-neutral-900">Ledgerly</span>
+            </div>
+
+            {/* Nav Links */}
+            <div className="flex gap-6">
+              <span className="text-body-md text-neutral-900 font-semibold">Dashboard</span>
+              <Link href="/dashboard/clients" className="text-body-md text-neutral-600 hover:text-neutral-900 transition">Clients</Link>
+              <Link href="/dashboard/requests" className="text-body-md text-neutral-600 hover:text-neutral-900 transition">Requests</Link>
+              <a href="#" className="text-body-md text-neutral-600 hover:text-neutral-900 transition">Documents</a>
+            </div>
+          </div>
+
+          {/* Right Side */}
+          <div className="flex items-center gap-3">
+            <button className="bg-primary-600 text-white text-xs font-semibold px-4 py-2.5 rounded-button hover:bg-primary-700 transition">
+              + New request
+            </button>
+            <div className="w-8 h-8 rounded-full bg-primary-600 text-white flex items-center justify-center text-xs font-semibold">
+              {user.name.split(' ').map(n => n[0]).join('')}
+            </div>
+          </div>
+        </div>
+
+        {/* Header */}
         <div className="mb-8">
-          <h1 className="text-h1 font-serif text-neutral-900 dark:text-neutral-50">Dashboard</h1>
-          <p className="mt-2 text-body-md text-neutral-600 dark:text-neutral-400">Welcome back, {user.name}</p>
+          <h1 className="text-h3 font-serif text-neutral-900 mb-1">This week at a glance</h1>
         </div>
 
-        {/* Stats row */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <StatsCard
-            label="Total Clients"
-            value={clients?.length ?? null}
-            isLoading={clientsLoading}
-            icon={
-              <svg
-                className="w-5 h-5 text-primary-600 dark:text-primary-400"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
-                />
-              </svg>
-            }
-          />
-          <StatsCard
-            label="Pending Requests"
-            value={pendingRequests.length}
-            color="text-warning-600"
-            isLoading={requestsLoading}
-            icon={
-              <svg
-                className="w-5 h-5 text-warning-600 dark:text-warning-400"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            }
-          />
-          <StatsCard
-            label="Total Requests"
-            value={allRequests?.length ?? null}
-            color="text-success-600"
-            isLoading={requestsLoading}
-            icon={
-              <svg
-                className="w-5 h-5 text-success-600 dark:text-success-400"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                />
-              </svg>
-            }
-          />
-        </div>
-
-        {/* Quick actions */}
-        <div className="flex flex-wrap gap-3 mb-8">
-          <Button asChild variant="primary" size="md">
-            <Link href="/dashboard/clients">
-              <svg
-                aria-hidden="true"
-                className="w-4 h-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-              </svg>
-              Add Client
-            </Link>
-          </Button>
-          <Button asChild variant="secondary" size="md">
-            <Link href="/dashboard/requests">
-              <svg
-                aria-hidden="true"
-                className="w-4 h-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                />
-              </svg>
-              Create Request
-            </Link>
-          </Button>
-        </div>
-
-        {/* Recent requests */}
-        <div className="bg-white dark:bg-neutral-900 rounded-card border border-neutral-300 dark:border-neutral-700 shadow-light overflow-hidden">
-          <div className="px-6 py-4 border-b border-neutral-200 dark:border-neutral-700">
-            <h2 className="text-h4 font-serif text-neutral-900 dark:text-neutral-50">Recent Requests</h2>
-          </div>
-
-        {requestsLoading ? (
-          <div className="py-12 flex justify-center">
-            <LoadingSpinner size="md" />
-          </div>
-        ) : recentRequests.length === 0 ? (
-          <div className="text-center py-16 px-6">
-            <svg
-              aria-hidden="true"
-              className="mx-auto w-12 h-12 text-neutral-300"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={1}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-              />
-            </svg>
-            <p className="mt-4 text-body-md font-medium text-neutral-900 dark:text-neutral-100">
-              No requests yet
-            </p>
-            <p className="mt-1 text-body-sm text-neutral-600">
-              <Link
-                href="/dashboard/requests"
-                className="text-primary-600 hover:text-primary-700 font-medium"
-              >
-                Create your first request
-              </Link>
-            </p>
-          </div>
-        ) : (
-          <ul className="divide-y divide-neutral-200 dark:divide-neutral-700">
-            {recentRequests.map((req) => (
-              <li key={req.id} className="py-4 px-6 flex items-start gap-3 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition">
-                <div
-                  className="w-8 h-8 rounded-full bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0 mt-0.5"
-                  aria-hidden="true"
-                >
-                  <svg
-                    className="w-4 h-4 text-primary-600 dark:text-primary-400"
+        {/* Bento Grid */}
+        <div className="grid grid-cols-4 gap-4 mb-8" style={{ gridAutoRows: '148px' }}>
+          {/* Big Hero - Overall Completion */}
+          <div className="col-span-2 row-span-2 bg-neutral-900 rounded-3xl p-7 flex flex-col justify-between">
+            <div className="flex justify-between items-start">
+              <div>
+                <div className="text-xs font-medium text-neutral-500 mb-2">Overall completion</div>
+                <div className="flex items-baseline gap-1">
+                  <span className="font-serif text-6xl text-neutral-50 leading-none">{completionPercentage}</span>
+                  <span className="text-3xl text-primary-500 mb-1">%</span>
+                </div>
+              </div>
+              {/* Circular Progress */}
+              <div className="relative w-20 h-20">
+                <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 88 88">
+                  <circle cx="44" cy="44" r="40" fill="none" stroke="#2C2F35" strokeWidth="2" />
+                  <circle
+                    cx="44"
+                    cy="44"
+                    r="40"
                     fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                    />
-                  </svg>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-body-md font-medium text-neutral-900 dark:text-neutral-100 truncate">
-                    {req.title}
-                  </p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <StatusBadge status={req.status} size="sm" />
-                    {req.due_date && (
-                      <span className="text-caption text-neutral-500 dark:text-neutral-400">
-                        Due{' '}
-                        {new Date(req.due_date).toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          year: 'numeric',
-                        })}
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <span className="text-caption text-neutral-500 dark:text-neutral-400 flex-shrink-0">
-                  {formatRelativeTime(req.created_at)}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
+                    stroke="#10A37F"
+                    strokeWidth="2"
+                    strokeDasharray={`${(40 * 2 * Math.PI * completionPercentage) / 100} ${40 * 2 * Math.PI}`}
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </div>
+            </div>
 
-        {recentRequests.length > 0 && (
-          <div className="px-6 py-3 border-t border-neutral-200 dark:border-neutral-700">
-            <Link
-              href="/dashboard/requests"
-              className="text-body-sm text-primary-600 hover:text-primary-700 font-medium"
-            >
-              Show all requests →
-            </Link>
+            {/* Stats */}
+            <div className="flex gap-6">
+              <div>
+                <div className="text-mono font-semibold text-neutral-50">{allRequests?.length ?? 0}</div>
+                <div className="text-xs text-neutral-500 mt-0.5">requested</div>
+              </div>
+              <div>
+                <div className="text-mono font-semibold text-primary-500">{receivedRequests.length}</div>
+                <div className="text-xs text-neutral-500 mt-0.5">received</div>
+              </div>
+              <div>
+                <div className="text-mono font-semibold text-warning-500">{pendingRequests.length}</div>
+                <div className="text-xs text-neutral-500 mt-0.5">outstanding</div>
+              </div>
+            </div>
           </div>
-        )}
+
+          {/* Active Clients */}
+          <div className="bg-white border border-neutral-300 rounded-3xl p-5 flex flex-col justify-between">
+            <div className="text-xs font-semibold text-neutral-600 uppercase tracking-widest">Active clients</div>
+            <div className="text-mono text-4xl font-semibold text-neutral-900">{clients?.length ?? 0}</div>
+          </div>
+
+          {/* Overdue */}
+          <div className="bg-danger-50 border border-danger-200 rounded-3xl p-5 flex flex-col justify-between">
+            <div className="text-xs font-semibold text-danger-700 uppercase tracking-widest">Overdue</div>
+            <div className="text-mono text-4xl font-semibold text-danger-600">{overdueRequests.length}</div>
+          </div>
+
+          {/* Pending */}
+          <div className="bg-white border border-neutral-300 rounded-3xl p-5 flex flex-col justify-between">
+            <div className="text-xs font-semibold text-neutral-600 uppercase tracking-widest">Pending</div>
+            <div className="text-mono text-4xl font-semibold text-warning-600">{pendingRequests.length}</div>
+          </div>
+
+          {/* Due This Week */}
+          <div className="bg-white border border-neutral-300 rounded-3xl p-5 flex flex-col justify-between">
+            <div className="text-xs font-semibold text-neutral-600 uppercase tracking-widest">Due this week</div>
+            <div className="text-mono text-4xl font-semibold text-neutral-900">{dueThisWeek.length}</div>
+          </div>
+
+          {/* Needs Attention - Wide */}
+          <div className="col-span-4 bg-white border border-neutral-300 rounded-3xl p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-body-md font-semibold text-neutral-900">Needs your attention</h3>
+              <Link href="/dashboard/requests" className="text-xs font-medium text-primary-600 hover:text-primary-700">View all →</Link>
+            </div>
+
+            {/* Attention Cards */}
+            <div className="flex gap-3 h-auto">
+              {overdueRequests.length > 0 && (
+                <div className="flex-1 border border-danger-200 bg-danger-50 rounded-2xl p-3.5">
+                  <div className="text-xs font-semibold text-danger-700 mb-1">OVERDUE {Math.floor((Date.now() - new Date(overdueRequests[0].due_date).getTime()) / (24 * 60 * 60 * 1000))} DAYS</div>
+                  <div className="text-sm font-medium text-neutral-900">{overdueRequests[0].title}</div>
+                  <div className="text-xs text-neutral-600 mt-1">Harbor Logistics</div>
+                </div>
+              )}
+
+              {dueThisWeek.length > 0 && (
+                <div className="flex-1 border border-warning-200 bg-warning-50 rounded-2xl p-3.5">
+                  <div className="text-xs font-semibold text-warning-700 mb-1">DUE TOMORROW</div>
+                  <div className="text-sm font-medium text-neutral-900">{dueThisWeek[0].title}</div>
+                  <div className="text-xs text-neutral-600 mt-1">Atlas Printing Co</div>
+                </div>
+              )}
+
+              {pendingRequests.length > 0 && (
+                <div className="flex-1 border border-warning-200 bg-warning-50 rounded-2xl p-3.5">
+                  <div className="text-xs font-semibold text-warning-700 mb-1">DUE IN 2 DAYS</div>
+                  <div className="text-sm font-medium text-neutral-900">{pendingRequests[0].title}</div>
+                  <div className="text-xs text-neutral-600 mt-1">Summit Consulting</div>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>

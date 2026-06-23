@@ -3,16 +3,14 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Input } from '@/components/ui/Input'
-import { Button } from '@/components/ui/Button'
 
 export default function LoginPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
+    email: 'sarah@maplecpa.com',
+    password: '••••••••••',
   })
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -50,59 +48,88 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-900 flex items-center justify-center px-4">
-      <div className="w-full max-w-md bg-white dark:bg-neutral-800 rounded-card border border-neutral-300 dark:border-neutral-700 shadow-light p-8">
-        <h1 className="text-h3 font-serif text-neutral-900 dark:text-neutral-50 mb-2 text-center">Welcome back</h1>
-        <p className="text-body-sm text-neutral-600 dark:text-neutral-400 text-center mb-6">Sign in to your Accountant Hub account</p>
+    <div className="min-h-screen bg-neutral-50 flex items-center justify-center px-6">
+      <div className="w-full max-w-sm bg-neutral-50 rounded-lg p-12 flex flex-col justify-center">
+        {/* Logo */}
+        <div className="flex items-center gap-3 mb-10">
+          <div className="w-8 h-8 rounded-lg bg-neutral-900 flex items-center justify-center">
+            <div className="w-3 h-3 rounded-sm bg-primary-500"></div>
+          </div>
+          <span className="text-xl font-semibold text-neutral-900">Ledgerly</span>
+        </div>
+
+        {/* Heading */}
+        <h1 className="text-h3 font-serif text-neutral-900 mb-1">Welcome back</h1>
+        <p className="text-body-md text-neutral-600 mb-8">Sign in to pick up where you left off.</p>
 
         {error && (
-          <div className="mb-4 p-3 bg-danger-50 dark:bg-danger-900/20 border border-danger-200 dark:border-danger-700 text-danger-600 dark:text-danger-400 rounded-input text-sm">
+          <div className="mb-6 p-3 bg-danger-50 border border-danger-200 text-danger-600 rounded-button text-sm">
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4 mb-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Email */}
           <div>
-            <label className="block text-body-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Email address</label>
-            <Input
+            <label className="text-xs font-semibold text-neutral-900 uppercase tracking-wide block mb-2">Email</label>
+            <input
               type="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
               required
-              placeholder="you@example.com"
+              className="w-full bg-white border border-neutral-300 rounded-button px-3.5 py-3 text-body-md text-neutral-900 placeholder:text-neutral-400"
             />
           </div>
 
+          {/* Password */}
           <div>
-            <label className="block text-body-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Password</label>
-            <Input
+            <div className="flex justify-between items-center mb-2">
+              <label className="text-xs font-semibold text-neutral-900 uppercase tracking-wide">Password</label>
+              <a href="#" className="text-xs font-medium text-primary-600 hover:text-primary-700">Forgot?</a>
+            </div>
+            <input
               type="password"
               name="password"
               value={formData.password}
               onChange={handleChange}
               required
-              placeholder="Enter your password"
+              className="w-full bg-white border-2 border-primary-600 rounded-button px-3.5 py-3 text-body-md text-neutral-900 shadow-[0_0_0_3px_rgba(15,122,99,0.12)]"
             />
           </div>
 
-          <Button
+          {/* Sign In Button */}
+          <button
             type="submit"
             disabled={loading}
-            loading={loading}
-            variant="primary"
-            size="md"
-            className="w-full"
+            className="w-full bg-primary-600 text-white text-body-md font-semibold py-3.5 rounded-button hover:bg-primary-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Signing in...' : 'Sign in'}
-          </Button>
+          </button>
+
+          {/* Divider */}
+          <div className="flex items-center gap-3">
+            <div className="flex-1 h-px bg-neutral-300"></div>
+            <span className="text-xs text-neutral-500 font-medium">or</span>
+            <div className="flex-1 h-px bg-neutral-300"></div>
+          </div>
+
+          {/* Google Button */}
+          <button
+            type="button"
+            className="w-full bg-white border border-neutral-300 text-neutral-900 text-body-md font-medium py-3 rounded-button hover:bg-neutral-50 transition flex items-center justify-center gap-2.5"
+          >
+            <div className="w-4 h-4 rounded-full bg-gradient-to-br from-red-500 to-amber-500"></div>
+            Continue with Google
+          </button>
         </form>
 
-        <div className="border-t border-neutral-200 dark:border-neutral-700 pt-6">
-          <p className="text-center text-body-sm text-neutral-600 dark:text-neutral-400">
-            Don't have an account?{' '}
-            <Link href="/auth/signup" className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium">
-              Create one
+        {/* Footer */}
+        <div className="mt-auto pt-8 border-t border-neutral-300 text-center">
+          <p className="text-body-sm text-neutral-600">
+            New here?{' '}
+            <Link href="/auth/signup" className="text-primary-600 font-semibold hover:text-primary-700">
+              Create a free account
             </Link>
           </p>
         </div>
