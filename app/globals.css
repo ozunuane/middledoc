@@ -1,26 +1,127 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  /* ─── Fonts ─── */
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
+  --font-serif: var(--font-serif);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* ─── Primary — Deep Teal-Emerald (Ledgerly brand) ─── */
+  --color-primary-50:  #E8F3EE;
+  --color-primary-100: #E0EDE7;
+  --color-primary-200: #B7CFC6;
+  --color-primary-300: #A0CCBA;
+  --color-primary-400: #17937F;
+  --color-primary-500: #10A37F;
+  --color-primary-600: #0F7A63;
+  --color-primary-700: #0B5C4A;
+  --color-primary-800: #064936;
+  --color-primary-900: #06281F;
+  --color-primary-950: #030F0A;
+
+  /* ─── Neutral — Warm Taupe-Grays ─── */
+  --color-neutral-50:  #F7F4EE;
+  --color-neutral-100: #EDEAE2;
+  --color-neutral-150: #EFEAE0;
+  --color-neutral-200: #E7E1D5;
+  --color-neutral-250: #E0D9CB;
+  --color-neutral-300: #D8D1C2;
+  --color-neutral-350: #C9C2B4;
+  --color-neutral-400: #9C968A;
+  --color-neutral-500: #7A7468;
+  --color-neutral-600: #5C5F66;
+  --color-neutral-700: #3A3D42;
+  --color-neutral-800: #1F2937;
+  --color-neutral-900: #17191C;
+  --color-neutral-950: #0A0B0D;
+
+  /* ─── Paper — Design-specific surface colors ─── */
+  --color-paper: #F7F4EE;
+  --color-paper-warm: #EDEAE2;
+  --color-paper-table: #FAF8F2;
+  --color-paper-url: #F4F2EB;
+  --color-paper-pending: #FEFCF6;
+  --color-paper-rowline: #F2EEE5;
+
+  /* ─── Success — Green (Received status) ─── */
+  --color-success-50:  #E2F1EA;
+  --color-success-100: #C4E3D5;
+  --color-success-200: #A8D5C2;
+  --color-success-300: #8CC7AF;
+  --color-success-400: #4AAE90;
+  --color-success-500: #1E9570;
+  --color-success-600: #16734F;
+  --color-success-700: #0F5C43;
+  --color-success-800: #0A4434;
+  --color-success-900: #063329;
+
+  /* ─── Warning — Amber (Pending status) ─── */
+  --color-warning-50:  #FEFAEE;
+  --color-warning-100: #FBF1D4;
+  --color-warning-200: #F0E0AE;
+  --color-warning-300: #E5D08F;
+  --color-warning-400: #E6A23C;
+  --color-warning-500: #C9A24A;
+  --color-warning-600: #B5830E;
+  --color-warning-700: #8A6608;
+  --color-warning-800: #704E06;
+  --color-warning-900: #4A3303;
+
+  /* ─── Danger — Warm Coral-Red (Overdue status) ─── */
+  --color-danger-50:  #FDF6F3;
+  --color-danger-100: #F7E2DC;
+  --color-danger-200: #EEC8BB;
+  --color-danger-300: #E5AE9A;
+  --color-danger-400: #DB947A;
+  --color-danger-500: #C97A5B;
+  --color-danger-600: #C0492F;
+  --color-danger-700: #A83624;
+  --color-danger-800: #8A2A1B;
+  --color-danger-900: #5F1C11;
+
+  /* ─── Surface ─── */
+  --color-surface: #FFFFFF;
+  --color-surface-raised: #FFFFFF;
+  --color-surface-overlay: rgba(23, 25, 28, 0.42);
+
+  /* ─── Semantic aliases ─── */
+  --color-background: var(--color-neutral-50);
+  --color-foreground: var(--color-neutral-900);
+
+  /* ─── Border Radius ─── */
+  --radius-subtle: 2px;
+  --radius-button: 9px;
+  --radius-input: 9px;
+  --radius-standard: 10px;
+  --radius-card: 14px;
+  --radius-modal: 16px;
+  --radius-pill: 9999px;
+
+  /* ─── Box Shadows ─── */
+  --shadow-light: 0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px -1px rgba(0, 0, 0, 0.06);
+  --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
+  --shadow-dark: 0 10px 15px -3px rgba(0, 0, 0, 0.12), 0 4px 6px -4px rgba(0, 0, 0, 0.08);
+  --shadow-hero: 0 18px 40px -12px rgba(23, 25, 28, 0.18);
+  --shadow-focus: 0 0 0 3px rgba(15, 122, 99, 0.12);
+
+  /* ─── Typography ─── */
+  --text-h1-display: 3.875rem;
+  --text-h1: 3.625rem;
+  --text-h2: 2.125rem;
+  --text-h3: 1.875rem;
+  --text-h4: 1.625rem;
+  --text-body-lg: 1.0625rem;
+  --text-body-md: 0.9375rem;
+  --text-body-sm: 0.875rem;
+  --text-label: 0.8125rem;
+  --text-caption: 0.75rem;
+  --text-tiny: 0.6875rem;
+  --text-mono-lg: 1.5rem;
+  --text-mono-md: 1.375rem;
+  --text-mono-sm: 0.8125rem;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-background);
+  color: var(--color-foreground);
 }
