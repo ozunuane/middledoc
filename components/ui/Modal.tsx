@@ -106,17 +106,17 @@ export function Modal({
         onClick={(e) => e.stopPropagation()}
         onKeyDown={handleKeyDownPanel}
         className={[
-          'relative bg-white dark:bg-gray-900 rounded-modal shadow-dark',
+          'relative bg-neutral-50 dark:bg-neutral-900 rounded-modal shadow-dark border border-neutral-300/50 dark:border-neutral-700',
           'w-full max-h-[90vh] flex flex-col',
           'animate-scale-in',
           sizeClasses[size],
         ].join(' ')}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-200 dark:border-neutral-700 flex-shrink-0">
           <h2
             id={titleId}
-            className="text-lg font-semibold text-gray-900 dark:text-gray-100"
+            className="text-h4 font-serif text-neutral-900 dark:text-neutral-50"
           >
             {title}
           </h2>
@@ -124,7 +124,7 @@ export function Modal({
             type="button"
             onClick={onClose}
             aria-label="Close dialog"
-            className="p-2 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-500 dark:hover:text-gray-300 dark:hover:bg-gray-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 transition-colors"
+            className="p-2 rounded-md text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 dark:text-neutral-500 dark:hover:text-neutral-300 dark:hover:bg-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 transition-colors"
           >
             <svg aria-hidden="true" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -139,7 +139,7 @@ export function Modal({
 
         {/* Footer */}
         {footer && (
-          <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-end gap-3 flex-shrink-0">
+          <div className="px-6 py-4 border-t border-neutral-200 dark:border-neutral-700 flex items-center justify-end gap-3 flex-shrink-0">
             {footer}
           </div>
         )}

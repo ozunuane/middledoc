@@ -136,13 +136,13 @@ export function DataTable<T extends { id: number | string }>({
   }
 
   return (
-    <div className={`w-full overflow-x-auto rounded-lg shadow-light ${className}`}>
+    <div className={`w-full overflow-x-auto rounded-card shadow-light ${className}`}>
       <table
         role="grid"
         aria-label={ariaLabel ?? 'Data table'}
-        className="w-full divide-y divide-gray-200 text-left"
+        className="w-full divide-y divide-neutral-200 text-left"
       >
-        <thead className="bg-gray-50 dark:bg-gray-800">
+        <thead className="bg-neutral-50 border-b border-neutral-200 dark:bg-neutral-800 dark:border-neutral-700">
           <tr role="row">
             {columns.map((col, i) => {
               const key = getAccessorKey(col.accessor)
@@ -156,7 +156,7 @@ export function DataTable<T extends { id: number | string }>({
                   aria-sort={isSorted ? (activeSortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
                   style={col.minWidth ? { minWidth: col.minWidth } : undefined}
                   className={[
-                    'px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider whitespace-nowrap',
+                    'px-4 py-3 text-tiny font-semibold text-neutral-600 dark:text-neutral-400 uppercase tracking-wider whitespace-nowrap',
                     alignClasses[col.align ?? 'left'],
                     col.sortable ? 'cursor-pointer select-none group' : '',
                   ].join(' ')}
@@ -165,7 +165,7 @@ export function DataTable<T extends { id: number | string }>({
                     <button
                       type="button"
                       onClick={() => handleSort(key)}
-                      className="flex items-center gap-1 font-semibold text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+                      className="flex items-center gap-1 font-semibold text-tiny uppercase tracking-wider text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors"
                     >
                       {col.header}
                       <SortIcon direction={sortDir} />
@@ -180,7 +180,7 @@ export function DataTable<T extends { id: number | string }>({
             })}
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-100 dark:divide-gray-700 bg-white dark:bg-gray-900">
+        <tbody className="divide-y divide-neutral-100 dark:divide-neutral-700 bg-white dark:bg-neutral-900">
           {isLoading ? (
             Array.from({ length: loadingRowCount }).map((_, i) => (
               <SkeletonRow key={i} columnCount={columns.length} />
@@ -192,7 +192,7 @@ export function DataTable<T extends { id: number | string }>({
                   <div className="text-center py-16 px-6">
                     <svg
                       aria-hidden="true"
-                      className="mx-auto w-12 h-12 text-gray-300"
+                      className="mx-auto w-12 h-12 text-neutral-300"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -204,8 +204,8 @@ export function DataTable<T extends { id: number | string }>({
                         d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                       />
                     </svg>
-                    <p className="mt-4 text-sm font-medium text-gray-900 dark:text-gray-100">{emptyMessage}</p>
-                    <p className="mt-1 text-sm text-gray-500">Get started by adding your first item.</p>
+                    <p className="mt-4 text-sm font-medium text-neutral-900 dark:text-neutral-100">{emptyMessage}</p>
+                    <p className="mt-1 text-sm text-neutral-500">Get started by adding your first item.</p>
                   </div>
                 )}
               </td>
@@ -225,17 +225,17 @@ export function DataTable<T extends { id: number | string }>({
                     'transition-colors duration-150',
                     onRowClick ? 'cursor-pointer' : '',
                     isSelected
-                      ? 'bg-indigo-50 dark:bg-indigo-900/20 border-b border-indigo-100 dark:border-indigo-800'
+                      ? 'bg-primary-50 dark:bg-primary-900/20 border-b border-primary-100 dark:border-primary-800'
                       : rowIdx % 2 === 1
-                      ? 'bg-gray-50/50 dark:bg-gray-800/30 hover:bg-gray-50 dark:hover:bg-gray-800 border-b border-gray-100 dark:border-gray-700'
-                      : 'bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 border-b border-gray-100 dark:border-gray-700',
+                      ? 'bg-neutral-50/50 dark:bg-neutral-800/30 hover:bg-neutral-50 dark:hover:bg-neutral-800 border-b border-neutral-100 dark:border-neutral-700'
+                      : 'bg-white dark:bg-neutral-900 hover:bg-neutral-50 dark:hover:bg-neutral-800 border-b border-neutral-100 dark:border-neutral-700',
                   ].join(' ')}
                 >
                   {columns.map((col, colIdx) => (
                     <td
                       key={colIdx}
                       className={[
-                        'px-4 py-3 text-sm text-gray-900 dark:text-gray-100 whitespace-nowrap',
+                        'px-4 py-3 text-body-sm text-neutral-900 dark:text-neutral-100 whitespace-nowrap',
                         alignClasses[col.align ?? 'left'],
                       ].join(' ')}
                     >
