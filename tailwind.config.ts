@@ -7,11 +7,12 @@ import type { Config } from 'tailwindcss'
  * brand palette, typography scale, spacing grid, border radii,
  * box shadows, and breakpoints.
  *
- * Primary brand color: Indigo (#4F46E5)
- * Neutral: Gray
- * Success: Green
- * Warning: Yellow (Amber tone)
- * Error/Danger: Red
+ * Design: Warm, editorial visual direction
+ * Primary brand color: Emerald (#0F7A63)
+ * Backgrounds: Warm paper (#F7F4EE, #EDEAE2, #E4DFD4)
+ * Typography: Instrument Serif (headings), Geist (body), Geist Mono (data)
+ * Neutral: Warm taupe grays
+ * Status: Amber (pending), Green (received), Coral-red (overdue)
  *
  * All values are mobile-first. Dark mode is class-based so that
  * the Frontend Specialist can toggle it manually via <html class="dark">.
@@ -34,88 +35,88 @@ const config: Config = {
       // COLOR PALETTE
       // ─────────────────────────────────────────────
       colors: {
-        // Primary — Indigo
-        // Usage: buttons, links, active states, focus rings, badges
+        // Primary — Emerald (Ledgerly brand)
+        // Usage: buttons, links, active states, focus rings, badges, progress bars
         primary: {
-          50:  '#EEF2FF', // very light tint — hover backgrounds, subtle fills
-          100: '#E0E7FF', // light tint — selected row backgrounds
-          200: '#C7D2FE', // light — progress bar tracks
-          300: '#A5B4FC', // medium-light — disabled state text
-          400: '#818CF8', // medium — secondary button borders
-          500: '#6366F1', // mid-range — icon accents
-          600: '#4F46E5', // DEFAULT — primary buttons, active nav items
-          700: '#4338CA', // darker — button hover state
-          800: '#3730A3', // dark — pressed states
-          900: '#312E81', // very dark — text on light indigo backgrounds
-          950: '#1E1B4B', // deepest — dark mode primary text
+          50:  '#E8F3EE', // very light tint — hover backgrounds
+          100: '#CFE6DB', // light tint — progress track
+          200: '#B8D9CB', // light — disabled backgrounds
+          300: '#A0CCBA', // medium-light — secondary accents
+          400: '#17937F', // medium — secondary buttons
+          500: '#0F7A63', // DEFAULT — primary buttons, active nav, progress fill
+          600: '#0F7A63', // DEFAULT same as 500 for brand consistency
+          700: '#0B5C4A', // darker — button hover state
+          800: '#064936', // dark — pressed states
+          900: '#06281F', // very dark — dark mode text
+          950: '#030F0A', // deepest — dark mode backgrounds
         },
 
-        // Neutral — Gray
+        // Neutral — Warm Taupe-Grays (not cool grays)
         // Usage: backgrounds, borders, labels, body text, table rows
         neutral: {
-          50:  '#F9FAFB', // page background (matches bg-gray-50 in dashboard)
-          100: '#F3F4F6', // card alternate row, skeleton loaders
-          200: '#E5E7EB', // dividers, input borders (default)
-          300: '#D1D5DB', // disabled input borders
-          400: '#9CA3AF', // placeholder text, disabled icons
-          500: '#6B7280', // helper text, secondary labels
-          600: '#4B5563', // body text (matches text-gray-600 in dashboard)
-          700: '#374151', // strong body text
-          800: '#1F2937', // secondary headings
-          900: '#111827', // primary headings (matches text-gray-900 in dashboard)
-          950: '#030712', // near-black for dark mode surfaces
+          50:  '#F7F4EE', // page background (warm paper — PRIMARY)
+          100: '#EDEAE2', // secondary background (warm paper)
+          200: '#E4DFD4', // tertiary background (warm paper)
+          300: '#D8D1C2', // input borders (default)
+          400: '#9C968A', // placeholder text, tertiary labels
+          500: '#7A7468', // helper text, secondary labels
+          600: '#5C5F66', // body text (secondary)
+          700: '#3A3D42', // strong body text
+          800: '#1F2937', // secondary headings (cool-neutral fallback)
+          900: '#17191C', // primary headings (dark ink)
+          950: '#0A0B0D', // near-black for dark mode surfaces
         },
 
-        // Success — Green
+        // Success — Green (Received status)
         // Usage: received status badge, success toasts, positive metrics
         success: {
-          50:  '#F0FDF4', // success message background
-          100: '#DCFCE7', // badge background (received)
-          200: '#BBF7D0', // badge border (received)
-          300: '#86EFAC', // icon fill
-          400: '#4ADE80', // progress complete
-          500: '#22C55E', // success icon
-          600: '#16A34A', // DEFAULT — badge text, success button (matches text-green-600 in dashboard)
-          700: '#15803D', // hover state
-          800: '#166534', // dark success text
-          900: '#14532D', // very dark success text
+          50:  '#E2F1EA', // badge background (received) — DESIGN SPEC
+          100: '#C4E3D5', // badge border (received) — DESIGN SPEC
+          200: '#A8D5C2', // lighter fill
+          300: '#8CC7AF', // medium fill
+          400: '#4AAE90', // medium-strong
+          500: '#1E9570', // strong
+          600: '#16734F', // DEFAULT — badge text (received) — DESIGN SPEC
+          700: '#0F5C43', // hover state
+          800: '#0A4434', // dark
+          900: '#063329', // very dark
         },
 
-        // Warning — Yellow/Amber
-        // Usage: pending status badge, warning toasts, overdue approaching
+        // Warning — Amber (Pending status)
+        // Usage: pending status badge, warning toasts
         warning: {
-          50:  '#FEFCE8', // warning message background
-          100: '#FEF9C3', // badge background (pending)
-          200: '#FEF08A', // badge border (pending)
-          300: '#FDE047', // icon fill
-          400: '#FACC15', // progress indicator
-          500: '#EAB308', // warning icon
-          600: '#CA8A04', // DEFAULT — badge text, warning labels (matches text-yellow-600 in dashboard)
-          700: '#A16207', // hover state
-          800: '#854D0E', // dark warning text
-          900: '#713F12', // very dark warning text
+          50:  '#FEFAEE', // very light background
+          100: '#FBF1D4', // badge background (pending) — DESIGN SPEC
+          200: '#F0E0AE', // badge border (pending) — DESIGN SPEC
+          300: '#E5D08F', // light fill
+          400: '#D4B85F', // medium fill
+          500: '#C39A2E', // strong
+          600: '#B5830E', // DEFAULT — badge text (pending) — DESIGN SPEC
+          700: '#96690A', // hover state
+          800: '#704E06', // dark
+          900: '#4A3303', // very dark
         },
 
-        // Error/Danger — Red
-        // Usage: overdue status badge, error messages, delete buttons, form errors
+        // Danger — Warm Coral-Red (Overdue status)
+        // Usage: overdue status badge, error messages, delete buttons
         danger: {
-          50:  '#FFF1F2', // error message background, form error background
-          100: '#FFE4E6', // badge background (overdue)
-          200: '#FECDD3', // badge border, input error border tint
-          300: '#FDA4AF', // icon fill
-          400: '#FB7185', // form error icon
-          500: '#F43F5E', // error icon
-          600: '#DC2626', // DEFAULT — error text, delete buttons (matches bg-red-600 in dashboard)
-          700: '#B91C1C', // hover state on delete buttons
-          800: '#991B1B', // pressed state
-          900: '#7F1D1D', // very dark error text
+          50:  '#FEF8F6', // very light background
+          100: '#F7E2DC', // badge background (overdue) — DESIGN SPEC
+          200: '#EEC8BB', // badge border (overdue) — DESIGN SPEC
+          300: '#E5AE9A', // light fill
+          400: '#DB947A', // medium fill
+          500: '#C97A5B', // strong
+          600: '#C0492F', // DEFAULT — badge text (overdue) — DESIGN SPEC
+          700: '#A83624', // hover state
+          800: '#8A2A1B', // dark
+          900: '#5F1C11', // very dark
         },
 
         // Brand surface colors for white card components
         surface: {
-          DEFAULT: '#FFFFFF', // card background (matches bg-white in dashboard)
+          DEFAULT: '#FFFFFF', // card background (white)
           raised: '#FFFFFF',  // elevated modals
-          overlay: 'rgba(0, 0, 0, 0.5)', // modal backdrop
+          overlay: 'rgba(23, 25, 28, 0.42)', // modal backdrop (from design)
         },
       },
 
@@ -123,7 +124,14 @@ const config: Config = {
       // TYPOGRAPHY
       // ─────────────────────────────────────────────
       fontFamily: {
-        // System font stack — fallback if Geist is not loaded
+        // Instrument Serif — Editorial headings (NEW)
+        serif: [
+          'var(--font-serif)',
+          '"Instrument Serif"',
+          'Georgia',
+          'serif',
+        ],
+        // Geist Sans — Body text and UI
         sans: [
           'var(--font-geist-sans)',
           'ui-sans-serif',
@@ -140,6 +148,7 @@ const config: Config = {
           '"Segoe UI Symbol"',
           '"Noto Color Emoji"',
         ],
+        // Geist Mono — Data display and statistics
         mono: [
           'var(--font-geist-mono)',
           'ui-monospace',
@@ -154,22 +163,36 @@ const config: Config = {
       },
 
       fontSize: {
-        // Responsive typography scale — each tuple is [size, { lineHeight, letterSpacing }]
-        // Page headings
-        'heading-xl': ['1.875rem', { lineHeight: '2.25rem', letterSpacing: '-0.02em', fontWeight: '700' }], // text-3xl — main page h1
-        'heading-lg': ['1.5rem',   { lineHeight: '2rem',    letterSpacing: '-0.015em', fontWeight: '700' }], // text-2xl — section headings
-        'heading-md': ['1.25rem',  { lineHeight: '1.75rem', letterSpacing: '-0.01em',  fontWeight: '600' }], // text-xl — card headings
-        'heading-sm': ['1.125rem', { lineHeight: '1.75rem', letterSpacing: '-0.005em', fontWeight: '600' }], // text-lg — sub-headings
+        // SERIF HEADINGS (Instrument Serif, weight 400)
+        // Used for page titles, section headers — editorial tone
+        'h1-display': ['3.875rem', { lineHeight: '1.0', letterSpacing: '-0.015em', fontFamily: 'var(--font-serif)', fontWeight: '400' }], // 62px — marketing hero
+        'h1': ['3.625rem', { lineHeight: '1.0', letterSpacing: '-0.01em', fontFamily: 'var(--font-serif)', fontWeight: '400' }], // 58px — page hero
+        'h2': ['2.125rem', { lineHeight: '1.4', letterSpacing: '-0.01em', fontFamily: 'var(--font-serif)', fontWeight: '400' }], // 34px — section headers
+        'h3': ['1.875rem', { lineHeight: '1.4', letterSpacing: '-0.005em', fontFamily: 'var(--font-serif)', fontWeight: '400' }], // 30px — subsection
+        'h4': ['1.625rem', { lineHeight: '1.4', fontFamily: 'var(--font-serif)', fontWeight: '400' }], // 26px — card titles
 
-        // Body text
-        'body-lg': ['1rem',     { lineHeight: '1.75rem', letterSpacing: '0' }], // text-base — primary body
-        'body-md': ['0.9375rem', { lineHeight: '1.5rem', letterSpacing: '0' }], // 15px — comfortable reading
-        'body-sm': ['0.875rem', { lineHeight: '1.5rem',  letterSpacing: '0' }], // text-sm — secondary content
+        // BODY TEXT (Geist Sans, weight 400)
+        'body-lg': ['1.0625rem', { lineHeight: '1.6', letterSpacing: '0' }], // 17px — primary body copy
+        'body-md': ['0.9375rem', { lineHeight: '1.5', letterSpacing: '0' }], // 15px — comfortable reading
+        'body-sm': ['0.875rem', { lineHeight: '1.5', letterSpacing: '0' }], // 14px — secondary content
 
-        // UI labels and captions
-        'label-lg': ['0.875rem', { lineHeight: '1.25rem', letterSpacing: '0.025em', fontWeight: '600' }], // stat card labels
-        'label-sm': ['0.75rem',  { lineHeight: '1rem',    letterSpacing: '0.05em',  fontWeight: '600' }], // status badges, captions
-        'caption':  ['0.75rem',  { lineHeight: '1rem',    letterSpacing: '0.01em' }],                     // helper text, timestamps
+        // UI LABELS & CAPTIONS (Geist Sans, weight 600)
+        'label': ['0.8125rem', { lineHeight: '1.25', letterSpacing: '0', fontWeight: '600' }], // 13px — form labels
+        'caption': ['0.75rem', { lineHeight: '1.0', letterSpacing: '0.01em', fontWeight: '400' }], // 12px — helper text
+        'tiny': ['0.6875rem', { lineHeight: '1.0', letterSpacing: '0', fontWeight: '600' }], // 11px — status badges
+
+        // DATA DISPLAY (Geist Mono, weight 600)
+        'mono-lg': ['1.5rem', { lineHeight: '1.0', fontFamily: 'var(--font-mono)', fontWeight: '600' }], // 24px — stats cards
+        'mono-md': ['1.375rem', { lineHeight: '1.0', fontFamily: 'var(--font-mono)', fontWeight: '600' }], // 22px
+        'mono-sm': ['0.8125rem', { lineHeight: '1.0', fontFamily: 'var(--font-mono)', fontWeight: '500' }], // 13px — badge counts
+
+        // Keep legacy heading classes for backward compatibility
+        'heading-xl': ['1.875rem', { lineHeight: '2.25rem', letterSpacing: '-0.02em', fontWeight: '700' }],
+        'heading-lg': ['1.5rem', { lineHeight: '2rem', letterSpacing: '-0.015em', fontWeight: '700' }],
+        'heading-md': ['1.25rem', { lineHeight: '1.75rem', letterSpacing: '-0.01em', fontWeight: '600' }],
+        'heading-sm': ['1.125rem', { lineHeight: '1.75rem', letterSpacing: '-0.005em', fontWeight: '600' }],
+        'label-lg': ['0.875rem', { lineHeight: '1.25rem', letterSpacing: '0.025em', fontWeight: '600' }],
+        'label-sm': ['0.75rem', { lineHeight: '1rem', letterSpacing: '0.05em', fontWeight: '600' }],
       },
 
       // ─────────────────────────────────────────────
@@ -199,9 +222,11 @@ const config: Config = {
       // ─────────────────────────────────────────────
       borderRadius: {
         'subtle':   '2px',   // nearly square — table rows, dividers
-        'standard': '6px',   // DEFAULT for inputs, badges, small cards
-        'card':     '8px',   // cards, dropdowns
-        'modal':    '12px',  // modals, larger panels
+        'button':   '9px',   // buttons (design spec)
+        'input':    '9px',   // input fields (design spec)
+        'standard': '10px',  // small interactive elements
+        'card':     '14px',  // cards, table containers (design spec)
+        'modal':    '16px',  // modals, larger panels (design spec)
         'pill':     '9999px', // full pill — status badges
       },
 
@@ -215,9 +240,11 @@ const config: Config = {
         'medium': '0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.06)',
         // Dark — modals, popovers, elevated panels
         'dark':   '0 10px 15px -3px rgba(0, 0, 0, 0.12), 0 4px 6px -4px rgba(0, 0, 0, 0.08)',
-        // Focus ring — keyboard navigation and active inputs
-        'focus':  '0 0 0 3px rgba(79, 70, 229, 0.45)',    // 3px indigo focus ring
-        'focus-danger': '0 0 0 3px rgba(220, 38, 38, 0.4)', // error field focus
+        // Deep shadow for hero cards (from design: 0 18px 40px -12px)
+        'hero':   '0 18px 40px -12px rgba(23, 25, 28, 0.18)',
+        // Focus ring — keyboard navigation and active inputs (emerald)
+        'focus':  '0 0 0 3px rgba(15, 122, 99, 0.12)',    // 3px emerald focus ring
+        'focus-danger': '0 0 0 3px rgba(192, 73, 47, 0.12)', // error field focus (coral-red)
         // Inner shadow for pressed buttons
         'inner-sm': 'inset 0 1px 2px rgba(0, 0, 0, 0.08)',
       },
