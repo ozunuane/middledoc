@@ -95,7 +95,7 @@ export function Sidebar({ userName, onLogout, isMobileOpen, onMobileClose }: Sid
     <div className="flex flex-col h-full">
       {/* Brand */}
       <div className="px-5 py-5 border-b border-neutral-200 dark:border-neutral-700">
-        <span className="text-body-lg font-serif font-bold text-neutral-900 dark:text-neutral-50">Accountant Hub</span>
+        <span className="text-body-lg font-serif font-bold text-neutral-900 dark:text-neutral-50">MiddleDoc</span>
       </div>
 
       {/* Nav */}
@@ -154,7 +154,7 @@ export function Sidebar({ userName, onLogout, isMobileOpen, onMobileClose }: Sid
           {/* Drawer */}
           <div className="relative w-72 h-full bg-white dark:bg-neutral-950 shadow-dark animate-fade-in flex flex-col">
             <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-200 dark:border-neutral-700">
-              <span className="text-body-lg font-serif font-bold text-neutral-900 dark:text-neutral-50">Accountant Hub</span>
+              <span className="text-body-lg font-serif font-bold text-neutral-900 dark:text-neutral-50">MiddleDoc</span>
               <button
                 type="button"
                 onClick={onMobileClose}
