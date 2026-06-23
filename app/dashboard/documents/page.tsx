@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { useApi } from '@/hooks/useApi'
 import { useAuth } from '@/hooks/useAuth'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
@@ -27,8 +28,9 @@ function formatUploadDate(dateStr: string): string {
 export default function DocumentsPage() {
   const { user } = useAuth(true)
 
+  const searchParams = useSearchParams()
   const [search, setSearch] = useState('')
-  const [clientFilter, setClientFilter] = useState<string>('')
+  const [clientFilter, setClientFilter] = useState<string>(searchParams.get('client_id') ?? '')
 
   const documentsUrl = clientFilter
     ? `/api/documents?client_id=${clientFilter}`

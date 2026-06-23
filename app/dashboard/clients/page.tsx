@@ -154,7 +154,7 @@ export default function ClientsPage() {
                   <div className="w-[34px] h-[34px] rounded-[9px] bg-primary-50 text-primary-600 font-semibold text-xs flex items-center justify-center">
                     {client.name.split(' ').map(n => n[0]).join('')}
                   </div>
-                  <Link href={`/dashboard/clients/${client.id}`} className="text-body-md font-medium text-neutral-900 hover:text-primary-600 transition">
+                  <Link href={`/dashboard/documents?client_id=${client.id}`} className="text-body-md font-medium text-neutral-900 hover:text-primary-600 transition">
                     {client.name}
                   </Link>
                 </div>
