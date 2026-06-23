@@ -52,7 +52,7 @@ function Toast({
 }
 
 // ── Create Request Modal ───────────────────────────────────────────────────────
-interface CreateRequestValues {
+interface CreateRequestValues extends Record<string, unknown> {
   title: string
   client_id: string
   due_date: string

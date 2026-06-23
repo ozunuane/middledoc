@@ -55,7 +55,7 @@ function Toast({ message, type, onDismiss }: ToastProps) {
 }
 
 // ── Add Client Form ────────────────────────────────────────────────────────────
-interface AddClientFormValues {
+interface AddClientFormValues extends Record<string, unknown> {
   name: string
   email: string
 }
