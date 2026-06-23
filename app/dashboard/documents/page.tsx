@@ -88,7 +88,8 @@ export default function DocumentsPage() {
           <select
             value={clientFilter}
             onChange={(e) => setClientFilter(e.target.value)}
-            className="bg-white border border-neutral-300 rounded-button px-3.5 py-2.5 text-body-md text-neutral-900 focus:outline-none focus:border-primary-600 focus:ring-2 focus:ring-primary-600/20 cursor-pointer"
+            className="w-48 bg-white border border-neutral-300 rounded-button px-3 py-2.5 text-[13px] text-neutral-900 focus:outline-none focus:border-primary-600 focus:ring-2 focus:ring-primary-600/20 cursor-pointer appearance-none"
+            style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239C968A' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E\")", backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}
           >
             <option value="">All clients</option>
             {(clients ?? []).map((client) => (
@@ -102,7 +103,7 @@ export default function DocumentsPage() {
             placeholder="Search by file name..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="flex-1 bg-white border border-neutral-300 rounded-button px-3.5 py-2.5 text-body-md text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-primary-600 focus:ring-2 focus:ring-primary-600/20"
+            className="flex-1 bg-white border border-neutral-300 rounded-button px-3 py-2.5 text-[13px] text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-primary-600 focus:ring-2 focus:ring-primary-600/20"
           />
         </div>
 
