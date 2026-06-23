@@ -117,7 +117,7 @@ export default function ClientsPage() {
         ) : filteredClients.length === 0 ? (
           /* Empty State */
           <div className="bg-white border border-neutral-200 rounded-card py-20 flex flex-col items-center justify-center text-center">
-            <div className="w-16 h-16 rounded-full bg-[#E8F3EE] flex items-center justify-center mb-5">
+            <div className="w-16 h-16 rounded-full bg-primary-50 flex items-center justify-center mb-5">
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12Z" stroke="#0F7A63" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                 <path d="M20 20C20 16.69 16.42 14 12 14C7.58 14 4 16.69 4 20" stroke="#0F7A63" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -149,7 +149,7 @@ export default function ClientsPage() {
             {filteredClients.map((client) => (
               <div key={client.id} className="grid gap-4 px-[22px] py-[14px] border-b border-paper-rowline items-center hover:bg-neutral-50 transition last:border-b-0 cursor-pointer" style={{ gridTemplateColumns: '2.2fr 1.4fr 1fr 0.8fr 0.5fr' }}>
                 <div className="flex items-center gap-3">
-                  <div className="w-[34px] h-[34px] rounded-[9px] bg-[#E8F3EE] text-primary-600 font-semibold text-xs flex items-center justify-center">
+                  <div className="w-[34px] h-[34px] rounded-[9px] bg-primary-50 text-primary-600 font-semibold text-xs flex items-center justify-center">
                     {client.name.split(' ').map(n => n[0]).join('')}
                   </div>
                   <Link href={`/dashboard/clients/${client.id}`} className="text-body-md font-medium text-neutral-900 hover:text-primary-600 transition">

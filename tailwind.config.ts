@@ -37,7 +37,7 @@ const config: Config = {
       colors: {
         // Primary — Emerald (Ledgerly brand)
         primary: {
-          50:  '#F4F8F6', // completed checklist bg (design spec)
+          50:  '#E8F3EE', // light green tint — badges, avatars, checklist bg
           100: '#E0EDE7', // completed checklist border (design spec)
           200: '#B7CFC6', // dropzone dashed border (design spec)
           300: '#A0CCBA', // medium-light

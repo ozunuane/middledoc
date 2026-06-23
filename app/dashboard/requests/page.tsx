@@ -131,7 +131,7 @@ export default function RequestsPage() {
         ) : filteredRequests.length === 0 ? (
           /* Empty State */
           <div className="bg-white border border-neutral-200 rounded-card py-20 flex flex-col items-center justify-center text-center">
-            <div className="w-16 h-16 rounded-full bg-[#E8F3EE] flex items-center justify-center mb-5">
+            <div className="w-16 h-16 rounded-full bg-primary-50 flex items-center justify-center mb-5">
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M9 17H15M9 13H15M9 9H11M13 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V9L13 2Z" stroke="#0F7A63" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                 <path d="M13 2V9H20" stroke="#0F7A63" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
