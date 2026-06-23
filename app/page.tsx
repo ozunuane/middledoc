@@ -123,7 +123,7 @@ export default function Home() {
           </div>
 
           {/* Logo Strip */}
-          <div className="border-t border-neutral-300 pt-12">
+          <div className="border-t border-neutral-300 pt-12 pb-20">
             <p className="text-xs font-medium text-neutral-500 mb-6">Trusted by 1,200+ practices at tax season</p>
             <div className="flex gap-12 opacity-50">
               <span className="font-serif text-xl text-neutral-900">Maple & Co</span>
@@ -134,6 +134,69 @@ export default function Home() {
           </div>
         </div>
       </main>
+
+      {/* Footer */}
+      <footer className="bg-neutral-900 text-neutral-50 px-12 py-16 mt-20">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-4 gap-12 mb-12">
+            {/* Brand */}
+            <div>
+              <div className="flex items-center gap-2 mb-6">
+                <div className="w-6 h-6 rounded-md bg-primary-500 flex items-center justify-center">
+                  <div className="w-2 h-2 rounded-sm bg-neutral-900"></div>
+                </div>
+                <span className="text-lg font-semibold">Ledgerly</span>
+              </div>
+              <p className="text-xs text-neutral-400">
+                Document collection made simple. Free up time for what matters.
+              </p>
+            </div>
+
+            {/* Product */}
+            <div>
+              <h3 className="text-xs font-semibold uppercase tracking-wide mb-4">Product</h3>
+              <ul className="space-y-2">
+                <li><a href="#" className="text-xs text-neutral-400 hover:text-neutral-200 transition">Features</a></li>
+                <li><a href="#" className="text-xs text-neutral-400 hover:text-neutral-200 transition">Pricing</a></li>
+                <li><a href="#" className="text-xs text-neutral-400 hover:text-neutral-200 transition">Security</a></li>
+                <li><a href="#" className="text-xs text-neutral-400 hover:text-neutral-200 transition">API</a></li>
+              </ul>
+            </div>
+
+            {/* Company */}
+            <div>
+              <h3 className="text-xs font-semibold uppercase tracking-wide mb-4">Company</h3>
+              <ul className="space-y-2">
+                <li><a href="#" className="text-xs text-neutral-400 hover:text-neutral-200 transition">About</a></li>
+                <li><a href="#" className="text-xs text-neutral-400 hover:text-neutral-200 transition">Blog</a></li>
+                <li><a href="#" className="text-xs text-neutral-400 hover:text-neutral-200 transition">Careers</a></li>
+                <li><a href="#" className="text-xs text-neutral-400 hover:text-neutral-200 transition">Contact</a></li>
+              </ul>
+            </div>
+
+            {/* Legal */}
+            <div>
+              <h3 className="text-xs font-semibold uppercase tracking-wide mb-4">Legal</h3>
+              <ul className="space-y-2">
+                <li><a href="#" className="text-xs text-neutral-400 hover:text-neutral-200 transition">Privacy</a></li>
+                <li><a href="#" className="text-xs text-neutral-400 hover:text-neutral-200 transition">Terms</a></li>
+                <li><a href="#" className="text-xs text-neutral-400 hover:text-neutral-200 transition">Security</a></li>
+                <li><a href="#" className="text-xs text-neutral-400 hover:text-neutral-200 transition">Compliance</a></li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Bottom */}
+          <div className="border-t border-neutral-800 pt-8 flex justify-between items-center">
+            <p className="text-xs text-neutral-500">© 2024 Ledgerly. All rights reserved.</p>
+            <div className="flex gap-6">
+              <a href="#" className="text-neutral-400 hover:text-neutral-200 text-sm">Twitter</a>
+              <a href="#" className="text-neutral-400 hover:text-neutral-200 text-sm">LinkedIn</a>
+              <a href="#" className="text-neutral-400 hover:text-neutral-200 text-sm">GitHub</a>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }
