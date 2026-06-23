@@ -7,6 +7,7 @@ import { useApi } from '@/hooks/useApi'
 import { useAuth } from '@/hooks/useAuth'
 import { StatusBadge } from '@/components/ui/StatusBadge'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
+import { NewRequestModal } from '@/components/NewRequestModal'
 import type { Client, DocumentRequest } from '@/types/index'
 
 export default function RequestsPage() {
@@ -14,7 +15,8 @@ export default function RequestsPage() {
   const { user } = useAuth(true)
 
   const [filter, setFilter] = useState<'all' | 'pending' | 'received' | 'overdue'>('all')
-  const { data: allRequests, loading: requestsLoading } = useApi<DocumentRequest[]>('/api/requests')
+  const [showNewRequest, setShowNewRequest] = useState(false)
+  const { data: allRequests, loading: requestsLoading, refetch: refetchRequests } = useApi<DocumentRequest[]>('/api/requests')
   const { data: clients } = useApi<Client[]>('/api/clients')
 
   const getClientName = (clientId: number): string => {
@@ -100,7 +102,7 @@ export default function RequestsPage() {
             <h1 className="text-h2 font-serif text-neutral-900 mb-1">Requests</h1>
             <p className="text-body-md text-neutral-500">All document requests across your clients</p>
           </div>
-          <button onClick={() => router.push('/dashboard/requests')} className="bg-primary-600 text-white text-xs font-semibold px-4 py-2.5 rounded-button hover:bg-primary-700 transition cursor-pointer">
+          <button onClick={() => setShowNewRequest(true)} className="bg-primary-600 text-white text-xs font-semibold px-4 py-2.5 rounded-button hover:bg-primary-700 transition cursor-pointer">
             + New request
           </button>
         </div>
@@ -143,7 +145,7 @@ export default function RequestsPage() {
             </p>
             {filter === 'all' && (
               <button
-                onClick={() => alert('Create request modal coming soon')}
+                onClick={() => setShowNewRequest(true)}
                 className="bg-primary-600 text-white text-[13px] font-semibold px-5 py-2.5 rounded-[9px] hover:bg-primary-700 transition cursor-pointer"
               >
                 Create your first request
@@ -178,6 +180,12 @@ export default function RequestsPage() {
             ))}
           </div>
         )}
+
+        <NewRequestModal
+          isOpen={showNewRequest}
+          onClose={() => setShowNewRequest(false)}
+          onRequestCreated={() => void refetchRequests()}
+        />
       </div>
     </div>
   )

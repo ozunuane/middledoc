@@ -5,13 +5,15 @@ import Link from 'next/link'
 import { useApi } from '@/hooks/useApi'
 import { useAuth } from '@/hooks/useAuth'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
+import { AddClientModal } from '@/components/AddClientModal'
 import type { Client, DocumentRequest } from '@/types/index'
 
 export default function ClientsPage() {
   const { user } = useAuth(true)
 
   const [search, setSearch] = useState('')
-  const { data: clients, loading } = useApi<Client[]>('/api/clients')
+  const [showAddClient, setShowAddClient] = useState(false)
+  const { data: clients, loading, refetch: refetchClients } = useApi<Client[]>('/api/clients')
   const { data: allRequests } = useApi<DocumentRequest[]>('/api/requests')
 
   const filteredClients = (clients ?? []).filter(
@@ -89,7 +91,7 @@ export default function ClientsPage() {
               Import CSV
             </button>
             <button
-              onClick={() => alert('Add client modal coming soon')}
+              onClick={() => setShowAddClient(true)}
               className="bg-primary-600 text-white text-[13px] font-semibold px-4 py-2.5 rounded-[9px] hover:bg-primary-700 transition cursor-pointer"
             >
               + Add client
@@ -128,7 +130,7 @@ export default function ClientsPage() {
               Add your first client to start collecting documents.
             </p>
             <button
-              onClick={() => alert('Add client modal coming soon')}
+              onClick={() => setShowAddClient(true)}
               className="bg-primary-600 text-white text-[13px] font-semibold px-5 py-2.5 rounded-[9px] hover:bg-primary-700 transition cursor-pointer"
             >
               Add your first client
@@ -177,6 +179,12 @@ export default function ClientsPage() {
           </div>
         )}
       </div>
+
+      <AddClientModal
+        isOpen={showAddClient}
+        onClose={() => setShowAddClient(false)}
+        onClientAdded={() => { refetchClients() }}
+      />
     </div>
   )
 }
