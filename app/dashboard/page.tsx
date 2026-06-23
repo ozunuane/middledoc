@@ -162,7 +162,7 @@ export default function DashboardPage() {
               <span className="text-sm text-neutral-900 font-semibold">Dashboard</span>
               <Link href="/dashboard/clients" className="text-sm text-neutral-500 hover:text-neutral-900 transition cursor-pointer">Clients</Link>
               <Link href="/dashboard/requests" className="text-sm text-neutral-500 hover:text-neutral-900 transition cursor-pointer">Requests</Link>
-              <Link href="/dashboard/requests" className="text-sm text-neutral-500 hover:text-neutral-900 transition cursor-pointer">Documents</Link>
+              <Link href="/dashboard/documents" className="text-sm text-neutral-500 hover:text-neutral-900 transition cursor-pointer">Documents</Link>
             </div>
           </div>
 

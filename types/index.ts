@@ -34,3 +34,15 @@ export interface DocumentUpload {
   file_size: number
   uploaded_at: string
 }
+
+export interface Document {
+  id: number
+  file_name: string
+  file_size: number
+  uploaded_at: string
+  request_id: number
+  request_title: string
+  client_id: number
+  client_name: string
+  client_email: string
+}

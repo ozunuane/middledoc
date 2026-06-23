@@ -65,7 +65,7 @@ export default function ClientsPage() {
             <Link href="/dashboard" className="text-sm text-neutral-500 hover:text-neutral-900 transition">Dashboard</Link>
             <span className="text-sm text-neutral-900 font-semibold">Clients</span>
             <Link href="/dashboard/requests" className="text-sm text-neutral-500 hover:text-neutral-900 transition">Requests</Link>
-            <Link href="/dashboard/requests" className="text-sm text-neutral-500 hover:text-neutral-900 transition">Documents</Link>
+            <Link href="/dashboard/documents" className="text-sm text-neutral-500 hover:text-neutral-900 transition">Documents</Link>
           </div>
         </div>
 
