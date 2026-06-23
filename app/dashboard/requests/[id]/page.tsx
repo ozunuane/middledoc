@@ -40,6 +40,33 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
     params.then((p) => setRequestId(p.id))
   }, [params])
 
+  const [sending, setSending] = useState(false)
+  const [sendResult, setSendResult] = useState<string | null>(null)
+
+  const handleSendReminder = async () => {
+    if (sending || !request) return
+    setSending(true)
+    setSendResult(null)
+    try {
+      const res = await fetch('/api/reminders/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ request_id: request.id }),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setSendResult(data.message || 'Reminder sent')
+      } else {
+        setSendResult(data.error || 'Failed to send reminder')
+      }
+    } catch {
+      setSendResult('Network error — please try again')
+    } finally {
+      setSending(false)
+      setTimeout(() => setSendResult(null), 3000)
+    }
+  }
+
   const getClientName = (clientId: number): string => {
     return clients?.find((c) => c.id === clientId)?.name ?? 'Unknown Client'
   }
@@ -172,14 +199,25 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
           </div>
 
           <div className="flex gap-3">
-            <button onClick={() => alert('Reminder sent!')} className="bg-white text-neutral-900 text-xs font-medium px-4 py-2.5 rounded-button border border-neutral-300 hover:bg-neutral-50 transition">
-              Send reminder
+            <button
+              onClick={handleSendReminder}
+              disabled={sending}
+              className="bg-white text-neutral-900 text-xs font-medium px-4 py-2.5 rounded-button border border-neutral-300 hover:bg-neutral-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {sending ? 'Sending...' : 'Send reminder'}
             </button>
             <button onClick={() => alert('Download started')} className="bg-neutral-900 text-white text-xs font-semibold px-4 py-2.5 rounded-button hover:bg-neutral-800 transition">
               Download all
             </button>
           </div>
         </div>
+
+        {/* Reminder toast */}
+        {sendResult && (
+          <div className="mb-4 px-4 py-2.5 rounded-button text-xs font-medium bg-neutral-100 text-neutral-700 border border-neutral-200 inline-block">
+            {sendResult}
+          </div>
+        )}
 
         {/* Two-column layout */}
         <div className="grid gap-6" style={{ gridTemplateColumns: '1.6fr 1fr' }}>

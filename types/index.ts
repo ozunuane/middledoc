@@ -35,6 +35,14 @@ export interface DocumentUpload {
   uploaded_at: string
 }
 
+export interface EmailReminder {
+  id: number
+  request_id: number
+  client_id: number
+  reminder_type: 'initial' | '7day' | '3day' | 'deadline'
+  sent_at: string
+}
+
 export interface Document {
   id: number
   file_name: string
