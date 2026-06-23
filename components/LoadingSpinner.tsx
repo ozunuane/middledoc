@@ -25,7 +25,7 @@ export function LoadingSpinner({
     <div role="status" aria-label={label} className={`inline-flex flex-col items-center gap-3 ${className}`}>
       <svg
         aria-hidden="true"
-        className={`animate-spin text-indigo-600 ${sizeClasses[size]}`}
+        className={`animate-spin text-primary-500 ${sizeClasses[size]}`}
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
         viewBox="0 0 24 24"
@@ -50,7 +50,7 @@ export function LoadingSpinner({
 
   if (fullPage) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+      <div className="flex items-center justify-center min-h-screen bg-neutral-50">
         {spinner}
       </div>
     )

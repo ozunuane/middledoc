@@ -150,15 +150,15 @@ export function FileUploadArea({
 
   const zoneClasses = [
     'border-2 border-dashed rounded-modal p-8 text-center cursor-pointer transition-colors duration-200',
-    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2',
+    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2',
     disabled
-      ? 'border-gray-200 bg-gray-50 cursor-not-allowed opacity-60'
+      ? 'border-neutral-200 bg-neutral-50 cursor-not-allowed opacity-60'
       : isDragging
-      ? 'border-indigo-500 bg-indigo-50 cursor-copy'
-      : 'border-gray-300 bg-white hover:border-indigo-400 hover:bg-indigo-50/30',
+      ? 'border-primary-500 bg-primary-50 cursor-copy'
+      : 'border-neutral-300 bg-white hover:border-primary-400 hover:bg-primary-50/30',
   ].join(' ')
 
-  const iconColor = isDragging ? 'text-indigo-400' : 'text-gray-300'
+  const iconColor = isDragging ? 'text-primary-400' : 'text-neutral-300'
 
   return (
     <div className="flex flex-col gap-3">
@@ -190,10 +190,10 @@ export function FileUploadArea({
             d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
           />
         </svg>
-        <p className="text-base font-medium text-gray-600">
+        <p className="text-body-md font-medium text-neutral-700">
           {isDragging ? 'Drop files here' : 'Drag files here or click to browse'}
         </p>
-        <p id={hintId} className="text-sm text-gray-400 mt-1">
+        <p id={hintId} className="text-caption text-neutral-500 mt-1">
           {helperText ?? 'PDF, DOCX, XLSX, PNG, JPG up to 50 MB'}
         </p>
 
@@ -214,7 +214,7 @@ export function FileUploadArea({
       {errors.length > 0 && (
         <div role="alert" className="flex flex-col gap-1">
           {errors.map((err, i) => (
-            <p key={i} className="text-sm text-red-600 font-medium">
+            <p key={i} className="text-caption text-danger-600 font-medium">
               {err}
             </p>
           ))}
@@ -234,18 +234,18 @@ export function FileUploadArea({
             return (
               <li
                 key={file.name}
-                className="bg-gray-50 rounded-card border border-gray-200 px-3 py-2 flex flex-col gap-1.5"
+                className="bg-neutral-50 rounded-card border border-neutral-200 px-3 py-2 flex flex-col gap-1.5"
               >
                 <div className="flex items-center gap-2">
                   <FileTypeIcon name={file.name} />
-                  <span className="text-sm text-gray-700 truncate flex-1 min-w-0">{file.name}</span>
-                  <span className="text-xs text-gray-400 flex-shrink-0">{formatBytes(file.size)}</span>
+                  <span className="text-body-sm text-neutral-700 truncate flex-1 min-w-0">{file.name}</span>
+                  <span className="text-caption text-neutral-500 flex-shrink-0">{formatBytes(file.size)}</span>
                   {onFileRemove && (
                     <button
                       type="button"
                       aria-label={`Remove ${file.name}`}
                       onClick={() => removeFile(file.name)}
-                      className="p-0.5 text-gray-400 hover:text-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded"
+                      className="p-0.5 text-neutral-400 hover:text-neutral-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded"
                     >
                       <svg aria-hidden="true" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -262,17 +262,17 @@ export function FileUploadArea({
                       aria-valuemin={0}
                       aria-valuemax={100}
                       aria-label={`Uploading ${file.name}`}
-                      className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden"
+                      className="flex-1 h-1.5 bg-neutral-200 rounded-full overflow-hidden"
                     >
                       <div
                         className={[
                           'h-1.5 rounded-full transition-[width] duration-300',
-                          isComplete ? 'bg-green-500' : isError ? 'bg-red-500' : 'bg-indigo-600',
+                          isComplete ? 'bg-success-600' : isError ? 'bg-danger-600' : 'bg-primary-600',
                         ].join(' ')}
                         style={{ width: `${isComplete ? 100 : progress}%` }}
                       />
                     </div>
-                    <span className="text-xs text-gray-500 flex-shrink-0">
+                    <span className="text-caption text-neutral-500 flex-shrink-0">
                       {isComplete ? 'Done' : isError ? 'Error' : `${progress}%`}
                     </span>
                   </div>

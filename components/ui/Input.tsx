@@ -53,12 +53,12 @@ export function Input({
         'w-full px-3 py-2.5 text-sm text-neutral-900',
         'bg-white border rounded-input placeholder:text-neutral-400',
         'transition-colors duration-200',
-        'focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20',
-        'disabled:bg-neutral-50 disabled:text-neutral-400 disabled:cursor-not-allowed',
-        'dark:bg-neutral-800 dark:border-neutral-600 dark:text-neutral-100 dark:placeholder:text-neutral-500',
-        'dark:focus:border-primary-400 dark:focus:ring-primary-400/20',
+        'focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30',
+        'disabled:bg-neutral-50 disabled:text-neutral-500 disabled:cursor-not-allowed',
+        'dark:bg-neutral-800 dark:border-neutral-600 dark:text-neutral-50 dark:placeholder:text-neutral-500',
+        'dark:focus:border-primary-400 dark:focus:ring-primary-400/30',
         error
-          ? 'border-danger-600 bg-danger-50 focus:border-danger-600 focus:ring-danger-600/20 dark:border-danger-400 dark:bg-danger-900/20'
+          ? 'border-danger-600 bg-danger-50 focus:border-danger-600 focus:ring-danger-600/30 dark:border-danger-400 dark:bg-danger-900/20'
           : 'border-neutral-300',
         className,
       ].join(' ')}
