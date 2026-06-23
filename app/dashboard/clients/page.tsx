@@ -1,11 +1,12 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useApi } from '@/hooks/useApi'
 import { useAuth } from '@/hooks/useAuth'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { AddClientModal } from '@/components/AddClientModal'
+import { EditClientModal } from '@/components/EditClientModal'
 import type { Client, DocumentRequest } from '@/types/index'
 
 export default function ClientsPage() {
@@ -13,6 +14,18 @@ export default function ClientsPage() {
 
   const [search, setSearch] = useState('')
   const [showAddClient, setShowAddClient] = useState(false)
+  const [openMenuId, setOpenMenuId] = useState<number | null>(null)
+  const [editClient, setEditClient] = useState<Client | null>(null)
+  const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null)
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClick = () => setOpenMenuId(null)
+    if (openMenuId !== null) {
+      document.addEventListener('click', handleClick)
+      return () => document.removeEventListener('click', handleClick)
+    }
+  }, [openMenuId])
   const { data: clients, loading, refetch: refetchClients } = useApi<Client[]>('/api/clients')
   const { data: allRequests } = useApi<DocumentRequest[]>('/api/requests')
 
@@ -171,8 +184,30 @@ export default function ClientsPage() {
                   </span>
                 </div>
                 <div className="text-[13px] text-neutral-400">{getRelativeTime(client.created_at)}</div>
-                <div className="text-right">
-                  <button className="text-neutral-350 hover:text-neutral-600 text-lg cursor-pointer">⋯</button>
+                <div className="text-right relative">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setOpenMenuId(openMenuId === client.id ? null : client.id) }}
+                    className="text-neutral-350 hover:text-neutral-600 text-lg cursor-pointer"
+                  >
+                    ⋯
+                  </button>
+
+                  {openMenuId === client.id && (
+                    <div className="absolute right-0 top-8 bg-white border border-neutral-200 rounded-[9px] shadow-medium py-1 w-40 z-50">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setEditClient(client); setOpenMenuId(null) }}
+                        className="w-full text-left px-4 py-2 text-[13px] text-neutral-900 hover:bg-neutral-50 transition cursor-pointer"
+                      >
+                        Edit client
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setDeleteConfirm(client.id); setOpenMenuId(null) }}
+                        className="w-full text-left px-4 py-2 text-[13px] text-danger-600 hover:bg-danger-50 transition cursor-pointer"
+                      >
+                        Delete client
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
@@ -185,6 +220,40 @@ export default function ClientsPage() {
         onClose={() => setShowAddClient(false)}
         onClientAdded={() => { refetchClients() }}
       />
+
+      <EditClientModal
+        isOpen={editClient !== null}
+        onClose={() => setEditClient(null)}
+        onClientUpdated={() => void refetchClients()}
+        client={editClient}
+      />
+
+      {deleteConfirm !== null && (
+        <div className="fixed inset-0 bg-neutral-900/40 flex items-center justify-center z-50">
+          <div className="bg-neutral-50 rounded-[16px] shadow-hero max-w-sm w-full p-6">
+            <h3 className="text-lg font-serif text-neutral-900 mb-2">Delete client?</h3>
+            <p className="text-[13.5px] text-neutral-500 mb-6">This will also delete all their requests and uploaded documents. This cannot be undone.</p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setDeleteConfirm(null)}
+                className="bg-white border border-neutral-300 text-neutral-900 text-[13px] font-medium px-4 py-2.5 rounded-[9px] hover:bg-neutral-50 transition cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  await fetch(`/api/clients/${deleteConfirm}`, { method: 'DELETE' })
+                  setDeleteConfirm(null)
+                  refetchClients()
+                }}
+                className="bg-danger-600 text-white text-[13px] font-semibold px-4 py-2.5 rounded-[9px] hover:bg-danger-700 transition cursor-pointer"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
