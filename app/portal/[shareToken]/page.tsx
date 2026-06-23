@@ -243,31 +243,31 @@ export default function PortalPage({ params }: { params: Promise<{ shareToken: s
 
   return (
     <div className="min-h-screen bg-neutral-100 py-8 px-4 flex flex-col items-center justify-center">
-      <div className="w-full max-w-2xl">
+      <div className="w-full max-w-[560px]">
         {/* Logo */}
         <div className="text-center mb-6">
           <div className="flex items-center justify-center gap-2 mb-6">
-            <div className="w-8 h-8 rounded-lg bg-neutral-900 flex items-center justify-center">
-              <div className="w-2.5 h-2.5 rounded-sm bg-primary-500"></div>
+            <div className="w-[26px] h-[26px] rounded-lg bg-neutral-900 flex items-center justify-center">
+              <div className="w-[9px] h-[9px] rounded-sm bg-primary-500"></div>
             </div>
-            <span className="text-lg font-semibold text-neutral-900">Ledgerly</span>
+            <span className="text-[15px] font-semibold text-neutral-900">Ledgerly</span>
           </div>
         </div>
 
         {/* Card */}
-        <div className="bg-white rounded-2xl shadow-lg p-8">
+        <div className="bg-white rounded-2xl px-[28px] py-[30px]" style={{ boxShadow: '0 10px 30px -8px rgba(0,0,0,0.12)' }}>
           {/* Requested by */}
-          <div className="text-xs text-neutral-600 mb-1">
+          <div className="text-xs text-neutral-400 mb-1">
             Requested by {request.accountant_name}
             {request.accountant_firm && ` · ${request.accountant_firm}`}
           </div>
 
           {/* Title */}
-          <h1 className="text-h2 font-serif text-neutral-900 mb-3">{request.title}</h1>
+          <h1 className="text-h3 font-serif text-neutral-900 mb-3">{request.title}</h1>
 
           {/* Due date */}
           {request.due_date && (
-            <p className="text-body-md text-neutral-600 mb-4">
+            <p className="text-[13.5px] text-neutral-500 mb-4">
               {request.accountant_name} needs these documents by{' '}
               <strong className="text-neutral-900">{formatDueDate(request.due_date)}</strong>. Upload what you
               have — you can come back for the rest.
@@ -276,8 +276,8 @@ export default function PortalPage({ params }: { params: Promise<{ shareToken: s
 
           {/* Status badge */}
           {daysLeft !== null && uploadedFiles.length > 0 && (
-            <div className="flex items-center gap-2 px-3.5 py-2.5 bg-warning-100 border border-warning-200 rounded-button mb-6">
-              <span className="text-sm text-warning-700">
+            <div className="flex items-center gap-2 px-[14px] py-[10px] bg-warning-100 border border-warning-200 rounded-[10px] mb-6">
+              <span className="text-[13px] text-warning-700">
                 ⏱ {daysLeft} {daysLeft === 1 ? 'day' : 'days'} left · {uploadedFiles.length} uploaded — almost there
               </span>
             </div>
@@ -285,15 +285,15 @@ export default function PortalPage({ params }: { params: Promise<{ shareToken: s
 
           {/* Checklist */}
           {request.document_types && request.document_types.length > 0 && (
-            <div className="space-y-2 mb-6">
+            <div className="space-y-[9px] mb-6">
               {request.document_types.map((doc, idx) => {
                 const isUploaded = uploadedFiles.some(f => f.name.toLowerCase().includes(doc.toLowerCase()))
                 return (
                   <div
                     key={idx}
-                    className={`flex items-center gap-3 p-3 rounded-button border ${
+                    className={`flex items-center gap-3 px-[13px] py-[12px] rounded-[10px] border ${
                       isUploaded
-                        ? 'bg-success-50 border-success-200'
+                        ? 'bg-primary-50 border-primary-100'
                         : 'bg-white border-neutral-200'
                     }`}
                   >
@@ -326,15 +326,15 @@ export default function PortalPage({ params }: { params: Promise<{ shareToken: s
                 disabled={isUploading}
                 className="hidden"
               />
-              <div className="border-2 border-dashed border-primary-300 bg-primary-50 rounded-2xl p-8 text-center cursor-pointer hover:border-primary-500 hover:bg-primary-100 transition">
-                <div className="w-12 h-12 rounded-2xl bg-primary-600 flex items-center justify-center mx-auto mb-3">
+              <div className="border-[1.5px] border-dashed border-primary-200 bg-primary-50 rounded-[13px] p-8 text-center cursor-pointer hover:border-primary-500 hover:bg-primary-100 transition">
+                <div className="w-[44px] h-[44px] rounded-[12px] bg-primary-600 flex items-center justify-center mx-auto mb-3">
                   <span className="text-white text-xl">↑</span>
                 </div>
                 <div className="text-body-md font-semibold text-neutral-900 mb-1">
                   Drop files here, or{' '}
                   <span className="text-primary-600">choose from your device</span>
                 </div>
-                <div className="text-xs text-neutral-600">
+                <div className="text-xs text-neutral-400">
                   PDF, DOCX, XLSX, PNG, JPG up to 50 MB
                 </div>
               </div>
@@ -365,7 +365,7 @@ export default function PortalPage({ params }: { params: Promise<{ shareToken: s
           )}
 
           {/* Security note */}
-          <p className="text-xs text-neutral-500 text-center">
+          <p className="text-[11.5px] text-neutral-400 text-center">
             🔒 Encrypted in transit and at rest. Only {request.accountant_name} can see what you upload.
           </p>
         </div>
@@ -378,19 +378,19 @@ export default function PortalPage({ params }: { params: Promise<{ shareToken: s
 function PortalShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-neutral-100 py-8 px-4 flex flex-col items-center justify-center">
-      <div className="w-full max-w-2xl">
+      <div className="w-full max-w-[560px]">
         {/* Logo */}
         <div className="text-center mb-6">
           <div className="flex items-center justify-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-neutral-900 flex items-center justify-center">
-              <div className="w-2.5 h-2.5 rounded-sm bg-primary-500"></div>
+            <div className="w-[26px] h-[26px] rounded-lg bg-neutral-900 flex items-center justify-center">
+              <div className="w-[9px] h-[9px] rounded-sm bg-primary-500"></div>
             </div>
-            <span className="text-lg font-semibold text-neutral-900">Ledgerly</span>
+            <span className="text-[15px] font-semibold text-neutral-900">Ledgerly</span>
           </div>
         </div>
 
         {/* Card */}
-        <div className="bg-white rounded-2xl shadow-lg p-8">{children}</div>
+        <div className="bg-white rounded-2xl px-[28px] py-[30px]" style={{ boxShadow: '0 10px 30px -8px rgba(0,0,0,0.12)' }}>{children}</div>
       </div>
     </div>
   )

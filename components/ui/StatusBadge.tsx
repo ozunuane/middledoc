@@ -84,7 +84,7 @@ const StatusIcons: Record<RequestStatus, (props: { className: string }) => React
   cancelled: CancelledIcon,
 }
 
-export function StatusBadge({ status, size = 'sm', showIcon = true, className = '' }: StatusBadgeProps) {
+export function StatusBadge({ status, size = 'sm', showIcon = false, className = '' }: StatusBadgeProps) {
   const Icon = StatusIcons[status]
   const label = STATUS_LABELS[status]
 

@@ -36,35 +36,46 @@ const config: Config = {
       // ─────────────────────────────────────────────
       colors: {
         // Primary — Emerald (Ledgerly brand)
-        // Usage: buttons, links, active states, focus rings, badges, progress bars
         primary: {
-          50:  '#E8F3EE', // very light tint — hover backgrounds
-          100: '#CFE6DB', // light tint — progress track
-          200: '#B8D9CB', // light — disabled backgrounds
-          300: '#A0CCBA', // medium-light — secondary accents
-          400: '#17937F', // medium — secondary buttons
-          500: '#0F7A63', // DEFAULT — primary buttons, active nav, progress fill
-          600: '#0F7A63', // DEFAULT same as 500 for brand consistency
-          700: '#0B5C4A', // darker — button hover state
-          800: '#064936', // dark — pressed states
-          900: '#06281F', // very dark — dark mode text
-          950: '#030F0A', // deepest — dark mode backgrounds
+          50:  '#F4F8F6', // completed checklist bg (design spec)
+          100: '#E0EDE7', // completed checklist border (design spec)
+          200: '#B7CFC6', // dropzone dashed border (design spec)
+          300: '#A0CCBA', // medium-light
+          400: '#17937F', // medium
+          500: '#10A37F', // logo dot accent (design spec — NOT same as 600)
+          600: '#0F7A63', // buttons, progress fills, active states
+          700: '#0B5C4A', // button hover
+          800: '#064936', // pressed states
+          900: '#06281F', // dark mode text
+          950: '#030F0A', // dark mode bg
         },
 
-        // Neutral — Warm Taupe-Grays (not cool grays)
-        // Usage: backgrounds, borders, labels, body text, table rows
+        // Neutral — Warm Taupe-Grays
         neutral: {
-          50:  '#F7F4EE', // page background (warm paper — PRIMARY)
-          100: '#EDEAE2', // secondary background (warm paper)
-          200: '#E4DFD4', // tertiary background (warm paper)
-          300: '#D8D1C2', // input borders (default)
-          400: '#9C968A', // placeholder text, tertiary labels
-          500: '#7A7468', // helper text, secondary labels
-          600: '#5C5F66', // body text (secondary)
+          50:  '#F7F4EE', // page background (warm paper)
+          100: '#EDEAE2', // secondary background
+          150: '#EFEAE0', // progress bar track (design spec)
+          200: '#E7E1D5', // card/nav borders (design spec — primary border)
+          250: '#E0D9CB', // dividers, stat separators (design spec)
+          300: '#D8D1C2', // input borders
+          350: '#C9C2B4', // unchecked circle borders (design spec)
+          400: '#9C968A', // placeholder text, muted labels
+          500: '#7A7468', // secondary labels
+          600: '#5C5F66', // body text
           700: '#3A3D42', // strong body text
-          800: '#1F2937', // secondary headings (cool-neutral fallback)
+          800: '#1F2937', // secondary headings
           900: '#17191C', // primary headings (dark ink)
-          950: '#0A0B0D', // near-black for dark mode surfaces
+          950: '#0A0B0D', // near-black
+        },
+
+        // Design-specific surface colors
+        paper: {
+          DEFAULT: '#F7F4EE', // primary page bg
+          warm:    '#EDEAE2', // secondary bg
+          table:   '#FAF8F2', // table header bg (design spec)
+          url:     '#F4F2EB', // URL box bg (design spec)
+          pending: '#FEFCF6', // pending row bg (design spec)
+          rowline: '#F2EEE5', // table row divider (design spec)
         },
 
         // Success — Green (Received status)
@@ -83,26 +94,24 @@ const config: Config = {
         },
 
         // Warning — Amber (Pending status)
-        // Usage: pending status badge, warning toasts
         warning: {
           50:  '#FEFAEE', // very light background
-          100: '#FBF1D4', // badge background (pending) — DESIGN SPEC
-          200: '#F0E0AE', // badge border (pending) — DESIGN SPEC
+          100: '#FBF1D4', // badge background (pending)
+          200: '#F0E0AE', // badge border (pending)
           300: '#E5D08F', // light fill
-          400: '#D4B85F', // medium fill
-          500: '#C39A2E', // strong
-          600: '#B5830E', // DEFAULT — badge text (pending) — DESIGN SPEC
-          700: '#96690A', // hover state
+          400: '#E6A23C', // outstanding stat color (design spec)
+          500: '#C9A24A', // unchecked circle in email
+          600: '#B5830E', // badge text (pending)
+          700: '#8A6608', // portal status text (design spec)
           800: '#704E06', // dark
           900: '#4A3303', // very dark
         },
 
         // Danger — Warm Coral-Red (Overdue status)
-        // Usage: overdue status badge, error messages, delete buttons
         danger: {
-          50:  '#FEF8F6', // very light background
-          100: '#F7E2DC', // badge background (overdue) — DESIGN SPEC
-          200: '#EEC8BB', // badge border (overdue) — DESIGN SPEC
+          50:  '#FDF6F3', // attention card bg (design spec)
+          100: '#F7E2DC', // badge background (overdue)
+          200: '#EEC8BB', // badge border (overdue)
           300: '#E5AE9A', // light fill
           400: '#DB947A', // medium fill
           500: '#C97A5B', // strong

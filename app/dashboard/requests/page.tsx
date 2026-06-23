@@ -35,22 +35,22 @@ export default function RequestsPage() {
   return (
     <div className="min-h-screen bg-neutral-50">
       {/* Top Navigation */}
-      <div className="bg-white border-b border-neutral-300 px-9 py-4.5 flex items-center justify-between mb-8">
+      <div className="bg-white border-b border-neutral-200 px-9 py-4.5 flex items-center justify-between mb-8">
         <div className="flex items-center gap-8">
           {/* Logo */}
           <div className="flex items-center gap-3">
             <div className="w-7 h-7 rounded-lg bg-neutral-900 flex items-center justify-center">
               <div className="w-2.5 h-2.5 rounded-sm bg-primary-500"></div>
             </div>
-            <span className="text-lg font-semibold text-neutral-900">Ledgerly</span>
+            <span className="text-[16px] font-semibold text-neutral-900">Ledgerly</span>
           </div>
 
           {/* Nav Links */}
           <div className="flex gap-6">
-            <Link href="/dashboard" className="text-body-md text-neutral-600 hover:text-neutral-900 transition">Dashboard</Link>
-            <Link href="/dashboard/clients" className="text-body-md text-neutral-600 hover:text-neutral-900 transition">Clients</Link>
-            <span className="text-body-md text-neutral-900 font-semibold">Requests</span>
-            <a href="#" className="text-body-md text-neutral-600 hover:text-neutral-900 transition">Documents</a>
+            <Link href="/dashboard" className="text-sm text-neutral-500 hover:text-neutral-900 transition">Dashboard</Link>
+            <Link href="/dashboard/clients" className="text-sm text-neutral-500 hover:text-neutral-900 transition">Clients</Link>
+            <span className="text-sm text-neutral-900 font-semibold">Requests</span>
+            <a href="#" className="text-sm text-neutral-500 hover:text-neutral-900 transition">Documents</a>
           </div>
         </div>
 
@@ -65,8 +65,8 @@ export default function RequestsPage() {
         {/* Header */}
         <div className="flex justify-between items-end mb-5">
           <div>
-            <h1 className="text-h3 font-serif text-neutral-900 mb-1">Requests</h1>
-            <p className="text-body-md text-neutral-600">All document requests across your clients</p>
+            <h1 className="text-h2 font-serif text-neutral-900 mb-1">Requests</h1>
+            <p className="text-body-md text-neutral-500">All document requests across your clients</p>
           </div>
           <button className="bg-primary-600 text-white text-xs font-semibold px-4 py-2.5 rounded-button hover:bg-primary-700 transition">
             + New request
@@ -79,10 +79,10 @@ export default function RequestsPage() {
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className={`text-xs font-semibold px-3.5 py-1.5 rounded-full transition ${
+              className={`text-[13px] font-semibold px-3.5 py-[7px] rounded-full transition ${
                 filter === f
-                  ? 'bg-neutral-900 text-white'
-                  : 'bg-white border border-neutral-300 text-neutral-600 hover:bg-neutral-50'
+                  ? 'bg-white border border-neutral-900 text-neutral-900'
+                  : 'bg-white border border-neutral-200 text-neutral-500 hover:bg-neutral-50'
               }`}
             >
               {f === 'all' && `All · ${stats.all}`}
@@ -97,16 +97,16 @@ export default function RequestsPage() {
         {requestsLoading ? (
           <LoadingSpinner />
         ) : (
-          <div className="bg-white border border-neutral-300 rounded-2xl overflow-hidden">
+          <div className="bg-white border border-neutral-200 rounded-card overflow-hidden">
             {filteredRequests.map((request) => (
               <div
                 key={request.id}
-                className="flex items-center gap-4 px-6 py-4 border-b border-neutral-200 hover:bg-neutral-50 transition last:border-b-0 cursor-pointer"
+                className="flex items-center gap-4 px-[22px] py-[16px] border-b border-paper-rowline hover:bg-neutral-50 transition last:border-b-0 cursor-pointer"
               >
                 {/* Title and Client */}
                 <div className="flex-1 min-w-0">
                   <div className="text-body-md font-medium text-neutral-900">{request.title}</div>
-                  <div className="text-xs text-neutral-600 mt-0.5">
+                  <div className="text-[12.5px] text-neutral-400 mt-0.5">
                     {getClientName(request.client_id)} · due{' '}
                     {new Date(request.due_date).toLocaleDateString('en-US', {
                       month: 'short',
@@ -117,7 +117,7 @@ export default function RequestsPage() {
 
                 {/* Progress Bar */}
                 <div className="w-32">
-                  <div className="w-full h-1 bg-neutral-200 rounded-full overflow-hidden">
+                  <div className="w-full h-[5px] bg-neutral-150 rounded-full overflow-hidden">
                     <div
                       className="h-full bg-primary-600"
                       style={{ width: request.status === 'received' ? '100%' : '60%' }}

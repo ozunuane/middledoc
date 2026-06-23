@@ -120,26 +120,26 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
   return (
     <div className="min-h-screen bg-neutral-50">
       {/* Navigation */}
-      <div className="bg-white border-b border-neutral-300 px-9 py-4.5 flex items-center justify-between mb-8">
+      <div className="bg-white border-b border-neutral-200 px-9 py-4.5 flex items-center justify-between mb-8">
         <div className="flex items-center gap-8">
           {/* Logo */}
           <div className="flex items-center gap-3">
             <div className="w-7 h-7 rounded-lg bg-neutral-900 flex items-center justify-center">
               <div className="w-2.5 h-2.5 rounded-sm bg-primary-500"></div>
             </div>
-            <span className="text-lg font-semibold text-neutral-900">Ledgerly</span>
+            <span className="text-[16px] font-semibold text-neutral-900">Ledgerly</span>
           </div>
 
           {/* Nav Links */}
           <div className="flex gap-6">
-            <Link href="/dashboard" className="text-body-md text-neutral-600 hover:text-neutral-900 transition">
+            <Link href="/dashboard" className="text-sm text-neutral-500 hover:text-neutral-900 transition">
               Dashboard
             </Link>
-            <Link href="/dashboard/clients" className="text-body-md text-neutral-600 hover:text-neutral-900 transition">
+            <Link href="/dashboard/clients" className="text-sm text-neutral-500 hover:text-neutral-900 transition">
               Clients
             </Link>
-            <span className="text-body-md text-neutral-900 font-semibold">Requests</span>
-            <a href="#" className="text-body-md text-neutral-600 hover:text-neutral-900 transition">
+            <span className="text-sm text-neutral-900 font-semibold">Requests</span>
+            <a href="#" className="text-sm text-neutral-500 hover:text-neutral-900 transition">
               Documents
             </a>
           </div>
@@ -154,7 +154,7 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
       {/* Content */}
       <div className="px-9 max-w-7xl mx-auto">
         {/* Back link */}
-        <Link href="/dashboard/requests" className="text-primary-600 font-medium text-body-sm mb-6 inline-block hover:text-primary-700">
+        <Link href="/dashboard/requests" className="text-primary-600 font-medium text-[13px] mb-6 inline-block hover:text-primary-700">
           ← Back to requests
         </Link>
 
@@ -165,14 +165,14 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
               <h1 className="text-h2 font-serif text-neutral-900">{request.title}</h1>
               <StatusBadge status={request.status} size="md" />
             </div>
-            <p className="text-body-md text-neutral-600">
+            <p className="text-sm text-neutral-500">
               {getClientName(request.client_id)} · {getClientEmail(request.client_id)} · due{' '}
               <strong className="text-neutral-900">{formatDate(request.due_date)}</strong> ({daysLeft} days left)
             </p>
           </div>
 
           <div className="flex gap-3">
-            <button className="bg-white text-neutral-900 text-xs font-semibold px-4 py-2.5 rounded-button border border-neutral-300 hover:bg-neutral-50 transition">
+            <button className="bg-white text-neutral-900 text-xs font-medium px-4 py-2.5 rounded-button border border-neutral-300 hover:bg-neutral-50 transition">
               Send reminder
             </button>
             <button className="bg-neutral-900 text-white text-xs font-semibold px-4 py-2.5 rounded-button hover:bg-neutral-800 transition">
@@ -182,19 +182,19 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
         </div>
 
         {/* Two-column layout */}
-        <div className="grid grid-cols-3 gap-6">
+        <div className="grid gap-6" style={{ gridTemplateColumns: '1.6fr 1fr' }}>
           {/* Left: Documents checklist */}
-          <div className="col-span-2">
-            <div className="bg-white border border-neutral-300 rounded-2xl overflow-hidden">
+          <div>
+            <div className="bg-white border border-neutral-200 rounded-card overflow-hidden">
               {/* Header */}
-              <div className="px-6 py-4 border-b border-neutral-200">
+              <div className="px-[22px] py-[18px] border-b border-[#EFEAE0]">
                 <div className="flex justify-between items-center mb-3">
                   <h2 className="text-body-md font-semibold text-neutral-900">Documents requested</h2>
-                  <span className="text-body-md text-neutral-600">
+                  <span className="text-[13px] font-mono text-neutral-600">
                     {request.documents?.filter((d) => d.status === 'received').length ?? 0} / {request.documents?.length ?? 0} received
                   </span>
                 </div>
-                <div className="w-full h-1 bg-neutral-200 rounded-full overflow-hidden">
+                <div className="w-full h-[6px] bg-neutral-150 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-primary-600 transition-all"
                     style={{ width: `${progressPercentage}%` }}
@@ -208,15 +208,15 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
                   request.documents.map((doc) => (
                     <div
                       key={doc.id}
-                      className={`flex items-center gap-3 px-6 py-4 ${
-                        doc.status === 'pending' ? 'bg-neutral-50' : ''
+                      className={`flex items-center gap-3 px-[22px] py-[15px] ${
+                        doc.status === 'pending' ? 'bg-paper-pending' : ''
                       }`}
                     >
                       <div
-                        className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${
+                        className={`w-[22px] h-[22px] rounded-full flex items-center justify-center flex-shrink-0 ${
                           doc.status === 'received'
                             ? 'bg-primary-600'
-                            : 'border-2 border-neutral-300'
+                            : 'border-[1.5px] border-neutral-300'
                         }`}
                       >
                         {doc.status === 'received' && (
@@ -225,7 +225,7 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
                       </div>
 
                       <div className="flex-1 min-w-0">
-                        <div className="text-body-md font-medium text-neutral-900">{doc.name}</div>
+                        <div className={`text-body-md font-medium ${doc.status === 'pending' ? 'text-neutral-700' : 'text-neutral-900'}`}>{doc.name}</div>
                         {doc.status === 'received' && doc.file_name && (
                           <div className="text-xs text-neutral-600 mt-1">
                             {doc.file_name} · {formatBytes(doc.file_size)} · received{' '}
@@ -233,7 +233,7 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
                           </div>
                         )}
                         {doc.status === 'pending' && (
-                          <div className="text-xs text-warning-700 font-medium mt-1">Still needed</div>
+                          <div className="text-xs text-warning-600 font-medium mt-1">Still needed</div>
                         )}
                       </div>
 
@@ -254,13 +254,13 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
           {/* Right: Share link and activity */}
           <div className="flex flex-col gap-6">
             {/* Share link */}
-            <div className="bg-white border border-neutral-300 rounded-2xl p-6">
+            <div className="bg-white border border-neutral-200 rounded-card p-6">
               <h3 className="text-body-md font-semibold text-neutral-900 mb-2">Client share link</h3>
-              <p className="text-xs text-neutral-600 mb-4">
+              <p className="text-xs text-neutral-400 mb-4">
                 Share this with your client — no account or password to set up.
               </p>
 
-              <div className="bg-neutral-100 border border-neutral-300 rounded-button p-3 mb-3 text-xs text-neutral-600 font-mono break-all">
+              <div className="bg-paper-url border border-neutral-200 rounded-lg p-3 mb-3 text-xs text-neutral-600 font-mono break-all">
                 ledgerly.app/u/{request.id}-{request.title.toLowerCase().replace(/\s+/g, '-').substring(0, 15)}
               </div>
 
@@ -275,7 +275,7 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
             </div>
 
             {/* Activity */}
-            <div className="bg-white border border-neutral-300 rounded-2xl p-6">
+            <div className="bg-white border border-neutral-200 rounded-card p-6">
               <h3 className="text-body-md font-semibold text-neutral-900 mb-4">Activity</h3>
 
               <div className="space-y-4">
@@ -286,8 +286,8 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
                         item.type === 'upload' ? 'bg-primary-600' : 'bg-neutral-400'
                       }`}></div>
                       <div>
-                        <div className="text-body-sm text-neutral-900">{item.description}</div>
-                        <div className="text-xs text-neutral-600 mt-0.5">
+                        <div className="text-[13px] text-neutral-900">{item.description}</div>
+                        <div className="text-xs text-neutral-400 mt-0.5">
                           {formatDateTime(item.timestamp)}
                         </div>
                       </div>
