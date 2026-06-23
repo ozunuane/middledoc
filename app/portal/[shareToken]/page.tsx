@@ -1,8 +1,6 @@
 'use client'
 
 import React, { useState, useCallback, useEffect } from 'react'
-import { FileUploadArea } from '@/components/ui/FileUploadArea'
-import { Button } from '@/components/ui/Button'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 
 interface PortalRequest {
@@ -11,6 +9,8 @@ interface PortalRequest {
   description?: string
   due_date?: string
   accountant_name: string
+  accountant_firm?: string
+  document_types?: string[]
 }
 
 interface UploadedFile {
@@ -69,13 +69,14 @@ export default function PortalPage({ params }: { params: Promise<{ shareToken: s
   }, [fetchRequest])
 
   const handleFilesSelected = useCallback(
-    async (files: File[]) => {
-      if (!request || !shareToken || files.length === 0) return
+    async (files: FileList | null) => {
+      if (!request || !shareToken || !files || files.length === 0) return
       setIsUploading(true)
 
+      const fileArray = Array.from(files)
       const nextStatus: Record<string, 'uploading'> = {}
       const nextProgress: Record<string, number> = {}
-      for (const f of files) {
+      for (const f of fileArray) {
         nextStatus[f.name] = 'uploading'
         nextProgress[f.name] = 0
       }
@@ -84,7 +85,7 @@ export default function PortalPage({ params }: { params: Promise<{ shareToken: s
 
       const successFiles: UploadedFile[] = []
 
-      for (const file of files) {
+      for (const file of fileArray) {
         try {
           const formData = new FormData()
           formData.append('file', file)
@@ -138,22 +139,10 @@ export default function PortalPage({ params }: { params: Promise<{ shareToken: s
     return (
       <PortalShell>
         <div className="text-center">
-          <svg
-            aria-hidden="true"
-            className="mx-auto w-12 h-12 text-red-400 mb-4"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={1.5}
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-            Link Not Found
-          </h1>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            This upload link is invalid or has expired. Please contact your accountant for a new
-            link.
+          <div className="text-5xl mb-4">❌</div>
+          <h1 className="text-h3 font-serif text-neutral-900 mb-2">Link Not Found</h1>
+          <p className="text-body-md text-neutral-600">
+            This upload link is invalid or has expired. Please contact your accountant for a new link.
           </p>
         </div>
       </PortalShell>
@@ -165,23 +154,15 @@ export default function PortalPage({ params }: { params: Promise<{ shareToken: s
     return (
       <PortalShell>
         <div className="text-center">
-          <svg
-            aria-hidden="true"
-            className="mx-auto w-12 h-12 text-red-400 mb-4"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={1.5}
+          <div className="text-5xl mb-4">⚠️</div>
+          <h1 className="text-h3 font-serif text-neutral-900 mb-2">Something Went Wrong</h1>
+          <p className="text-body-md text-neutral-600 mb-6">{errorMessage}</p>
+          <button
+            onClick={fetchRequest}
+            className="bg-primary-600 text-white text-body-md font-semibold px-6 py-3 rounded-button hover:bg-primary-700 transition"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-          </svg>
-          <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-            Something Went Wrong
-          </h1>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">{errorMessage}</p>
-          <Button variant="secondary" onClick={fetchRequest}>
             Try Again
-          </Button>
+          </button>
         </div>
       </PortalShell>
     )
@@ -190,8 +171,8 @@ export default function PortalPage({ params }: { params: Promise<{ shareToken: s
   // ── Loading ────────────────────────────────────────────────────────────────────
   if (pageState === 'loading' || !request) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <LoadingSpinner size="lg" label="Loading upload form..." />
+      <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
+        <LoadingSpinner fullPage />
       </div>
     )
   }
@@ -201,133 +182,191 @@ export default function PortalPage({ params }: { params: Promise<{ shareToken: s
     return (
       <PortalShell>
         <div className="text-center">
-          <svg
-            aria-hidden="true"
-            className="mx-auto w-16 h-16 text-green-500 mb-4"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={1.5}
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <h1
-            tabIndex={-1}
-            className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2 focus:outline-none"
-          >
-            Files Received!
-          </h1>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-            Thank you. Your accountant will be notified.
-          </p>
+          <div className="text-6xl mb-4">✓</div>
+          <h1 className="text-h3 font-serif text-neutral-900 mb-2">Files Received!</h1>
+          <p className="text-body-md text-neutral-600 mb-8">Thank you. Your accountant will be notified.</p>
 
           {uploadedFiles.length > 0 && (
-            <div className="text-left mb-6">
-              <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                Uploaded files
-              </p>
-              <ul className="flex flex-col gap-1.5">
+            <div className="text-left mb-8">
+              <p className="text-xs font-semibold text-neutral-600 uppercase tracking-widest mb-3">Uploaded files</p>
+              <div className="space-y-2">
                 {uploadedFiles.map((f) => (
-                  <li
+                  <div
                     key={f.name}
-                    className="flex items-center justify-between py-2 px-3 bg-gray-50 dark:bg-gray-800 rounded-standard border border-gray-200 dark:border-gray-700 text-sm"
+                    className="flex items-center justify-between p-3 bg-neutral-50 rounded-button border border-neutral-200"
                   >
-                    <span className="text-gray-700 dark:text-gray-300 truncate">{f.name}</span>
-                    <span className="text-xs text-gray-400 ml-3 flex-shrink-0">{formatBytes(f.size)}</span>
-                  </li>
+                    <span className="text-body-md text-neutral-900 truncate">{f.name}</span>
+                    <span className="text-xs text-neutral-500 ml-3 flex-shrink-0">{formatBytes(f.size)}</span>
+                  </div>
                 ))}
-              </ul>
+              </div>
             </div>
           )}
 
-          <Button
-            variant="secondary"
+          <button
             onClick={() => {
               setPageState('ready')
               setUploadedFiles([])
               setUploadProgress({})
               setUploadStatus({})
             }}
-            className="w-full"
+            className="w-full bg-white text-neutral-900 text-body-md font-medium px-6 py-3 rounded-button border border-neutral-300 hover:bg-neutral-50 transition"
           >
             Upload More Files
-          </Button>
+          </button>
         </div>
       </PortalShell>
     )
   }
 
   // ── Ready state ───────────────────────────────────────────────────────────────
-  const formatDueDate = (d?: string) =>
-    d
-      ? new Date(d).toLocaleDateString('en-US', {
-          weekday: 'long',
-          month: 'long',
-          day: 'numeric',
-          year: 'numeric',
-        })
-      : null
+  const formatDueDate = (d?: string) => {
+    if (!d) return null
+    const date = new Date(d)
+    return date.toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+    })
+  }
+
+  const getDaysRemaining = () => {
+    if (!request.due_date) return null
+    const dueDate = new Date(request.due_date)
+    const today = new Date()
+    const msPerDay = 24 * 60 * 60 * 1000
+    const daysLeft = Math.ceil((dueDate.getTime() - today.getTime()) / msPerDay)
+    return Math.max(0, daysLeft)
+  }
+
+  const daysLeft = getDaysRemaining()
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-8 px-4">
-      <div className="max-w-lg mx-auto">
-        {/* Branding */}
-        <p className="text-sm font-medium text-gray-500 mb-6 text-center">Accountant Hub</p>
+    <div className="min-h-screen bg-neutral-100 py-8 px-4 flex flex-col items-center justify-center">
+      <div className="w-full max-w-2xl">
+        {/* Logo */}
+        <div className="text-center mb-6">
+          <div className="flex items-center justify-center gap-2 mb-6">
+            <div className="w-8 h-8 rounded-lg bg-neutral-900 flex items-center justify-center">
+              <div className="w-2.5 h-2.5 rounded-sm bg-primary-500"></div>
+            </div>
+            <span className="text-lg font-semibold text-neutral-900">Ledgerly</span>
+          </div>
+        </div>
 
         {/* Card */}
-        <div className="bg-white dark:bg-gray-900 rounded-modal shadow-medium p-6 sm:p-8">
-          {/* Context */}
-          <div>
-            <p className="text-xs text-gray-500">Requested by:</p>
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              {request.accountant_name}
-            </p>
+        <div className="bg-white rounded-2xl shadow-lg p-8">
+          {/* Requested by */}
+          <div className="text-xs text-neutral-600 mb-1">
+            Requested by {request.accountant_name}
+            {request.accountant_firm && ` · ${request.accountant_firm}`}
           </div>
 
           {/* Title */}
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-2 mb-1">
-            {request.title}
-          </h1>
+          <h1 className="text-h2 font-serif text-neutral-900 mb-3">{request.title}</h1>
 
           {/* Due date */}
           {request.due_date && (
-            <p className="text-sm text-gray-500 mb-4">
-              Due by{' '}
-              <span className="font-medium text-gray-700 dark:text-gray-300">
-                {formatDueDate(request.due_date)}
+            <p className="text-body-md text-neutral-600 mb-4">
+              {request.accountant_name} needs these documents by{' '}
+              <strong className="text-neutral-900">{formatDueDate(request.due_date)}</strong>. Upload what you
+              have — you can come back for the rest.
+            </p>
+          )}
+
+          {/* Status badge */}
+          {daysLeft !== null && uploadedFiles.length > 0 && (
+            <div className="flex items-center gap-2 px-3.5 py-2.5 bg-warning-100 border border-warning-200 rounded-button mb-6">
+              <span className="text-sm text-warning-700">
+                ⏱ {daysLeft} {daysLeft === 1 ? 'day' : 'days'} left · {uploadedFiles.length} uploaded — almost there
               </span>
-            </p>
+            </div>
           )}
 
-          {/* Description */}
-          {request.description && (
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6 leading-relaxed">
-              {request.description}
-            </p>
+          {/* Checklist */}
+          {request.document_types && request.document_types.length > 0 && (
+            <div className="space-y-2 mb-6">
+              {request.document_types.map((doc, idx) => {
+                const isUploaded = uploadedFiles.some(f => f.name.toLowerCase().includes(doc.toLowerCase()))
+                return (
+                  <div
+                    key={idx}
+                    className={`flex items-center gap-3 p-3 rounded-button border ${
+                      isUploaded
+                        ? 'bg-success-50 border-success-200'
+                        : 'bg-white border-neutral-200'
+                    }`}
+                  >
+                    <div
+                      className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${
+                        isUploaded
+                          ? 'bg-primary-600'
+                          : 'border-2 border-neutral-300'
+                      }`}
+                    >
+                      {isUploaded && <span className="text-white text-xs font-bold">✓</span>}
+                    </div>
+                    <span className={`text-body-md ${isUploaded ? 'text-neutral-900' : 'text-neutral-600'}`}>
+                      {doc}
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
           )}
 
-          <hr className="border-gray-200 dark:border-gray-700 mb-6" />
-
-          {/* Upload section */}
-          <div>
-            <p className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">
-              Upload Documents
-            </p>
-            <FileUploadArea
-              onFilesSelected={handleFilesSelected}
-              accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.png,.jpg,.jpeg,.gif,.webp"
-              maxSize={50 * 1024 * 1024}
-              multiple
-              disabled={isUploading}
-              uploadProgress={uploadProgress}
-              uploadStatus={uploadStatus}
-              helperText="PDF, DOCX, XLSX, PNG, JPG up to 50 MB"
-            />
+          {/* File input */}
+          <div className="mb-4">
+            <label className="block">
+              <input
+                type="file"
+                multiple
+                accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.png,.jpg,.jpeg,.gif,.webp"
+                onChange={(e) => handleFilesSelected(e.target.files)}
+                disabled={isUploading}
+                className="hidden"
+              />
+              <div className="border-2 border-dashed border-primary-300 bg-primary-50 rounded-2xl p-8 text-center cursor-pointer hover:border-primary-500 hover:bg-primary-100 transition">
+                <div className="w-12 h-12 rounded-2xl bg-primary-600 flex items-center justify-center mx-auto mb-3">
+                  <span className="text-white text-xl">↑</span>
+                </div>
+                <div className="text-body-md font-semibold text-neutral-900 mb-1">
+                  Drop files here, or{' '}
+                  <span className="text-primary-600">choose from your device</span>
+                </div>
+                <div className="text-xs text-neutral-600">
+                  PDF, DOCX, XLSX, PNG, JPG up to 50 MB
+                </div>
+              </div>
+            </label>
           </div>
 
+          {/* Upload progress */}
+          {Object.keys(uploadStatus).length > 0 && (
+            <div className="mb-4 space-y-2">
+              {Object.entries(uploadStatus).map(([fileName, status]) => (
+                <div key={fileName} className="flex items-center gap-3">
+                  <span className="text-xs text-neutral-600 flex-1 truncate">{fileName}</span>
+                  <div className="w-16 h-1 bg-neutral-200 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full transition-all ${
+                        status === 'complete'
+                          ? 'bg-primary-600 w-full'
+                          : status === 'error'
+                          ? 'bg-danger-600'
+                          : 'bg-primary-600'
+                      }`}
+                      style={{ width: `${uploadProgress[fileName] ?? 0}%` }}
+                    ></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
           {/* Security note */}
-          <p className="text-xs text-gray-400 mt-4 text-center">
-            Your files are encrypted and only accessible by your accountant.
+          <p className="text-xs text-neutral-500 text-center">
+            🔒 Encrypted in transit and at rest. Only {request.accountant_name} can see what you upload.
           </p>
         </div>
       </div>
@@ -338,12 +377,20 @@ export default function PortalPage({ params }: { params: Promise<{ shareToken: s
 // ── Shared shell for error/success states ──────────────────────────────────────
 function PortalShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-8 px-4">
-      <div className="max-w-lg mx-auto">
-        <p className="text-sm font-medium text-gray-500 mb-6 text-center">Accountant Hub</p>
-        <div className="bg-white dark:bg-gray-900 rounded-modal shadow-medium p-6 sm:p-8">
-          {children}
+    <div className="min-h-screen bg-neutral-100 py-8 px-4 flex flex-col items-center justify-center">
+      <div className="w-full max-w-2xl">
+        {/* Logo */}
+        <div className="text-center mb-6">
+          <div className="flex items-center justify-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-neutral-900 flex items-center justify-center">
+              <div className="w-2.5 h-2.5 rounded-sm bg-primary-500"></div>
+            </div>
+            <span className="text-lg font-semibold text-neutral-900">Ledgerly</span>
+          </div>
         </div>
+
+        {/* Card */}
+        <div className="bg-white rounded-2xl shadow-lg p-8">{children}</div>
       </div>
     </div>
   )
