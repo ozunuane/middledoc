@@ -98,7 +98,7 @@ export default function ClientsPage() {
             placeholder="Search clients by name or email…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="flex-1 bg-white border border-neutral-300 rounded-button px-3.5 py-2.5 text-body-md text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30"
+            className="flex-1 bg-white border border-neutral-300 rounded-button px-3.5 py-2.5 text-body-md text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-primary-600 focus:ring-2 focus:ring-primary-600/20"
           />
           <button className="bg-white border border-neutral-300 text-neutral-900 text-body-md px-4 py-2.5 rounded-button hover:bg-neutral-50 transition">
             All statuses ▾
@@ -123,7 +123,7 @@ export default function ClientsPage() {
             {filteredClients.map((client) => (
               <div key={client.id} className="grid gap-4 px-[22px] py-[14px] border-b border-paper-rowline items-center hover:bg-neutral-50 transition last:border-b-0" style={{ gridTemplateColumns: '2.2fr 1.4fr 1fr 0.8fr 0.5fr' }}>
                 <div className="flex items-center gap-3">
-                  <div className="w-[34px] h-[34px] rounded-[9px] bg-primary-50 text-primary-600 font-semibold text-xs flex items-center justify-center">
+                  <div className="w-[34px] h-[34px] rounded-[9px] bg-[#E8F3EE] text-primary-600 font-semibold text-xs flex items-center justify-center">
                     {client.name.split(' ').map(n => n[0]).join('')}
                   </div>
                   <span className="text-body-md font-medium text-neutral-900">{client.name}</span>
