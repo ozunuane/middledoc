@@ -50,16 +50,16 @@ export function Input({
       aria-invalid={ariaInvalid ?? error}
       aria-required={ariaRequired ?? required}
       className={[
-        'w-full px-3 py-2.5 text-sm text-gray-900',
-        'bg-white border rounded-standard placeholder:text-gray-400',
+        'w-full px-3 py-2.5 text-sm text-neutral-900',
+        'bg-white border rounded-input placeholder:text-neutral-400',
         'transition-colors duration-200',
-        'focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30',
-        'disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed',
-        'dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100 dark:placeholder:text-gray-500',
-        'dark:focus:border-indigo-400 dark:focus:ring-indigo-400/30',
+        'focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20',
+        'disabled:bg-neutral-50 disabled:text-neutral-400 disabled:cursor-not-allowed',
+        'dark:bg-neutral-800 dark:border-neutral-600 dark:text-neutral-100 dark:placeholder:text-neutral-500',
+        'dark:focus:border-primary-400 dark:focus:ring-primary-400/20',
         error
-          ? 'border-red-500 bg-red-50 focus:border-red-500 focus:ring-red-500/30 dark:border-red-400 dark:bg-red-900/20'
-          : 'border-gray-300',
+          ? 'border-danger-600 bg-danger-50 focus:border-danger-600 focus:ring-danger-600/20 dark:border-danger-400 dark:bg-danger-900/20'
+          : 'border-neutral-300',
         className,
       ].join(' ')}
     />

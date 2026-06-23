@@ -21,19 +21,23 @@ const STATUS_LABELS: Record<RequestStatus, string> = {
 }
 
 const statusClasses: Record<RequestStatus, string> = {
+  // Pending: Warm amber (#FBF1D4, #B5830E, #F0E0AE border)
   pending:
-    'bg-yellow-100 border border-yellow-200 text-yellow-700 dark:bg-yellow-900/30 dark:border-yellow-800 dark:text-yellow-400',
+    'bg-warning-100 border border-warning-200 text-warning-600 dark:bg-warning-900/30 dark:border-warning-800 dark:text-warning-300',
+  // Received: Fresh green (#E2F1EA, #16734F, #C4E3D5 border)
   received:
-    'bg-green-100 border border-green-200 text-green-700 dark:bg-green-900/30 dark:border-green-800 dark:text-green-400',
+    'bg-success-50 border border-success-100 text-success-600 dark:bg-success-900/30 dark:border-success-800 dark:text-success-300',
+  // Overdue: Warm coral-red (#F7E2DC, #C0492F, #EEC8BB border)
   overdue:
-    'bg-red-100 border border-red-200 text-red-700 dark:bg-red-900/30 dark:border-red-800 dark:text-red-400',
+    'bg-danger-50 border border-danger-200 text-danger-600 dark:bg-danger-900/30 dark:border-danger-800 dark:text-danger-300',
+  // Cancelled: Neutral warm gray
   cancelled:
-    'bg-gray-100 border border-gray-200 text-gray-600 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400',
+    'bg-neutral-100 border border-neutral-200 text-neutral-600 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-400',
 }
 
 const sizeClasses: Record<Size, string> = {
-  sm: 'text-xs font-semibold uppercase tracking-wide px-2.5 py-0.5 rounded-full',
-  md: 'text-sm font-semibold uppercase tracking-wide px-3 py-1 rounded-full',
+  sm: 'text-tiny font-semibold uppercase tracking-wider px-2.5 py-1 rounded-pill',
+  md: 'text-tiny font-semibold uppercase tracking-wider px-3 py-1.5 rounded-pill',
 }
 
 const iconSize: Record<Size, string> = {
