@@ -77,3 +77,27 @@ CREATE TRIGGER trigger_mark_received
 AFTER INSERT ON document_uploads
 FOR EACH ROW
 EXECUTE FUNCTION update_request_status();
+
+-- Seed data for development/testing
+-- Password: password123 for both test accounts
+INSERT INTO accountants (email, password_hash, name)
+VALUES
+  ('test@example.com', '$2a$10$tAdfnTiqzGOg6LcHCmSzuuK/ejac47KA/i8uKd6LbpEkC3OoagHNq', 'Test Accountant'),
+  ('demo@accountant.com', '$2a$10$tAdfnTiqzGOg6LcHCmSzuuK/ejac47KA/i8uKd6LbpEkC3OoagHNq', 'Demo User')
+ON CONFLICT (email) DO NOTHING;
+
+-- Seed clients for the test accountant
+INSERT INTO clients (accountant_id, email, name)
+VALUES
+  (1, 'john@business.com', 'John Smith'),
+  (1, 'sarah@company.co', 'Sarah Johnson'),
+  (1, 'mike@startup.io', 'Mike Chen')
+ON CONFLICT (accountant_id, email) DO NOTHING;
+
+-- Seed document requests
+INSERT INTO document_requests (accountant_id, client_id, title, description, due_date, status)
+VALUES
+  (1, 1, '2025 Tax Returns', 'Please provide all tax documents for 2025', '2026-03-31', 'pending'),
+  (1, 2, 'Quarterly Income Statement', 'Q1 2026 financial statements needed', '2026-02-28', 'received'),
+  (1, 3, 'Expense Receipts', 'All receipts from January 2026', '2026-02-15', 'overdue')
+ON CONFLICT DO NOTHING;
