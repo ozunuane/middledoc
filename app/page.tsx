@@ -34,7 +34,7 @@ export default function Home() {
             {/* Left: Content */}
             <div>
               {/* Badge */}
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary-50 border border-primary-200 rounded-pill mb-6">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary-50 border border-primary-200 rounded-full mb-6">
                 <div className="w-1.5 h-1.5 rounded-full bg-primary-500"></div>
                 <span className="text-xs font-semibold text-primary-700 uppercase tracking-wider">Built for solo & small accounting practices</span>
               </div>
