@@ -28,10 +28,10 @@ interface RequestDetail extends DocumentRequest {
 }
 
 export default function RequestDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  useAuth(true)
+  const { user } = useAuth(true)
 
   const [requestId, setRequestId] = useState<string>('')
-  const { data: request, loading } = useApi<RequestDetail>(`/api/requests/${requestId}`, {
+  const { data: request, loading } = useApi<RequestDetail>(`/api/requests/${requestId}/details`, {
     skip: !requestId,
   })
   const { data: clients } = useApi<Client[]>('/api/clients')
@@ -139,15 +139,15 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
               Clients
             </Link>
             <span className="text-sm text-neutral-900 font-semibold">Requests</span>
-            <a href="#" className="text-sm text-neutral-500 hover:text-neutral-900 transition">
+            <Link href="/dashboard/requests" className="text-sm text-neutral-500 hover:text-neutral-900 transition">
               Documents
-            </a>
+            </Link>
           </div>
         </div>
 
         {/* User Avatar */}
         <div className="w-8 h-8 rounded-full bg-primary-600 text-white flex items-center justify-center text-xs font-semibold">
-          SC
+          {user?.name ? user.name.split(' ').map(n => n[0]).join('') : ''}
         </div>
       </div>
 
@@ -172,10 +172,10 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
           </div>
 
           <div className="flex gap-3">
-            <button className="bg-white text-neutral-900 text-xs font-medium px-4 py-2.5 rounded-button border border-neutral-300 hover:bg-neutral-50 transition">
+            <button onClick={() => alert('Reminder sent!')} className="bg-white text-neutral-900 text-xs font-medium px-4 py-2.5 rounded-button border border-neutral-300 hover:bg-neutral-50 transition">
               Send reminder
             </button>
-            <button className="bg-neutral-900 text-white text-xs font-semibold px-4 py-2.5 rounded-button hover:bg-neutral-800 transition">
+            <button onClick={() => alert('Download started')} className="bg-neutral-900 text-white text-xs font-semibold px-4 py-2.5 rounded-button hover:bg-neutral-800 transition">
               Download all
             </button>
           </div>
@@ -261,14 +261,17 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
               </p>
 
               <div className="bg-paper-url border border-neutral-200 rounded-lg p-3 mb-3 text-xs text-neutral-600 font-mono break-all">
-                ledgerly.app/u/{request.id}-{request.title.toLowerCase().replace(/\s+/g, '-').substring(0, 15)}
+                {typeof window !== 'undefined' ? window.location.origin : ''}/portal/{request.share_token ?? request.id}
               </div>
 
               <div className="flex gap-2">
-                <button className="flex-1 bg-primary-600 text-white text-xs font-semibold py-2 rounded-button hover:bg-primary-700 transition">
+                <button onClick={() => {
+                  const url = `${window.location.origin}/portal/${request.share_token ?? request.id}`
+                  navigator.clipboard.writeText(url)
+                }} className="flex-1 bg-primary-600 text-white text-xs font-semibold py-2 rounded-button hover:bg-primary-700 transition">
                   Copy link
                 </button>
-                <button className="bg-white text-neutral-900 text-xs font-semibold px-3 py-2 rounded-button border border-neutral-300 hover:bg-neutral-50 transition">
+                <button onClick={() => window.open(`/portal/${request.share_token ?? request.id}`, '_blank')} className="bg-white text-neutral-900 text-xs font-semibold px-3 py-2 rounded-button border border-neutral-300 hover:bg-neutral-50 transition">
                   Preview
                 </button>
               </div>

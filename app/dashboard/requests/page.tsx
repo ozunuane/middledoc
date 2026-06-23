@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useApi } from '@/hooks/useApi'
 import { useAuth } from '@/hooks/useAuth'
 import { StatusBadge } from '@/components/ui/StatusBadge'
@@ -9,7 +10,8 @@ import { LoadingSpinner } from '@/components/LoadingSpinner'
 import type { Client, DocumentRequest } from '@/types/index'
 
 export default function RequestsPage() {
-  useAuth(true)
+  const router = useRouter()
+  const { user } = useAuth(true)
 
   const [filter, setFilter] = useState<'all' | 'pending' | 'received' | 'overdue'>('all')
   const { data: allRequests, loading: requestsLoading } = useApi<DocumentRequest[]>('/api/requests')
@@ -50,13 +52,13 @@ export default function RequestsPage() {
             <Link href="/dashboard" className="text-sm text-neutral-500 hover:text-neutral-900 transition">Dashboard</Link>
             <Link href="/dashboard/clients" className="text-sm text-neutral-500 hover:text-neutral-900 transition">Clients</Link>
             <span className="text-sm text-neutral-900 font-semibold">Requests</span>
-            <a href="#" className="text-sm text-neutral-500 hover:text-neutral-900 transition">Documents</a>
+            <Link href="/dashboard/requests" className="text-sm text-neutral-500 hover:text-neutral-900 transition">Documents</Link>
           </div>
         </div>
 
         {/* User Avatar */}
         <div className="w-8 h-8 rounded-full bg-primary-600 text-white flex items-center justify-center text-xs font-semibold">
-          SC
+          {user?.name ? user.name.split(' ').map(n => n[0]).join('') : ''}
         </div>
       </div>
 
@@ -68,7 +70,7 @@ export default function RequestsPage() {
             <h1 className="text-h2 font-serif text-neutral-900 mb-1">Requests</h1>
             <p className="text-body-md text-neutral-500">All document requests across your clients</p>
           </div>
-          <button className="bg-primary-600 text-white text-xs font-semibold px-4 py-2.5 rounded-button hover:bg-primary-700 transition">
+          <button onClick={() => router.push('/dashboard/requests')} className="bg-primary-600 text-white text-xs font-semibold px-4 py-2.5 rounded-button hover:bg-primary-700 transition">
             + New request
           </button>
         </div>
@@ -99,7 +101,8 @@ export default function RequestsPage() {
         ) : (
           <div className="bg-white border border-neutral-200 rounded-card overflow-hidden">
             {filteredRequests.map((request) => (
-              <div
+              <Link
+                href={`/dashboard/requests/${request.id}`}
                 key={request.id}
                 className="flex items-center gap-4 px-[22px] py-[16px] border-b border-paper-rowline hover:bg-neutral-50 transition last:border-b-0 cursor-pointer"
               >
@@ -120,7 +123,7 @@ export default function RequestsPage() {
                   <div className="w-full h-[5px] bg-neutral-150 rounded-full overflow-hidden">
                     <div
                       className="h-full bg-primary-600"
-                      style={{ width: request.status === 'received' ? '100%' : '60%' }}
+                      style={{ width: request.status === 'received' ? '100%' : request.status === 'pending' ? '0%' : '0%' }}
                     ></div>
                   </div>
                 </div>
@@ -129,7 +132,7 @@ export default function RequestsPage() {
                 <div className="flex-shrink-0">
                   <StatusBadge status={request.status} size="sm" />
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}

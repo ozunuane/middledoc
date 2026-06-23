@@ -8,7 +8,7 @@ import { LoadingSpinner } from '@/components/LoadingSpinner'
 import type { Client, DocumentRequest } from '@/types/index'
 
 export default function ClientsPage() {
-  useAuth(true)
+  const { user } = useAuth(true)
 
   const [search, setSearch] = useState('')
   const { data: clients, loading } = useApi<Client[]>('/api/clients')
@@ -27,6 +27,13 @@ export default function ClientsPage() {
     const allIn = clientRequests.every((r) => r.status === 'received')
     if (allIn && clientRequests.length > 0) return 'ALL IN'
     return `${clientRequests.filter((r) => r.status === 'overdue').length} OVERDUE`
+  }
+
+  const getRelativeTime = (dateStr: string) => {
+    const days = Math.floor((Date.now() - new Date(dateStr).getTime()) / 86400000)
+    if (days === 0) return 'Today'
+    if (days === 1) return 'Yesterday'
+    return `${days} days ago`
   }
 
   const getStatusColor = (clientId: number) => {
@@ -56,13 +63,13 @@ export default function ClientsPage() {
             <Link href="/dashboard" className="text-sm text-neutral-500 hover:text-neutral-900 transition">Dashboard</Link>
             <span className="text-sm text-neutral-900 font-semibold">Clients</span>
             <Link href="/dashboard/requests" className="text-sm text-neutral-500 hover:text-neutral-900 transition">Requests</Link>
-            <a href="#" className="text-sm text-neutral-500 hover:text-neutral-900 transition">Documents</a>
+            <Link href="/dashboard/requests" className="text-sm text-neutral-500 hover:text-neutral-900 transition">Documents</Link>
           </div>
         </div>
 
         {/* User Avatar */}
         <div className="w-8 h-8 rounded-full bg-primary-600 text-white flex items-center justify-center text-xs font-semibold">
-          SC
+          {user?.name ? user.name.split(' ').map(n => n[0]).join('') : ''}
         </div>
       </div>
 
@@ -72,7 +79,7 @@ export default function ClientsPage() {
         <div className="flex justify-between items-end mb-6">
           <div>
             <h1 className="text-h2 font-serif text-neutral-900 mb-1">Clients</h1>
-            <p className="text-body-md text-neutral-500">{clients?.length ?? 0} active · 0 archived</p>
+            <p className="text-body-md text-neutral-500">{clients?.length ?? 0} active</p>
           </div>
           <div className="flex gap-2">
             <button className="bg-white border border-neutral-300 text-neutral-900 text-[13px] font-medium px-4 py-2.5 rounded-[9px] hover:bg-neutral-50 transition">
@@ -133,7 +140,7 @@ export default function ClientsPage() {
                     {getClientStatus(client.id)}
                   </span>
                 </div>
-                <div className="text-[13px] text-neutral-400">2 days ago</div>
+                <div className="text-[13px] text-neutral-400">{getRelativeTime(client.created_at)}</div>
                 <div className="text-right">
                   <button className="text-neutral-350 hover:text-neutral-600 text-lg">⋯</button>
                 </div>

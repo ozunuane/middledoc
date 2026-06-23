@@ -2,6 +2,7 @@
 
 import React from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useApi } from '@/hooks/useApi'
 import { useAuth } from '@/hooks/useAuth'
 import { StatusBadge } from '@/components/ui/StatusBadge'
@@ -9,6 +10,7 @@ import { LoadingSpinner } from '@/components/LoadingSpinner'
 import type { Client, DocumentRequest } from '@/types/index'
 
 export default function DashboardPage() {
+  const router = useRouter()
   const { user, loading: authLoading } = useAuth(true)
 
   const { data: clients, loading: clientsLoading } = useApi<Client[]>('/api/clients', {
@@ -32,7 +34,14 @@ export default function DashboardPage() {
   if (authLoading) return <LoadingSpinner fullPage />
   if (!user) return null
 
-  const completionPercentage = allRequests ? Math.round((receivedRequests.length / allRequests.length) * 100) : 0
+  const completionPercentage = allRequests && allRequests.length > 0 ? Math.round((receivedRequests.length / allRequests.length) * 100) : 0
+
+  const getDaysLabel = (dueDate: string) => {
+    const days = Math.ceil((new Date(dueDate).getTime() - Date.now()) / 86400000)
+    if (days <= 0) return 'OVERDUE'
+    if (days === 1) return 'DUE TOMORROW'
+    return `DUE IN ${days} DAYS`
+  }
 
   return (
     <div className="min-h-screen bg-neutral-50 px-6 py-8">
@@ -53,13 +62,13 @@ export default function DashboardPage() {
               <span className="text-sm text-neutral-900 font-semibold">Dashboard</span>
               <Link href="/dashboard/clients" className="text-sm text-neutral-500 hover:text-neutral-900 transition">Clients</Link>
               <Link href="/dashboard/requests" className="text-sm text-neutral-500 hover:text-neutral-900 transition">Requests</Link>
-              <a href="#" className="text-sm text-neutral-500 hover:text-neutral-900 transition">Documents</a>
+              <Link href="/dashboard/requests" className="text-sm text-neutral-500 hover:text-neutral-900 transition">Documents</Link>
             </div>
           </div>
 
           {/* Right Side */}
           <div className="flex items-center gap-3">
-            <button className="bg-primary-600 text-white text-[13px] font-semibold px-4 py-[9px] rounded-lg hover:bg-primary-700 transition">
+            <button onClick={() => router.push('/dashboard/requests')} className="bg-primary-600 text-white text-[13px] font-semibold px-4 py-[9px] rounded-lg hover:bg-primary-700 transition">
               + New request
             </button>
             <div className="w-8 h-8 rounded-full bg-primary-600 text-white flex items-center justify-center text-xs font-semibold">
@@ -155,25 +164,25 @@ export default function DashboardPage() {
             <div className="flex gap-[14px] h-auto">
               {overdueRequests.length > 0 && (
                 <div className="flex-1 border border-danger-200 bg-danger-50 rounded-[11px] p-3.5">
-                  <div className="text-xs font-semibold text-danger-600 mb-1">OVERDUE {Math.floor((Date.now() - new Date(overdueRequests[0].due_date).getTime()) / (24 * 60 * 60 * 1000))} DAYS</div>
+                  <div className="text-xs font-semibold text-danger-600 mb-1">{getDaysLabel(overdueRequests[0].due_date)}</div>
                   <div className="text-sm font-medium text-neutral-900">{overdueRequests[0].title}</div>
-                  <div className="text-xs text-neutral-400 mt-1">Harbor Logistics</div>
+                  <div className="text-xs text-neutral-400 mt-1">{clients?.find(c => c.id === overdueRequests[0]?.client_id)?.name ?? 'Unknown'}</div>
                 </div>
               )}
 
               {dueThisWeek.length > 0 && (
                 <div className="flex-1 border border-warning-200 bg-warning-50 rounded-[11px] p-3.5">
-                  <div className="text-xs font-semibold text-warning-700 mb-1">DUE TOMORROW</div>
+                  <div className="text-xs font-semibold text-warning-700 mb-1">{getDaysLabel(dueThisWeek[0].due_date)}</div>
                   <div className="text-sm font-medium text-neutral-900">{dueThisWeek[0].title}</div>
-                  <div className="text-xs text-neutral-400 mt-1">Atlas Printing Co</div>
+                  <div className="text-xs text-neutral-400 mt-1">{clients?.find(c => c.id === dueThisWeek[0]?.client_id)?.name ?? 'Unknown'}</div>
                 </div>
               )}
 
               {pendingRequests.length > 0 && (
                 <div className="flex-1 border border-warning-200 bg-warning-50 rounded-[11px] p-3.5">
-                  <div className="text-xs font-semibold text-warning-700 mb-1">DUE IN 2 DAYS</div>
+                  <div className="text-xs font-semibold text-warning-700 mb-1">{getDaysLabel(pendingRequests[0].due_date)}</div>
                   <div className="text-sm font-medium text-neutral-900">{pendingRequests[0].title}</div>
-                  <div className="text-xs text-neutral-400 mt-1">Summit Consulting</div>
+                  <div className="text-xs text-neutral-400 mt-1">{clients?.find(c => c.id === pendingRequests[0]?.client_id)?.name ?? 'Unknown'}</div>
                 </div>
               )}
             </div>
