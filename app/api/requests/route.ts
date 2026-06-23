@@ -1,0 +1,103 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { withAuth } from '@/lib/middleware'
+import { query } from '@/lib/db'
+
+export async function POST(request: NextRequest) {
+  return withAuth(request, async (req, accountantId) => {
+    try {
+      const body = await req.json()
+      const { client_id, title, description, due_date } = body
+
+      if (!client_id || !title || !due_date) {
+        return NextResponse.json(
+          { error: 'Missing required fields: client_id, title, due_date' },
+          { status: 400 }
+        )
+      }
+
+      const dueDateObj = new Date(due_date)
+      if (isNaN(dueDateObj.getTime())) {
+        return NextResponse.json({ error: 'Invalid due_date format' }, { status: 400 })
+      }
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      if (dueDateObj < today) {
+        return NextResponse.json({ error: 'due_date must be a future date' }, { status: 400 })
+      }
+
+      const clientResult = await query(
+        'SELECT id FROM clients WHERE id = $1 AND accountant_id = $2',
+        [client_id, accountantId]
+      )
+      if (clientResult.rows.length === 0) {
+        return NextResponse.json({ error: 'Client not found or not owned by user' }, { status: 404 })
+      }
+
+      const result = await query(
+        `INSERT INTO document_requests (accountant_id, client_id, title, description, due_date)
+         VALUES ($1, $2, $3, $4, $5)
+         RETURNING id, client_id, title, due_date, status, share_token, created_at`,
+        [accountantId, client_id, title, description ?? null, due_date]
+      )
+
+      return NextResponse.json(result.rows[0], { status: 201 })
+    } catch (error) {
+      console.error('POST /api/requests error:', error)
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    }
+  })
+}
+
+export async function GET(request: NextRequest) {
+  return withAuth(request, async (req, accountantId) => {
+    try {
+      const searchParams = req.nextUrl.searchParams
+      const statusFilter = searchParams.get('status')
+      const sortParam = searchParams.get('sort')
+
+      const validStatuses = ['pending', 'received', 'overdue', 'cancelled']
+      if (statusFilter && !validStatuses.includes(statusFilter)) {
+        return NextResponse.json({ error: 'Invalid status filter' }, { status: 400 })
+      }
+
+      const validSorts: Record<string, string> = {
+        due_date: 'dr.due_date',
+        created_at: 'dr.created_at',
+      }
+      const orderBy = sortParam && validSorts[sortParam] ? validSorts[sortParam] : 'dr.created_at'
+
+      const conditions: string[] = ['dr.accountant_id = $1']
+      const values: (string | number)[] = [accountantId]
+
+      if (statusFilter) {
+        values.push(statusFilter)
+        conditions.push(`dr.status = $${values.length}`)
+      }
+
+      const whereClause = conditions.join(' AND ')
+
+      const result = await query(
+        `SELECT
+           dr.id,
+           dr.client_id,
+           dr.title,
+           dr.due_date,
+           dr.status,
+           dr.share_token,
+           dr.created_at,
+           COUNT(du.id)::int AS file_count
+         FROM document_requests dr
+         LEFT JOIN document_uploads du ON du.request_id = dr.id
+         WHERE ${whereClause}
+         GROUP BY dr.id
+         ORDER BY ${orderBy} ASC`,
+        values
+      )
+
+      return NextResponse.json(result.rows)
+    } catch (error) {
+      console.error('GET /api/requests error:', error)
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    }
+  })
+}
