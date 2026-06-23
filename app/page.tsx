@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/Button"
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-neutral-200 flex flex-col">
+    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-900 flex flex-col">
       {/* Navbar */}
       <nav className="bg-white border-b border-neutral-300 px-6 py-4 shadow-light">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
