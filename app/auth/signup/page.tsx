@@ -69,12 +69,12 @@ export default function SignupPage() {
             <div className="w-8 h-8 rounded-lg bg-neutral-900 flex items-center justify-center">
               <div className="w-3 h-3 rounded-sm bg-primary-500"></div>
             </div>
-            <span className="text-[19px] font-semibold text-neutral-900">Ledgerly</span>
+            <span className="text-[19px] font-semibold text-neutral-900">MiddleDoc</span>
           </div>
 
           {/* Heading */}
           <h1 className="text-[36px] font-serif leading-tight tracking-[-0.01em] text-neutral-900 mb-1">Create your account</h1>
-          <p className="text-[14.5px] text-neutral-500 mb-[30px]">Get started with Ledgerly — free forever for solo practices.</p>
+          <p className="text-[14.5px] text-neutral-500 mb-[30px]">Get started with MiddleDoc — free forever for solo practices.</p>
 
           {error && (
             <div className="mb-6 p-3 bg-danger-50 border border-danger-200 text-danger-600 rounded-button text-sm">

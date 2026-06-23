@@ -57,7 +57,7 @@ export default function LoginPage() {
             <div className="w-8 h-8 rounded-lg bg-neutral-900 flex items-center justify-center">
               <div className="w-3 h-3 rounded-sm bg-primary-500"></div>
             </div>
-            <span className="text-[19px] font-semibold text-neutral-900">Ledgerly</span>
+            <span className="text-[19px] font-semibold text-neutral-900">MiddleDoc</span>
           </div>
 
           {/* Heading */}

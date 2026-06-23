@@ -35,7 +35,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
-          <span className="text-body-md font-semibold text-neutral-900 dark:text-neutral-50">Ledgerly</span>
+          <span className="text-body-md font-semibold text-neutral-900 dark:text-neutral-50">MiddleDoc</span>
         </header>
 
         <main className="flex-1">
@@ -45,7 +45,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* Footer */}
         <footer className="bg-white border-t border-neutral-300 px-6 py-8">
           <div className="max-w-7xl mx-auto flex justify-between items-center text-xs text-neutral-600">
-            <p>© 2024 Ledgerly. All rights reserved.</p>
+            <p>© 2024 MiddleDoc. All rights reserved.</p>
             <div className="flex gap-6">
               <a href="#" className="hover:text-neutral-900 transition">Privacy</a>
               <a href="#" className="hover:text-neutral-900 transition">Terms</a>

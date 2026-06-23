@@ -35,7 +35,7 @@ const config: Config = {
       // COLOR PALETTE
       // ─────────────────────────────────────────────
       colors: {
-        // Primary — Emerald (Ledgerly brand)
+        // Primary — Emerald (MiddleDoc brand)
         primary: {
           50:  '#E8F3EE', // light green tint — badges, avatars, checklist bg
           100: '#E0EDE7', // completed checklist border (design spec)

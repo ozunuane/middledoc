@@ -250,7 +250,7 @@ export default function PortalPage({ params }: { params: Promise<{ shareToken: s
             <div className="w-[26px] h-[26px] rounded-lg bg-neutral-900 flex items-center justify-center">
               <div className="w-[9px] h-[9px] rounded-sm bg-primary-500"></div>
             </div>
-            <span className="text-[15px] font-semibold text-neutral-900">Ledgerly</span>
+            <span className="text-[15px] font-semibold text-neutral-900">MiddleDoc</span>
           </div>
         </div>
 
@@ -385,7 +385,7 @@ function PortalShell({ children }: { children: React.ReactNode }) {
             <div className="w-[26px] h-[26px] rounded-lg bg-neutral-900 flex items-center justify-center">
               <div className="w-[9px] h-[9px] rounded-sm bg-primary-500"></div>
             </div>
-            <span className="text-[15px] font-semibold text-neutral-900">Ledgerly</span>
+            <span className="text-[15px] font-semibold text-neutral-900">MiddleDoc</span>
           </div>
         </div>
 

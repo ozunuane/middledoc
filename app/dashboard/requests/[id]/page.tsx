@@ -127,7 +127,7 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
             <div className="w-7 h-7 rounded-lg bg-neutral-900 flex items-center justify-center">
               <div className="w-2.5 h-2.5 rounded-sm bg-primary-500"></div>
             </div>
-            <span className="text-[16px] font-semibold text-neutral-900">Ledgerly</span>
+            <span className="text-[16px] font-semibold text-neutral-900">MiddleDoc</span>
           </div>
 
           {/* Nav Links */}

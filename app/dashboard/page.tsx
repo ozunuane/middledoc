@@ -29,7 +29,7 @@ function EmptyState({ firstName, onOpenNewRequest }: { firstName: string; onOpen
   return (
     <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
       <h1 className="text-h2 font-serif text-neutral-900 mb-3">
-        Welcome to Ledgerly, {firstName}
+        Welcome to MiddleDoc, {firstName}
       </h1>
       <p className="text-body-md text-neutral-500 max-w-md mb-10">
         Start by adding your first client, then create a document request.
@@ -154,7 +154,7 @@ export default function DashboardPage() {
               <div className="w-7 h-7 rounded-lg bg-neutral-900 flex items-center justify-center">
                 <div className="w-2.5 h-2.5 rounded-sm bg-primary-500"></div>
               </div>
-              <span className="text-[16px] font-semibold text-neutral-900">Ledgerly</span>
+              <span className="text-[16px] font-semibold text-neutral-900">MiddleDoc</span>
             </div>
 
             {/* Nav Links */}

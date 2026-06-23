@@ -13,7 +13,7 @@ export default function Home() {
             <div className="w-[30px] h-[30px] rounded-[7px] bg-neutral-900 flex items-center justify-center">
               <div className="w-[11px] h-[11px] rounded-sm bg-primary-500"></div>
             </div>
-            <span className="text-lg font-semibold text-neutral-900">Ledgerly</span>
+            <span className="text-lg font-semibold text-neutral-900">MiddleDoc</span>
           </div>
 
           {/* Nav Links */}
