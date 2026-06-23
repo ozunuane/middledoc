@@ -21,23 +21,19 @@ const STATUS_LABELS: Record<RequestStatus, string> = {
 }
 
 const statusClasses: Record<RequestStatus, string> = {
-  // Pending: Warm amber (#FBF1D4, #B5830E, #F0E0AE border)
   pending:
-    'bg-warning-100 border border-warning-200 text-warning-600 dark:bg-warning-900/30 dark:border-warning-800 dark:text-warning-300',
-  // Received: Fresh green (#E2F1EA, #16734F, #C4E3D5 border)
+    'bg-warning-100 text-warning-600',
   received:
-    'bg-success-50 border border-success-100 text-success-600 dark:bg-success-900/30 dark:border-success-800 dark:text-success-300',
-  // Overdue: Warm coral-red (#F7E2DC, #C0492F, #EEC8BB border)
+    'bg-success-50 text-success-600',
   overdue:
-    'bg-danger-50 border border-danger-200 text-danger-600 dark:bg-danger-900/30 dark:border-danger-800 dark:text-danger-300',
-  // Cancelled: Neutral warm gray
+    'bg-danger-100 text-danger-600',
   cancelled:
-    'bg-neutral-100 border border-neutral-200 text-neutral-600 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-400',
+    'bg-neutral-100 text-neutral-600',
 }
 
 const sizeClasses: Record<Size, string> = {
-  sm: 'text-tiny font-semibold uppercase tracking-wider px-2.5 py-1 rounded-pill',
-  md: 'text-tiny font-semibold uppercase tracking-wider px-3 py-1.5 rounded-pill',
+  sm: 'text-tiny font-semibold uppercase tracking-wider px-[10px] py-1 rounded-full',
+  md: 'text-tiny font-semibold uppercase tracking-wider px-3 py-1.5 rounded-full',
 }
 
 const iconSize: Record<Size, string> = {
@@ -93,7 +89,7 @@ export function StatusBadge({ status, size = 'sm', showIcon = false, className =
       role="status"
       aria-label={`Status: ${label}`}
       className={[
-        'inline-flex items-center hover:brightness-95 transition-all',
+        'inline-flex items-center',
         statusClasses[status],
         sizeClasses[size],
         className,

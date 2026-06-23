@@ -170,16 +170,6 @@ export default function RequestsPage() {
                   </div>
                 </div>
 
-                {/* Progress Bar */}
-                <div className="w-32">
-                  <div className={`w-full h-[5px] ${getProgressTrackColor(request)} rounded-full overflow-hidden`}>
-                    <div
-                      className={`h-full ${getProgressBarColor(request)} transition-all`}
-                      style={{ width: getProgressWidth(request) }}
-                    ></div>
-                  </div>
-                </div>
-
                 {/* Status Badge */}
                 <div className="flex-shrink-0">
                   <StatusBadge status={request.status} size="sm" />
