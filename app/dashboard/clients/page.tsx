@@ -82,10 +82,16 @@ export default function ClientsPage() {
             <p className="text-body-md text-neutral-500">{clients?.length ?? 0} active</p>
           </div>
           <div className="flex gap-2">
-            <button className="bg-white border border-neutral-300 text-neutral-900 text-[13px] font-medium px-4 py-2.5 rounded-[9px] hover:bg-neutral-50 transition">
+            <button
+              onClick={() => alert('CSV import coming soon')}
+              className="bg-white border border-neutral-300 text-neutral-900 text-[13px] font-medium px-4 py-2.5 rounded-[9px] hover:bg-neutral-50 transition cursor-pointer"
+            >
               Import CSV
             </button>
-            <button className="bg-primary-600 text-white text-[13px] font-semibold px-4 py-2.5 rounded-[9px] hover:bg-primary-700 transition">
+            <button
+              onClick={() => alert('Add client modal coming soon')}
+              className="bg-primary-600 text-white text-[13px] font-semibold px-4 py-2.5 rounded-[9px] hover:bg-primary-700 transition cursor-pointer"
+            >
               + Add client
             </button>
           </div>
@@ -100,7 +106,7 @@ export default function ClientsPage() {
             onChange={(e) => setSearch(e.target.value)}
             className="flex-1 bg-white border border-neutral-300 rounded-button px-3.5 py-2.5 text-body-md text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-primary-600 focus:ring-2 focus:ring-primary-600/20"
           />
-          <button className="bg-white border border-neutral-300 text-neutral-900 text-body-md px-4 py-2.5 rounded-button hover:bg-neutral-50 transition">
+          <button className="bg-white border border-neutral-300 text-neutral-900 text-body-md px-4 py-2.5 rounded-button hover:bg-neutral-50 transition cursor-pointer">
             All statuses ▾
           </button>
         </div>
@@ -108,6 +114,26 @@ export default function ClientsPage() {
         {/* Table */}
         {loading ? (
           <LoadingSpinner />
+        ) : filteredClients.length === 0 ? (
+          /* Empty State */
+          <div className="bg-white border border-neutral-200 rounded-card py-20 flex flex-col items-center justify-center text-center">
+            <div className="w-16 h-16 rounded-full bg-[#E8F3EE] flex items-center justify-center mb-5">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12Z" stroke="#0F7A63" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M20 20C20 16.69 16.42 14 12 14C7.58 14 4 16.69 4 20" stroke="#0F7A63" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+            <h2 className="text-xl font-serif text-neutral-900 mb-2">No clients yet</h2>
+            <p className="text-body-md text-neutral-500 mb-6 max-w-sm">
+              Add your first client to start collecting documents.
+            </p>
+            <button
+              onClick={() => alert('Add client modal coming soon')}
+              className="bg-primary-600 text-white text-[13px] font-semibold px-5 py-2.5 rounded-[9px] hover:bg-primary-700 transition cursor-pointer"
+            >
+              Add your first client
+            </button>
+          </div>
         ) : (
           <div className="bg-white border border-neutral-200 rounded-card overflow-hidden">
             {/* Header */}
@@ -121,12 +147,14 @@ export default function ClientsPage() {
 
             {/* Rows */}
             {filteredClients.map((client) => (
-              <div key={client.id} className="grid gap-4 px-[22px] py-[14px] border-b border-paper-rowline items-center hover:bg-neutral-50 transition last:border-b-0" style={{ gridTemplateColumns: '2.2fr 1.4fr 1fr 0.8fr 0.5fr' }}>
+              <div key={client.id} className="grid gap-4 px-[22px] py-[14px] border-b border-paper-rowline items-center hover:bg-neutral-50 transition last:border-b-0 cursor-pointer" style={{ gridTemplateColumns: '2.2fr 1.4fr 1fr 0.8fr 0.5fr' }}>
                 <div className="flex items-center gap-3">
                   <div className="w-[34px] h-[34px] rounded-[9px] bg-[#E8F3EE] text-primary-600 font-semibold text-xs flex items-center justify-center">
                     {client.name.split(' ').map(n => n[0]).join('')}
                   </div>
-                  <span className="text-body-md font-medium text-neutral-900">{client.name}</span>
+                  <Link href={`/dashboard/clients/${client.id}`} className="text-body-md font-medium text-neutral-900 hover:text-primary-600 transition">
+                    {client.name}
+                  </Link>
                 </div>
                 <div className="text-[13.5px] text-neutral-600">{client.email}</div>
                 <div>
@@ -142,7 +170,7 @@ export default function ClientsPage() {
                 </div>
                 <div className="text-[13px] text-neutral-400">{getRelativeTime(client.created_at)}</div>
                 <div className="text-right">
-                  <button className="text-neutral-350 hover:text-neutral-600 text-lg">⋯</button>
+                  <button className="text-neutral-350 hover:text-neutral-600 text-lg cursor-pointer">⋯</button>
                 </div>
               </div>
             ))}
