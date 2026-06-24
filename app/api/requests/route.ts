@@ -66,6 +66,9 @@ export async function GET(request: NextRequest) {
       }
       const orderBy = sortParam && validSorts[sortParam] ? validSorts[sortParam] : 'dr.created_at'
 
+      const pageParam = searchParams.get('page')
+      const limitParam = searchParams.get('limit')
+
       const conditions: string[] = ['dr.accountant_id = $1']
       const values: (string | number)[] = [accountantId]
 
@@ -76,8 +79,8 @@ export async function GET(request: NextRequest) {
 
       const whereClause = conditions.join(' AND ')
 
-      const result = await query(
-        `SELECT
+      const selectQuery = `
+        SELECT
            dr.id,
            dr.client_id,
            dr.title,
@@ -90,8 +93,41 @@ export async function GET(request: NextRequest) {
          LEFT JOIN document_uploads du ON du.request_id = dr.id
          WHERE ${whereClause}
          GROUP BY dr.id
-         ORDER BY ${orderBy} ASC`,
-        values
+         ORDER BY ${orderBy} ASC`
+
+      // If page is provided, return paginated response
+      if (pageParam) {
+        const page = Math.max(1, parseInt(pageParam, 10) || 1)
+        const limit = Math.min(200, Math.max(1, parseInt(limitParam ?? '50', 10) || 50))
+        const offset = (page - 1) * limit
+
+        const countResult = await query(
+          `SELECT COUNT(*) FROM document_requests dr WHERE ${whereClause}`,
+          values
+        )
+        const total = parseInt(countResult.rows[0].count, 10)
+        const totalPages = Math.ceil(total / limit)
+
+        const dataValues = [...values, limit, offset]
+        const result = await query(
+          `${selectQuery} LIMIT $${dataValues.length - 1} OFFSET $${dataValues.length}`,
+          dataValues
+        )
+
+        return NextResponse.json({
+          data: result.rows,
+          total,
+          page,
+          limit,
+          totalPages,
+        })
+      }
+
+      // Backward compatible: return plain array with default limit
+      const dataValues = [...values, 200]
+      const result = await query(
+        `${selectQuery} LIMIT $${dataValues.length}`,
+        dataValues
       )
 
       return NextResponse.json(result.rows)

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withAuth } from '@/lib/middleware'
 import { query } from '@/lib/db'
-import { writeFile, mkdir } from 'fs/promises'
+import { writeFile, mkdir, rename } from 'fs/promises'
 import path from 'path'
 import { randomUUID } from 'crypto'
 
@@ -79,7 +79,8 @@ export async function POST(request: NextRequest) {
       await mkdir(absoluteDir, { recursive: true })
 
       const buffer = Buffer.from(await file.arrayBuffer())
-      await writeFile(absolutePath, buffer)
+      const tempPath = absolutePath + '.tmp'
+      await writeFile(tempPath, buffer)
 
       // Insert record — trigger will auto-update request status to 'received'
       const insertResult = await query(
@@ -88,6 +89,9 @@ export async function POST(request: NextRequest) {
          RETURNING id, request_id, file_name, file_size, uploaded_at`,
         [requestId, clientId, file.name, relativePath, file.size]
       )
+
+      // Only move to final location if DB insert succeeded
+      await rename(tempPath, absolutePath)
 
       return NextResponse.json(insertResult.rows[0], { status: 201 })
     } catch (error) {

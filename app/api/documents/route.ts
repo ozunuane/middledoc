@@ -161,10 +161,11 @@ export async function GET(request: NextRequest) {
         })
       }
 
-      // Backward compatible: return plain array
+      // Backward compatible: return plain array with default limit
+      const dataValues = [...values, 200]
       const result = await query(
-        `SELECT ${selectFields} ${fromClause} WHERE ${whereClause} ORDER BY ${orderClause}`,
-        values
+        `SELECT ${selectFields} ${fromClause} WHERE ${whereClause} ORDER BY ${orderClause} LIMIT $${dataValues.length}`,
+        dataValues
       )
 
       return NextResponse.json(result.rows)

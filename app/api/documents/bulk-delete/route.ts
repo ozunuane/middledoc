@@ -49,8 +49,19 @@ export async function POST(request: NextRequest) {
         )
       }
 
+      // Combine into single atomic operation
+      const result = await query(
+        `DELETE FROM document_uploads du
+         USING document_requests dr
+         WHERE dr.id = du.request_id
+           AND dr.accountant_id = $1
+           AND du.id IN (${placeholders})
+         RETURNING du.id, du.file_path`,
+        [accountantId, ...validIds]
+      )
+
       // Delete files from filesystem (best effort -- log failures but continue)
-      for (const row of uploads.rows) {
+      for (const row of result.rows) {
         try {
           const filePath = path.resolve(row.file_path)
           await unlink(filePath)
@@ -59,12 +70,6 @@ export async function POST(request: NextRequest) {
           console.warn(`Failed to delete file ${row.file_path}:`, fsError)
         }
       }
-
-      // Delete records from database
-      const result = await query(
-        `DELETE FROM document_uploads WHERE id IN (${placeholders})`,
-        [...parsedIds]
-      )
 
       return NextResponse.json({ deleted: result.rowCount })
     } catch (error) {
