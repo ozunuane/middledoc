@@ -7,6 +7,8 @@ import {
   logReminderSent,
   type ReminderType,
 } from '@/lib/email'
+import { logActivity } from '@/lib/activity'
+import { checkReminderLimit } from '@/lib/plan-enforcement'
 
 interface RequestWithDetails {
   id: number
@@ -105,6 +107,15 @@ export async function POST(request: NextRequest) {
         )
       }
 
+      // Plan enforcement: check reminder limit
+      const reminderCheck = await checkReminderLimit(accountantId)
+      if (!reminderCheck.allowed) {
+        return NextResponse.json(
+          { error: `Monthly reminder limit reached (${reminderCheck.sent}/${reminderCheck.max}). Upgrade your plan.` },
+          { status: 403 }
+        )
+      }
+
       // Fetch notification BCC emails
       const notificationEmails = await getMany<{ email: string }>(
         `SELECT email FROM notification_emails WHERE accountant_id = $1`,
@@ -134,6 +145,7 @@ export async function POST(request: NextRequest) {
 
       // Log the reminder
       await logReminderSent(requestData.id, requestData.client_id, reminderType)
+      await logActivity(accountantId, 'sent_reminder', 'request', requestData.id, { reminder_type: reminderType })
 
       return NextResponse.json({
         success: true,

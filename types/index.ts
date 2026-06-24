@@ -131,6 +131,25 @@ export interface ClientAssignment {
   client_name?: string
 }
 
+export interface RequestTemplate {
+  id: number
+  accountant_id: number
+  name: string
+  description?: string
+  checklist_items: string[]
+  is_default: boolean
+}
+
+export interface ActivityLogEntry {
+  id: number
+  accountant_id: number
+  action: string
+  entity_type: string
+  entity_id?: number
+  details: Record<string, unknown>
+  created_at: string
+}
+
 // ============================================================
 // ADMIN & SUBSCRIPTION TYPES
 // ============================================================

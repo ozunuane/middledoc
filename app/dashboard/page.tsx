@@ -200,7 +200,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Bento Grid */}
-            <div className="grid grid-cols-4 gap-[18px] mb-8" style={{ gridAutoRows: '148px' }}>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-[18px] mb-8" style={{ gridAutoRows: '148px' }}>
               {/* Big Hero - Overall Completion */}
               <div className="col-span-2 row-span-2 bg-neutral-900 rounded-[18px] p-7 flex flex-col justify-between">
                 <div className="flex justify-between items-start">
@@ -283,7 +283,7 @@ export default function DashboardPage() {
               </Link>
 
               {/* Needs Attention - Wide */}
-              <div className="col-span-4 bg-white border border-neutral-200 rounded-[18px] p-6">
+              <div className="col-span-2 lg:col-span-4 bg-white border border-neutral-200 rounded-[18px] p-6">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-body-md font-semibold text-neutral-900">Needs your attention</h3>
                   <Link href="/dashboard/requests" className="text-xs font-medium text-primary-600 hover:text-primary-700 cursor-pointer">View all &rarr;</Link>

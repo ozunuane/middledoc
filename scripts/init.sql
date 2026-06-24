@@ -183,3 +183,39 @@ CREATE TABLE IF NOT EXISTS notification_emails (
   created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
   UNIQUE(accountant_id, email)
 );
+
+-- Password reset tokens
+CREATE TABLE IF NOT EXISTS password_reset_tokens (
+  id SERIAL PRIMARY KEY,
+  accountant_id INTEGER NOT NULL REFERENCES accountants(id) ON DELETE CASCADE,
+  token UUID UNIQUE DEFAULT gen_random_uuid(),
+  expires_at TIMESTAMPTZ DEFAULT (CURRENT_TIMESTAMP + INTERVAL '1 hour'),
+  used_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_password_reset_token ON password_reset_tokens(token);
+
+-- Request Templates
+CREATE TABLE IF NOT EXISTS request_templates (
+  id SERIAL PRIMARY KEY,
+  accountant_id INTEGER NOT NULL REFERENCES accountants(id) ON DELETE CASCADE,
+  name VARCHAR(255) NOT NULL,
+  description TEXT,
+  checklist_items TEXT[] DEFAULT '{}',
+  is_default BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_request_templates_accountant ON request_templates(accountant_id);
+
+-- Activity Log
+CREATE TABLE IF NOT EXISTS activity_log (
+  id SERIAL PRIMARY KEY,
+  accountant_id INTEGER NOT NULL REFERENCES accountants(id) ON DELETE CASCADE,
+  action VARCHAR(100) NOT NULL,
+  entity_type VARCHAR(50) NOT NULL,
+  entity_id INTEGER,
+  details JSONB DEFAULT '{}',
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_activity_log_accountant ON activity_log(accountant_id);
+CREATE INDEX IF NOT EXISTS idx_activity_log_created ON activity_log(created_at DESC);

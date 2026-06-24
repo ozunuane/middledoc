@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { withAuth } from '@/lib/middleware'
 import { query } from '@/lib/db'
 import { getAccessibleClientIds, getUserTeamInfo, resolveOwnerAccountantId } from '@/lib/access'
+import { logActivity } from '@/lib/activity'
 
 export async function POST(request: NextRequest) {
   return withAuth(request, async (req, accountantId) => {
@@ -41,7 +42,10 @@ export async function POST(request: NextRequest) {
         [accountantId, client_id, title, description ?? null, due_date]
       )
 
-      return NextResponse.json(result.rows[0], { status: 201 })
+      const newRequest = result.rows[0]
+      await logActivity(accountantId, 'created', 'request', newRequest.id, { title: newRequest.title })
+
+      return NextResponse.json(newRequest, { status: 201 })
     } catch (error) {
       console.error('POST /api/requests error:', error)
       return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

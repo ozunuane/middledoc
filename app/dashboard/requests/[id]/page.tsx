@@ -38,6 +38,10 @@ interface RequestDetail extends DocumentRequest {
   }>
 }
 
+function getFileExtension(fileName: string): string {
+  return fileName.split('.').pop()?.toLowerCase() ?? ''
+}
+
 export default function RequestDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { user, teamRole } = useAuth(true)
   const canSeeAllNav = !teamRole || teamRole === 'owner' || teamRole === 'admin'
@@ -59,6 +63,9 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
   const [rejectingFileId, setRejectingFileId] = useState<number | null>(null)
   const [rejectReason, setRejectReason] = useState('')
   const [rejecting, setRejecting] = useState(false)
+
+  // Preview state
+  const [previewFile, setPreviewFile] = useState<UploadedFile | null>(null)
 
   const handleSendReminder = async () => {
     if (sending || !request) return
@@ -187,6 +194,7 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
 
   const daysLeft = getDaysLeft()
   const progressPercentage = getProgressPercentage()
+  const previewExt = previewFile ? getFileExtension(previewFile.file_name) : ''
 
   return (
     <div className="min-h-screen bg-neutral-50">
@@ -241,7 +249,7 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
       <div className="px-9 max-w-7xl mx-auto">
         {/* Back link */}
         <Link href="/dashboard/requests" className="text-primary-600 font-medium text-[13px] mb-6 inline-block hover:text-primary-700">
-          ← Back to requests
+          &larr; Back to requests
         </Link>
 
         {/* Header */}
@@ -317,7 +325,7 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
                         }`}
                       >
                         {doc.status === 'received' && (
-                          <span className="text-white text-xs font-bold">✓</span>
+                          <span className="text-white text-xs font-bold">&#10003;</span>
                         )}
                       </div>
 
@@ -335,7 +343,7 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
                       </div>
 
                       {doc.status === 'received' && (
-                        <span className="text-primary-600 text-body-md">↓</span>
+                        <span className="text-primary-600 text-body-md">&darr;</span>
                       )}
                     </div>
                   ))
@@ -347,47 +355,59 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
               </div>
             </div>
 
-            {/* Uploaded files with rejection support */}
+            {/* Uploaded files with rejection support and preview */}
             {request.uploaded_files && request.uploaded_files.length > 0 && (
               <div className="bg-white border border-neutral-200 rounded-card overflow-hidden mt-6">
                 <div className="px-[22px] py-[18px] border-b border-[#EFEAE0]">
                   <h2 className="text-body-md font-semibold text-neutral-900">Uploaded files</h2>
                 </div>
                 <div className="divide-y divide-neutral-200">
-                  {request.uploaded_files.map((file) => (
-                    <div key={file.id} className="px-[22px] py-[15px]">
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="text-body-md font-medium text-neutral-900 truncate">{file.file_name}</span>
-                            {file.status === 'rejected' && (
-                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-red-50 text-red-700 border border-red-200">
-                                Rejected
-                              </span>
+                  {request.uploaded_files.map((file) => {
+                    const ext = getFileExtension(file.file_name)
+                    const isPreviewable = ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)
+                    return (
+                      <div key={file.id} className="px-[22px] py-[15px]">
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="text-body-md font-medium text-neutral-900 truncate">{file.file_name}</span>
+                              {file.status === 'rejected' && (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-red-50 text-red-700 border border-red-200">
+                                  Rejected
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-xs text-neutral-500 mt-1">
+                              {formatBytes(file.file_size)} · uploaded {formatDateTime(file.uploaded_at)}
+                            </div>
+                            {file.status === 'rejected' && file.rejection_reason && (
+                              <div className="text-xs text-red-600 mt-1">
+                                Rejected: {file.rejection_reason}
+                              </div>
                             )}
                           </div>
-                          <div className="text-xs text-neutral-500 mt-1">
-                            {formatBytes(file.file_size)} · uploaded {formatDateTime(file.uploaded_at)}
+                          <div className="flex items-center gap-2 ml-4">
+                            {isPreviewable && (
+                              <button
+                                onClick={() => setPreviewFile(file)}
+                                className="text-xs text-primary-600 hover:text-primary-700 cursor-pointer"
+                              >
+                                Preview
+                              </button>
+                            )}
+                            {file.status !== 'rejected' && (
+                              <button
+                                onClick={() => { setRejectingFileId(file.id); setRejectReason('') }}
+                                className="text-xs font-medium text-red-600 hover:text-red-700 px-3 py-1.5 rounded-button border border-red-200 hover:bg-red-50 transition"
+                              >
+                                Reject
+                              </button>
+                            )}
                           </div>
-                          {file.status === 'rejected' && file.rejection_reason && (
-                            <div className="text-xs text-red-600 mt-1">
-                              Rejected: {file.rejection_reason}
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2 ml-4">
-                          {file.status !== 'rejected' && (
-                            <button
-                              onClick={() => { setRejectingFileId(file.id); setRejectReason('') }}
-                              className="text-xs font-medium text-red-600 hover:text-red-700 px-3 py-1.5 rounded-button border border-red-200 hover:bg-red-50 transition"
-                            >
-                              Reject
-                            </button>
-                          )}
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </div>
             )}
@@ -475,6 +495,25 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
               >
                 {rejecting ? 'Rejecting...' : 'Reject & notify'}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* File Preview modal */}
+      {previewFile && (
+        <div className="fixed inset-0 bg-neutral-900/60 z-50 flex items-center justify-center p-8" onClick={() => setPreviewFile(null)}>
+          <div className="bg-white rounded-[16px] max-w-4xl w-full max-h-[90vh] overflow-hidden" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center px-6 py-4 border-b border-neutral-200">
+              <span className="font-semibold text-neutral-900">{previewFile.file_name}</span>
+              <button onClick={() => setPreviewFile(null)} className="text-neutral-400 hover:text-neutral-600 text-xl cursor-pointer">&times;</button>
+            </div>
+            <div className="p-4 flex items-center justify-center" style={{ maxHeight: 'calc(90vh - 80px)', overflow: 'auto' }}>
+              {previewExt === 'pdf' ? (
+                <iframe src={`/api/download/${previewFile.id}`} className="w-full" style={{ height: '70vh' }} />
+              ) : (
+                <img src={`/api/download/${previewFile.id}`} alt={previewFile.file_name} className="max-w-full max-h-[70vh] object-contain" />
+              )}
             </div>
           </div>
         </div>

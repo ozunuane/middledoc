@@ -1,11 +1,13 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 
 export default function SettingsPage() {
+  const router = useRouter()
   const { user, loading: authLoading } = useAuth(true)
 
   const [name, setName] = useState('')
@@ -13,6 +15,9 @@ export default function SettingsPage() {
   const [firmName, setFirmName] = useState('')
   const [saving, setSaving] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [deleteConfirm, setDeleteConfirm] = useState('')
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     if (user) {
@@ -45,6 +50,28 @@ export default function SettingsPage() {
       showToast('Network error — please try again')
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirm !== 'DELETE') return
+    setDeleting(true)
+    try {
+      const res = await fetch('/api/auth/delete-account', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ confirm: 'DELETE' }),
+      })
+      if (res.ok) {
+        router.push('/')
+      } else {
+        const data = await res.json()
+        showToast(data.error || 'Failed to delete account')
+      }
+    } catch {
+      showToast('Network error -- please try again')
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -179,7 +206,72 @@ export default function SettingsPage() {
             Manage notification emails &rarr;
           </Link>
         </div>
+
+        {/* Data Export Section */}
+        <div className="bg-white border border-neutral-200 rounded-card p-6 mb-6">
+          <h2 className="text-body-md font-semibold text-neutral-900 mb-1">Export my data</h2>
+          <p className="text-[13px] text-neutral-500 mb-4">Download a JSON file with all your account data including clients, requests, uploads, and reminders.</p>
+          <a
+            href="/api/auth/export-data"
+            download
+            className="inline-block bg-white border border-neutral-300 text-neutral-900 text-[13px] font-semibold px-[18px] py-[10px] rounded-[9px] hover:bg-neutral-50 transition cursor-pointer"
+          >
+            Export my data
+          </a>
+        </div>
+
+        {/* Danger Zone */}
+        <div className="bg-white border border-danger-200 rounded-card p-6 mb-6">
+          <h2 className="text-body-md font-semibold text-danger-600 mb-1">Danger Zone</h2>
+          <p className="text-[13px] text-neutral-500 mb-4">
+            Permanently delete your account and all associated data. This action cannot be undone.
+          </p>
+          <button
+            onClick={() => setShowDeleteModal(true)}
+            className="bg-danger-600 text-white text-[13px] font-semibold px-[18px] py-[10px] rounded-[9px] hover:bg-danger-700 transition cursor-pointer"
+          >
+            Delete my account
+          </button>
+        </div>
       </div>
+
+      {/* Delete Account Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
+          <div className="bg-white rounded-card p-6 max-w-md w-full shadow-xl">
+            <h3 className="text-[18px] font-semibold text-neutral-900 mb-2">Delete your account?</h3>
+            <p className="text-[13.5px] text-neutral-500 mb-4">
+              This will permanently remove all your data including clients, document requests, uploaded files,
+              and team settings. This action cannot be undone.
+            </p>
+            <label className="text-[13px] font-semibold text-neutral-700 block mb-2">
+              Type <span className="font-mono text-danger-600">DELETE</span> to confirm
+            </label>
+            <input
+              type="text"
+              value={deleteConfirm}
+              onChange={(e) => setDeleteConfirm(e.target.value)}
+              placeholder="DELETE"
+              className="w-full bg-white border border-neutral-300 rounded-[9px] px-[14px] py-[12px] text-[14px] focus:outline-none focus:border-danger-600 mb-4 font-mono"
+            />
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => { setShowDeleteModal(false); setDeleteConfirm('') }}
+                className="text-[13px] font-semibold text-neutral-600 px-[18px] py-[10px] rounded-[9px] hover:bg-neutral-100 transition cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteAccount}
+                disabled={deleteConfirm !== 'DELETE' || deleting}
+                className="bg-danger-600 text-white text-[13px] font-semibold px-[18px] py-[10px] rounded-[9px] hover:bg-danger-700 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {deleting ? 'Deleting...' : 'Permanently delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Success toast */}
       {toast && (

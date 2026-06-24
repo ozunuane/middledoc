@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { withAuth } from '@/lib/middleware'
 import { query, getOne, getMany } from '@/lib/db'
 import { sendReminderEmail } from '@/lib/email'
+import { logActivity } from '@/lib/activity'
 
 export async function POST(request: NextRequest) {
   return withAuth(request, async (req, accountantId) => {
@@ -101,6 +102,8 @@ export async function POST(request: NextRequest) {
         fileName: doc.file_name,
         rejectionReason: reason.trim(),
       })
+
+      await logActivity(accountantId, 'rejected', 'document', document_id, { reason: reason.trim(), file_name: doc.file_name })
 
       return NextResponse.json({
         success: true,

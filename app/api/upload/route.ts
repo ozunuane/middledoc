@@ -4,6 +4,7 @@ import { query } from '@/lib/db'
 import { writeFile, mkdir, rename } from 'fs/promises'
 import path from 'path'
 import { randomUUID } from 'crypto'
+import { checkStorageLimit } from '@/lib/plan-enforcement'
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10 MB
 const UPLOADS_BASE = '/app/uploads'
@@ -11,6 +12,17 @@ const UPLOADS_BASE = '/app/uploads'
 export async function POST(request: NextRequest) {
   return withAuth(request, async (req, accountantId) => {
     try {
+      // Plan enforcement: check storage limit
+      const storageCheck = await checkStorageLimit(accountantId)
+      if (!storageCheck.allowed) {
+        const usedMB = Math.round(storageCheck.used_bytes / (1024 * 1024))
+        const maxMB = Math.round(storageCheck.max_bytes / (1024 * 1024))
+        return NextResponse.json(
+          { error: `Storage limit reached (${usedMB}MB / ${maxMB}MB). Upgrade your plan.` },
+          { status: 403 }
+        )
+      }
+
       const formData = await req.formData()
       const file = formData.get('file') as File | null
       const requestIdRaw = formData.get('request_id') as string | null

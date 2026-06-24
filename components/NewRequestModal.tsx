@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import type { Client } from '@/types/index'
+import type { Client, RequestTemplate } from '@/types/index'
 
 interface NewRequestModalProps {
   isOpen: boolean
@@ -12,6 +12,8 @@ interface NewRequestModalProps {
 export function NewRequestModal({ isOpen, onClose, onRequestCreated }: NewRequestModalProps) {
   const [clients, setClients] = useState<Client[]>([])
   const [clientsLoading, setClientsLoading] = useState(false)
+  const [templates, setTemplates] = useState<RequestTemplate[]>([])
+  const [selectedTemplateId, setSelectedTemplateId] = useState('')
 
   const [clientId, setClientId] = useState('')
   const [title, setTitle] = useState('')
@@ -21,7 +23,7 @@ export function NewRequestModal({ isOpen, onClose, onRequestCreated }: NewReques
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Fetch clients when modal opens
+  // Fetch clients and templates when modal opens
   useEffect(() => {
     if (!isOpen) return
     setClientsLoading(true)
@@ -33,6 +35,14 @@ export function NewRequestModal({ isOpen, onClose, onRequestCreated }: NewReques
       })
       .catch(() => setClients([]))
       .finally(() => setClientsLoading(false))
+
+    fetch('/api/request-templates')
+      .then(async (res) => {
+        if (!res.ok) throw new Error('Failed to load templates')
+        const data: RequestTemplate[] = await res.json()
+        setTemplates(data)
+      })
+      .catch(() => setTemplates([]))
   }, [isOpen])
 
   // Reset form when modal opens
@@ -42,11 +52,22 @@ export function NewRequestModal({ isOpen, onClose, onRequestCreated }: NewReques
       setTitle('')
       setDescription('')
       setDueDate('')
+      setSelectedTemplateId('')
       setError(null)
     }
   }, [isOpen])
 
+  const selectedTemplate = templates.find((t) => String(t.id) === selectedTemplateId)
   const selectedClient = clients.find((c) => String(c.id) === clientId)
+
+  const handleTemplateChange = (templateId: string) => {
+    setSelectedTemplateId(templateId)
+    const template = templates.find((t) => String(t.id) === templateId)
+    if (template) {
+      setTitle(template.name)
+      setDescription(template.description ?? '')
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -108,6 +129,46 @@ export function NewRequestModal({ isOpen, onClose, onRequestCreated }: NewReques
             {error && (
               <div className="bg-danger-50 border border-danger-200 text-danger-700 text-[13px] rounded-[9px] px-[14px] py-[10px]">
                 {error}
+              </div>
+            )}
+
+            {/* Template dropdown */}
+            {templates.length > 0 && (
+              <div>
+                <label className="text-[13px] font-semibold text-neutral-700 block mb-[7px]">
+                  Template <span className="font-normal text-neutral-400">(optional)</span>
+                </label>
+                <div className="relative">
+                  <select
+                    value={selectedTemplateId}
+                    onChange={(e) => handleTemplateChange(e.target.value)}
+                    className="bg-white border border-neutral-300 rounded-[9px] px-[14px] py-[12px] text-[14px] text-neutral-900 w-full appearance-none focus:border-[1.5px] focus:border-primary-600 focus:shadow-focus outline-none cursor-pointer"
+                  >
+                    <option value="">No template</option>
+                    {templates.map((t) => (
+                      <option key={t.id} value={String(t.id)}>
+                        {t.name}{t.is_default ? ' (default)' : ''}
+                      </option>
+                    ))}
+                  </select>
+                  <span className="absolute right-[14px] top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none text-xs">
+                    &#9662;
+                  </span>
+                </div>
+
+                {/* Checklist items preview */}
+                {selectedTemplate && selectedTemplate.checklist_items.length > 0 && (
+                  <div className="mt-3 bg-primary-50 border border-primary-100 rounded-[9px] px-[14px] py-[10px]">
+                    <div className="text-[11px] font-semibold text-primary-700 uppercase tracking-wider mb-2">Checklist items</div>
+                    <ul className="space-y-1">
+                      {selectedTemplate.checklist_items.map((item, i) => (
+                        <li key={i} className="text-[13px] text-neutral-700 flex items-center gap-2">
+                          <span className="text-primary-600 text-xs">&#10003;</span> {item}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
             )}
 

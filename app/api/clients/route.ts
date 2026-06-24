@@ -2,10 +2,21 @@ import { NextRequest, NextResponse } from 'next/server'
 import { withAuth } from '@/lib/middleware'
 import { query } from '@/lib/db'
 import { getAccessibleClientIds, getUserTeamInfo, resolveOwnerAccountantId } from '@/lib/access'
+import { logActivity } from '@/lib/activity'
+import { checkClientLimit } from '@/lib/plan-enforcement'
 
 export async function POST(request: NextRequest) {
   return withAuth(request, async (req, accountantId) => {
     try {
+      // Plan enforcement: check client limit
+      const clientCheck = await checkClientLimit(accountantId)
+      if (!clientCheck.allowed) {
+        return NextResponse.json(
+          { error: `Client limit reached (${clientCheck.current}/${clientCheck.max}). Upgrade your plan.` },
+          { status: 403 }
+        )
+      }
+
       const body = await req.json()
       const { email, name } = body
 
@@ -31,7 +42,10 @@ export async function POST(request: NextRequest) {
         [accountantId, email, name]
       )
 
-      return NextResponse.json(result.rows[0], { status: 201 })
+      const newClient = result.rows[0]
+      await logActivity(accountantId, 'created', 'client', newClient.id, { name: newClient.name })
+
+      return NextResponse.json(newClient, { status: 201 })
     } catch (error) {
       console.error('POST /api/clients error:', error instanceof Error ? error.message : 'Unknown error')
       return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

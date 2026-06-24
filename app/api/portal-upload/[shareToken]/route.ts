@@ -3,6 +3,7 @@ import { query } from '@/lib/db'
 import { writeFile, mkdir, rename } from 'fs/promises'
 import path from 'path'
 import { randomUUID } from 'crypto'
+import { checkStorageLimit } from '@/lib/plan-enforcement'
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10 MB
 const UPLOADS_BASE = '/app/uploads'
@@ -20,7 +21,7 @@ export async function POST(
 
     // Resolve request via share token (no auth required)
     const requestResult = await query(
-      'SELECT id, client_id FROM document_requests WHERE share_token = $1',
+      'SELECT id, client_id, accountant_id FROM document_requests WHERE share_token = $1',
       [shareToken]
     )
 
@@ -28,7 +29,16 @@ export async function POST(
       return NextResponse.json({ error: 'Request not found' }, { status: 404 })
     }
 
-    const { id: requestId, client_id: clientId } = requestResult.rows[0]
+    const { id: requestId, client_id: clientId, accountant_id: accountantId } = requestResult.rows[0]
+
+    // Plan enforcement: check storage limit for the accountant
+    const storageCheck = await checkStorageLimit(accountantId)
+    if (!storageCheck.allowed) {
+      return NextResponse.json(
+        { error: 'The accountant\'s storage limit has been reached. Please contact them directly.' },
+        { status: 403 }
+      )
+    }
 
     const formData = await request.formData()
     const file = formData.get('file') as File | null
