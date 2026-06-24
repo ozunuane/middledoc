@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
       const templates = await getMany(
         `SELECT id, accountant_id, name, description, checklist_items, is_default, created_at
          FROM request_templates
-         WHERE accountant_id = 0 OR accountant_id = $1
+         WHERE accountant_id IS NULL OR accountant_id = $1
          ORDER BY is_default DESC, created_at DESC`,
         [accountantId]
       )
