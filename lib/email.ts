@@ -16,6 +16,7 @@ interface SendReminderParams {
   clientEmail: string
   clientName: string
   accountantName: string
+  accountantEmail?: string
   accountantFirm?: string
   requestTitle: string
   dueDate: string
@@ -73,6 +74,7 @@ interface BatchReminderParams {
   clientEmail: string
   clientName: string
   accountantName: string
+  accountantEmail?: string
   requests: Array<{ title: string; dueDate: string; shareToken: string }>
 }
 
@@ -295,6 +297,7 @@ export async function sendReminderEmail(
     await sgMail.send({
       to: params.clientEmail,
       from: { email: FROM_EMAIL, name: params.accountantName },
+      ...(params.accountantEmail ? { bcc: params.accountantEmail } : {}),
       subject,
       html,
     })
@@ -324,6 +327,7 @@ export async function sendBatchReminder(
     await sgMail.send({
       to: params.clientEmail,
       from: { email: FROM_EMAIL, name: params.accountantName },
+      ...(params.accountantEmail ? { bcc: params.accountantEmail } : {}),
       subject,
       html,
     })

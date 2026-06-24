@@ -20,6 +20,7 @@ interface RequestWithDetails {
   client_name: string
   accountant_id: number
   accountant_name: string
+  accountant_email: string
 }
 
 function determineReminderType(dueDate: string): ReminderType {
@@ -63,7 +64,8 @@ export async function POST(request: NextRequest) {
            c.email AS client_email,
            c.name AS client_name,
            dr.accountant_id,
-           a.name AS accountant_name
+           a.name AS accountant_name,
+           a.email AS accountant_email
          FROM document_requests dr
          JOIN clients c ON c.id = dr.client_id
          JOIN accountants a ON a.id = dr.accountant_id
@@ -108,6 +110,7 @@ export async function POST(request: NextRequest) {
         clientEmail: requestData.client_email,
         clientName: requestData.client_name || 'there',
         accountantName: requestData.accountant_name || 'Your accountant',
+        accountantEmail: requestData.accountant_email,
         requestTitle: requestData.title,
         dueDate: requestData.due_date,
         shareToken: requestData.share_token,

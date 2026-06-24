@@ -27,6 +27,7 @@ export async function POST(request: NextRequest) {
         client_name: string
         client_email: string
         accountant_name: string
+        accountant_email: string
         doc_status: string
       }>(
         `SELECT
@@ -39,7 +40,8 @@ export async function POST(request: NextRequest) {
            dr.due_date,
            c.name AS client_name,
            c.email AS client_email,
-           a.name AS accountant_name
+           a.name AS accountant_name,
+           a.email AS accountant_email
          FROM document_uploads du
          JOIN document_requests dr ON dr.id = du.request_id
          JOIN clients c ON c.id = du.client_id
@@ -83,6 +85,7 @@ export async function POST(request: NextRequest) {
         clientEmail: doc.client_email,
         clientName: doc.client_name,
         accountantName: doc.accountant_name,
+        accountantEmail: doc.accountant_email,
         requestTitle: doc.request_title,
         dueDate: doc.due_date,
         shareToken: doc.share_token,
