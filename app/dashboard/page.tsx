@@ -171,9 +171,11 @@ export default function DashboardPage() {
             <button onClick={() => setShowNewRequest(true)} className="bg-primary-600 text-white text-[13px] font-semibold px-4 py-[9px] rounded-lg hover:bg-primary-700 transition cursor-pointer">
               + New request
             </button>
-            <div className="w-8 h-8 rounded-full bg-primary-600 text-white flex items-center justify-center text-xs font-semibold">
-              {user.name.split(' ').map(n => n[0]).join('')}
-            </div>
+            <Link href="/dashboard/settings/email-templates" className="cursor-pointer">
+              <div className="w-8 h-8 rounded-full bg-primary-600 text-white flex items-center justify-center text-xs font-semibold">
+                {user.name.split(' ').map(n => n[0]).join('')}
+              </div>
+            </Link>
           </div>
         </div>
 

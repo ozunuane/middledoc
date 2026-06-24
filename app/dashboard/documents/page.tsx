@@ -153,9 +153,11 @@ export default function DocumentsPage() {
         </div>
 
         {/* User Avatar */}
-        <div className="w-8 h-8 rounded-full bg-primary-600 text-white flex items-center justify-center text-xs font-semibold">
-          {user?.name ? user.name.split(' ').map(n => n[0]).join('') : ''}
-        </div>
+        <Link href="/dashboard/settings/email-templates" className="cursor-pointer">
+          <div className="w-8 h-8 rounded-full bg-primary-600 text-white flex items-center justify-center text-xs font-semibold">
+            {user?.name ? user.name.split(' ').map(n => n[0]).join('') : ''}
+          </div>
+        </Link>
       </div>
 
       {/* Content */}
