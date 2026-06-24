@@ -107,7 +107,8 @@ function EmptyState({ firstName, onOpenNewRequest }: { firstName: string; onOpen
    ────────────────────────────────────────────── */
 export default function DashboardPage() {
   const router = useRouter()
-  const { user, loading: authLoading } = useAuth(true)
+  const { user, loading: authLoading, teamRole } = useAuth(true)
+  const canSeeAllNav = !teamRole || teamRole === 'owner' || teamRole === 'admin'
 
   const [showNewRequest, setShowNewRequest] = useState(false)
 
@@ -162,8 +163,8 @@ export default function DashboardPage() {
               <span className="text-sm text-neutral-900 font-semibold">Dashboard</span>
               <Link href="/dashboard/clients" className="text-sm text-neutral-500 hover:text-neutral-900 transition cursor-pointer">Clients</Link>
               <Link href="/dashboard/requests" className="text-sm text-neutral-500 hover:text-neutral-900 transition cursor-pointer">Requests</Link>
-              <Link href="/dashboard/documents" className="text-sm text-neutral-500 hover:text-neutral-900 transition cursor-pointer">Documents</Link>
-              <Link href="/dashboard/settings" className="text-sm text-neutral-500 hover:text-neutral-900 transition cursor-pointer">Settings</Link>
+              {canSeeAllNav && <Link href="/dashboard/documents" className="text-sm text-neutral-500 hover:text-neutral-900 transition cursor-pointer">Documents</Link>}
+              {canSeeAllNav && <Link href="/dashboard/settings" className="text-sm text-neutral-500 hover:text-neutral-900 transition cursor-pointer">Settings</Link>}
             </div>
           </div>
 
@@ -172,11 +173,17 @@ export default function DashboardPage() {
             <button onClick={() => setShowNewRequest(true)} className="bg-primary-600 text-white text-[13px] font-semibold px-4 py-[9px] rounded-lg hover:bg-primary-700 transition cursor-pointer">
               + New request
             </button>
-            <Link href="/dashboard/settings" className="cursor-pointer">
+            {canSeeAllNav ? (
+              <Link href="/dashboard/settings" className="cursor-pointer">
+                <div className="w-8 h-8 rounded-full bg-primary-600 text-white flex items-center justify-center text-xs font-semibold">
+                  {user.name.split(' ').map(n => n[0]).join('')}
+                </div>
+              </Link>
+            ) : (
               <div className="w-8 h-8 rounded-full bg-primary-600 text-white flex items-center justify-center text-xs font-semibold">
                 {user.name.split(' ').map(n => n[0]).join('')}
               </div>
-            </Link>
+            )}
           </div>
         </div>
 

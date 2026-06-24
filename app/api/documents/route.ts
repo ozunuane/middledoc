@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withAuth } from '@/lib/middleware'
 import { query } from '@/lib/db'
+import { getAccessibleClientIds, getUserTeamInfo, resolveOwnerAccountantId } from '@/lib/access'
 
 // File type extension mappings for the type filter
 const FILE_TYPE_FILTERS: Record<string, { mode: 'include' | 'exclude'; patterns: string[] }> = {
@@ -71,8 +72,30 @@ export async function GET(request: NextRequest) {
           orderClause = 'du.uploaded_at DESC'
       }
 
+      // Resolve team-based access
+      const teamInfo = await getUserTeamInfo(accountantId)
+      const ownerAccountantId = await resolveOwnerAccountantId(accountantId, teamInfo)
+      const accessibleIds = await getAccessibleClientIds(accountantId, teamInfo.memberId ?? undefined, teamInfo.role ?? undefined)
+
+      // If member has no accessible clients, return empty
+      if (Array.isArray(accessibleIds) && accessibleIds.length === 0) {
+        if (pageParam) {
+          return NextResponse.json({ data: [], total: 0, page: 1, limit: 50, totalPages: 0 })
+        }
+        return NextResponse.json([])
+      }
+
       const conditions: string[] = ['dr.accountant_id = $1']
-      const values: (string | number)[] = [accountantId]
+      const values: (string | number)[] = [ownerAccountantId]
+
+      // Filter by accessible client IDs for members
+      if (Array.isArray(accessibleIds)) {
+        const placeholders = accessibleIds.map((id) => {
+          values.push(id)
+          return `$${values.length}`
+        })
+        conditions.push(`du.client_id IN (${placeholders.join(',')})`)
+      }
 
       if (clientId) {
         values.push(clientId)

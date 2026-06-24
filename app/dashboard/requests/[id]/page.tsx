@@ -39,7 +39,8 @@ interface RequestDetail extends DocumentRequest {
 }
 
 export default function RequestDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { user } = useAuth(true)
+  const { user, teamRole } = useAuth(true)
+  const canSeeAllNav = !teamRole || teamRole === 'owner' || teamRole === 'admin'
 
   const [requestId, setRequestId] = useState<string>('')
   const { data: request, loading, refetch } = useApi<RequestDetail>(`/api/request-details/${requestId}`, {
@@ -209,21 +210,31 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
               Clients
             </Link>
             <span className="text-sm text-neutral-900 font-semibold">Requests</span>
-            <Link href="/dashboard/documents" className="text-sm text-neutral-500 hover:text-neutral-900 transition">
-              Documents
-            </Link>
-            <Link href="/dashboard/settings" className="text-sm text-neutral-500 hover:text-neutral-900 transition">
-              Settings
-            </Link>
+            {canSeeAllNav && (
+              <Link href="/dashboard/documents" className="text-sm text-neutral-500 hover:text-neutral-900 transition">
+                Documents
+              </Link>
+            )}
+            {canSeeAllNav && (
+              <Link href="/dashboard/settings" className="text-sm text-neutral-500 hover:text-neutral-900 transition">
+                Settings
+              </Link>
+            )}
           </div>
         </div>
 
         {/* User Avatar */}
-        <Link href="/dashboard/settings" className="cursor-pointer">
+        {canSeeAllNav ? (
+          <Link href="/dashboard/settings" className="cursor-pointer">
+            <div className="w-8 h-8 rounded-full bg-primary-600 text-white flex items-center justify-center text-xs font-semibold">
+              {user?.name ? user.name.split(' ').map(n => n[0]).join('') : ''}
+            </div>
+          </Link>
+        ) : (
           <div className="w-8 h-8 rounded-full bg-primary-600 text-white flex items-center justify-center text-xs font-semibold">
             {user?.name ? user.name.split(' ').map(n => n[0]).join('') : ''}
           </div>
-        </Link>
+        )}
       </div>
 
       {/* Content */}

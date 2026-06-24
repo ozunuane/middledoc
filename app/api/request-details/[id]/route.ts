@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withAuth } from '@/lib/middleware'
 import { query } from '@/lib/db'
+import { getAccessibleClientIds, getUserTeamInfo, resolveOwnerAccountantId } from '@/lib/access'
 
 export async function GET(
   request: NextRequest,
@@ -40,7 +41,18 @@ export async function GET(
 
       const row = requestResult.rows[0]
 
-      if (row.accountant_id !== accountantId) {
+      // Resolve team-based access
+      const teamInfo = await getUserTeamInfo(accountantId)
+      const ownerAccountantId = await resolveOwnerAccountantId(accountantId, teamInfo)
+
+      // Verify the request belongs to the owner's account
+      if (row.accountant_id !== ownerAccountantId) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+      }
+
+      // For members, verify they have access to this client
+      const accessibleIds = await getAccessibleClientIds(accountantId, teamInfo.memberId ?? undefined, teamInfo.role ?? undefined)
+      if (Array.isArray(accessibleIds) && !accessibleIds.includes(row.client_id)) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
       }
 

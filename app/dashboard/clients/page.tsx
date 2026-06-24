@@ -11,7 +11,8 @@ import { EditClientModal } from '@/components/EditClientModal'
 import type { Client, DocumentRequest } from '@/types/index'
 
 export default function ClientsPage() {
-  const { user } = useAuth(true)
+  const { user, teamRole } = useAuth(true)
+  const canSeeAllNav = !teamRole || teamRole === 'owner' || teamRole === 'admin'
 
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
@@ -171,17 +172,23 @@ export default function ClientsPage() {
             <Link href="/dashboard" className="text-sm text-neutral-500 hover:text-neutral-900 transition">Dashboard</Link>
             <span className="text-sm text-neutral-900 font-semibold">Clients</span>
             <Link href="/dashboard/requests" className="text-sm text-neutral-500 hover:text-neutral-900 transition">Requests</Link>
-            <Link href="/dashboard/documents" className="text-sm text-neutral-500 hover:text-neutral-900 transition">Documents</Link>
-            <Link href="/dashboard/settings" className="text-sm text-neutral-500 hover:text-neutral-900 transition">Settings</Link>
+            {canSeeAllNav && <Link href="/dashboard/documents" className="text-sm text-neutral-500 hover:text-neutral-900 transition">Documents</Link>}
+            {canSeeAllNav && <Link href="/dashboard/settings" className="text-sm text-neutral-500 hover:text-neutral-900 transition">Settings</Link>}
           </div>
         </div>
 
         {/* User Avatar */}
-        <Link href="/dashboard/settings" className="cursor-pointer">
+        {canSeeAllNav ? (
+          <Link href="/dashboard/settings" className="cursor-pointer">
+            <div className="w-8 h-8 rounded-full bg-primary-600 text-white flex items-center justify-center text-xs font-semibold">
+              {user?.name ? user.name.split(' ').map(n => n[0]).join('') : ''}
+            </div>
+          </Link>
+        ) : (
           <div className="w-8 h-8 rounded-full bg-primary-600 text-white flex items-center justify-center text-xs font-semibold">
             {user?.name ? user.name.split(' ').map(n => n[0]).join('') : ''}
           </div>
-        </Link>
+        )}
       </div>
 
       {/* Content */}

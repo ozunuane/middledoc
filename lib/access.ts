@@ -1,7 +1,5 @@
-// TODO: Integrate getAccessibleClientIds() into GET /api/clients, /api/requests, /api/documents
-// to enforce group-based access control for team members with 'member' role.
-
 import { query } from './db'
+import { getOne } from './db'
 
 /**
  * Get the list of client IDs that a team member can access.
@@ -40,4 +38,42 @@ export async function getAccessibleClientIds(
   directClients.rows.forEach(r => ids.add(r.client_id))
 
   return Array.from(ids)
+}
+
+/**
+ * Get the current user's team membership info.
+ */
+export async function getUserTeamInfo(accountantId: number): Promise<{
+  teamId: number | null
+  memberId: number | null
+  role: 'owner' | 'admin' | 'member' | null
+}> {
+  const member = await getOne<{ id: number; team_id: number; role: string }>(
+    `SELECT id, team_id, role FROM team_members WHERE accountant_id = $1`,
+    [accountantId]
+  )
+  if (!member) return { teamId: null, memberId: null, role: null }
+  return {
+    teamId: member.team_id,
+    memberId: member.id,
+    role: member.role as 'owner' | 'admin' | 'member',
+  }
+}
+
+/**
+ * Resolve the owner accountant ID for a team member.
+ * If the user is not on a team or is the owner, returns their own ID.
+ */
+export async function resolveOwnerAccountantId(
+  accountantId: number,
+  teamInfo: { teamId: number | null; role: 'owner' | 'admin' | 'member' | null }
+): Promise<number> {
+  if (teamInfo.teamId && teamInfo.role !== 'owner') {
+    const owner = await getOne<{ accountant_id: number }>(
+      `SELECT accountant_id FROM team_members WHERE team_id = $1 AND role = 'owner'`,
+      [teamInfo.teamId]
+    )
+    if (owner) return owner.accountant_id
+  }
+  return accountantId
 }

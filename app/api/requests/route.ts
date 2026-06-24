@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withAuth } from '@/lib/middleware'
 import { query } from '@/lib/db'
+import { getAccessibleClientIds, getUserTeamInfo, resolveOwnerAccountantId } from '@/lib/access'
 
 export async function POST(request: NextRequest) {
   return withAuth(request, async (req, accountantId) => {
@@ -55,6 +56,20 @@ export async function GET(request: NextRequest) {
       const statusFilter = searchParams.get('status')
       const sortParam = searchParams.get('sort')
 
+      // Resolve team-based access
+      const teamInfo = await getUserTeamInfo(accountantId)
+      const ownerAccountantId = await resolveOwnerAccountantId(accountantId, teamInfo)
+      const accessibleIds = await getAccessibleClientIds(accountantId, teamInfo.memberId ?? undefined, teamInfo.role ?? undefined)
+
+      // If member has no accessible clients, return empty
+      if (Array.isArray(accessibleIds) && accessibleIds.length === 0) {
+        const pageParam = searchParams.get('page')
+        if (pageParam) {
+          return NextResponse.json({ data: [], total: 0, page: 1, limit: 50, totalPages: 0 })
+        }
+        return NextResponse.json([])
+      }
+
       const validStatuses = ['pending', 'received', 'overdue', 'cancelled']
       if (statusFilter && !validStatuses.includes(statusFilter)) {
         return NextResponse.json({ error: 'Invalid status filter' }, { status: 400 })
@@ -70,7 +85,16 @@ export async function GET(request: NextRequest) {
       const limitParam = searchParams.get('limit')
 
       const conditions: string[] = ['dr.accountant_id = $1']
-      const values: (string | number)[] = [accountantId]
+      const values: (string | number)[] = [ownerAccountantId]
+
+      // Filter by accessible client IDs for members
+      if (Array.isArray(accessibleIds)) {
+        const placeholders = accessibleIds.map((id) => {
+          values.push(id)
+          return `$${values.length}`
+        })
+        conditions.push(`dr.client_id IN (${placeholders.join(',')})`)
+      }
 
       if (statusFilter) {
         values.push(statusFilter)

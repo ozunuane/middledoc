@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withAuth } from '@/lib/middleware'
 import { query } from '@/lib/db'
+import { getAccessibleClientIds, getUserTeamInfo, resolveOwnerAccountantId } from '@/lib/access'
 
 export async function POST(request: NextRequest) {
   return withAuth(request, async (req, accountantId) => {
@@ -48,6 +49,19 @@ export async function GET(request: NextRequest) {
       const orderParam = searchParams.get('order')
       const searchTerm = searchParams.get('search')
 
+      // Resolve team-based access
+      const teamInfo = await getUserTeamInfo(accountantId)
+      const ownerAccountantId = await resolveOwnerAccountantId(accountantId, teamInfo)
+      const accessibleIds = await getAccessibleClientIds(accountantId, teamInfo.memberId ?? undefined, teamInfo.role ?? undefined)
+
+      // If member has no accessible clients, return empty
+      if (Array.isArray(accessibleIds) && accessibleIds.length === 0) {
+        if (searchParams.get('page')) {
+          return NextResponse.json({ data: [], total: 0, page: 1, limit: 50, totalPages: 0 })
+        }
+        return NextResponse.json([])
+      }
+
       // Validate sort column
       const validSorts: Record<string, string> = {
         name: 'name',
@@ -61,7 +75,16 @@ export async function GET(request: NextRequest) {
 
       // Build WHERE clause
       const conditions: string[] = ['accountant_id = $1']
-      const values: (string | number)[] = [accountantId]
+      const values: (string | number)[] = [ownerAccountantId]
+
+      // Filter by accessible client IDs for members
+      if (Array.isArray(accessibleIds)) {
+        const placeholders = accessibleIds.map((id, i) => {
+          values.push(id)
+          return `$${values.length}`
+        })
+        conditions.push(`id IN (${placeholders.join(',')})`)
+      }
 
       if (searchTerm) {
         values.push(`%${searchTerm}%`)

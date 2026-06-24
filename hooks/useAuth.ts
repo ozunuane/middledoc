@@ -7,25 +7,34 @@ import type { Accountant } from '@/types/index'
 interface AuthState {
   user: Accountant | null
   loading: boolean
+  teamRole: 'owner' | 'admin' | 'member' | null
 }
 
 export function useAuth(redirectOnFail = true) {
   const router = useRouter()
-  const [state, setState] = useState<AuthState>({ user: null, loading: true })
+  const [state, setState] = useState<AuthState>({ user: null, loading: true, teamRole: null })
 
   const checkAuth = useCallback(async () => {
     try {
-      const res = await fetch('/api/auth/me')
-      if (!res.ok) {
+      const [meRes, roleRes] = await Promise.all([
+        fetch('/api/auth/me'),
+        fetch('/api/auth/team-role'),
+      ])
+      if (!meRes.ok) {
         if (redirectOnFail) router.push('/auth/login')
-        setState({ user: null, loading: false })
+        setState({ user: null, loading: false, teamRole: null })
         return
       }
-      const user: Accountant = await res.json()
-      setState({ user, loading: false })
+      const user: Accountant = await meRes.json()
+      let teamRole: 'owner' | 'admin' | 'member' | null = null
+      if (roleRes.ok) {
+        const roleData = await roleRes.json()
+        teamRole = roleData.role ?? null
+      }
+      setState({ user, loading: false, teamRole })
     } catch {
       if (redirectOnFail) router.push('/auth/login')
-      setState({ user: null, loading: false })
+      setState({ user: null, loading: false, teamRole: null })
     }
   }, [router, redirectOnFail])
 
