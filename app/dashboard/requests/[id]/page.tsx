@@ -31,7 +31,7 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
   const { user } = useAuth(true)
 
   const [requestId, setRequestId] = useState<string>('')
-  const { data: request, loading } = useApi<RequestDetail>(`/api/requests/${requestId}/details`, {
+  const { data: request, loading } = useApi<RequestDetail>(`/api/request-details/${requestId}`, {
     skip: !requestId,
   })
   const { data: clients } = useApi<Client[]>('/api/clients')

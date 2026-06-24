@@ -12,6 +12,12 @@ export async function GET(
       return NextResponse.json({ error: 'Invalid share token' }, { status: 404 })
     }
 
+    // Validate UUID format
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+    if (!uuidRegex.test(shareToken)) {
+      return NextResponse.json({ error: 'Request not found' }, { status: 404 })
+    }
+
     const requestResult = await query(
       `SELECT
          dr.id,

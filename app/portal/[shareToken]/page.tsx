@@ -102,7 +102,7 @@ export default function PortalPage({ params }: { params: Promise<{ shareToken: s
             })
           }, 150)
 
-          const res = await fetch(`/api/portal/${shareToken}/upload`, {
+          const res = await fetch(`/api/portal-upload/${shareToken}`, {
             method: 'POST',
             body: formData,
           })
