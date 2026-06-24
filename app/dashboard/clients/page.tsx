@@ -6,6 +6,7 @@ import { useApi } from '@/hooks/useApi'
 import { useAuth } from '@/hooks/useAuth'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { AddClientModal } from '@/components/AddClientModal'
+import { ImportClientModal } from '@/components/ImportClientModal'
 import { EditClientModal } from '@/components/EditClientModal'
 import type { Client, DocumentRequest } from '@/types/index'
 
@@ -15,6 +16,7 @@ export default function ClientsPage() {
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [showAddClient, setShowAddClient] = useState(false)
+  const [showImport, setShowImport] = useState(false)
   const [openMenuId, setOpenMenuId] = useState<number | null>(null)
   const [editClient, setEditClient] = useState<Client | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null)
@@ -189,7 +191,7 @@ export default function ClientsPage() {
           </div>
           <div className="flex gap-2">
             <button
-              onClick={() => alert('CSV import coming soon')}
+              onClick={() => setShowImport(true)}
               className="bg-white border border-neutral-300 text-neutral-900 text-[13px] font-medium px-4 py-2.5 rounded-[9px] hover:bg-neutral-50 transition cursor-pointer"
             >
               Import CSV
@@ -388,6 +390,12 @@ export default function ClientsPage() {
           </>
         )}
       </div>
+
+      <ImportClientModal
+        isOpen={showImport}
+        onClose={() => setShowImport(false)}
+        onImportComplete={() => { refetchClients(); setShowImport(false) }}
+      />
 
       <AddClientModal
         isOpen={showAddClient}
