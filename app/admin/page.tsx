@@ -13,6 +13,10 @@ interface DashboardData {
   signups_this_week: number
   signups_this_month: number
   active_subscriptions: number
+  churned_this_month: number
+  churn_rate: number
+  mrr: number
+  arr: number
 }
 
 interface StatsData {
@@ -84,6 +88,11 @@ export default function AdminDashboardPage() {
   const signupData = stats?.signup_trend || []
   const maxCount = Math.max(...signupData.map((d) => d.count), 1)
 
+  const formatMoney = (cents: number) => {
+    if (cents >= 100000) return `$${(cents / 100).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
+    return `$${(cents / 100).toFixed(2)}`
+  }
+
   const statCards = dashboard
     ? [
         {
@@ -92,9 +101,20 @@ export default function AdminDashboardPage() {
           sub: `${dashboard.signups_this_week} new this week`,
         },
         {
-          label: 'Total Clients',
-          value: dashboard.total_clients.toLocaleString(),
-          sub: null,
+          label: 'MRR',
+          value: formatMoney(dashboard.mrr),
+          sub: `ARR ${formatMoney(dashboard.arr)}`,
+        },
+        {
+          label: 'Churn Rate',
+          value: `${dashboard.churn_rate}%`,
+          sub: `${dashboard.churned_this_month} cancelled this month`,
+          color: dashboard.churn_rate > 5 ? 'text-danger-600' : dashboard.churn_rate > 0 ? 'text-warning-600' : 'text-primary-600',
+        },
+        {
+          label: 'Active Subscriptions',
+          value: dashboard.active_subscriptions.toLocaleString(),
+          sub: `${dashboard.total_clients.toLocaleString()} total clients`,
         },
         {
           label: 'Total Requests',
@@ -114,7 +134,7 @@ export default function AdminDashboardPage() {
       <h1 className="text-xl font-semibold text-neutral-900 mb-6">Dashboard</h1>
 
       {/* Stats row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
         {statCards.map((card) => (
           <div
             key={card.label}
@@ -123,7 +143,7 @@ export default function AdminDashboardPage() {
             <p className="text-[13px] text-neutral-400 uppercase tracking-wide mb-1">
               {card.label}
             </p>
-            <p className="text-3xl font-semibold text-neutral-900 font-mono">
+            <p className={`text-3xl font-semibold font-mono ${'color' in card && card.color ? card.color : 'text-neutral-900'}`}>
               {card.value}
             </p>
             {card.sub && (
