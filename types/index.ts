@@ -142,13 +142,30 @@ export interface Plan {
   description?: string
   monthly_price_cents: number
   annual_price_cents: number
+  extra_seat_price_cents: number
+  storage_overage_price_cents: number
   max_clients: number
   max_storage_gb: number
   included_team_members: number
   max_team_members: number
   max_email_reminders_per_month: number
+  max_client_emails: number
+  max_bcc_emails: number
+  max_request_templates: number
+  max_bulk_requests: number
   feature_teams: boolean
   feature_groups: boolean
+  feature_client_assignments: boolean
+  feature_whitelabel_logo: boolean
+  feature_whitelabel_full: boolean
+  feature_api_readonly: boolean
+  feature_api_full: boolean
+  feature_sso: boolean
+  feature_webhooks: boolean
+  feature_activity_log: boolean
+  feature_custom_fields: boolean
+  feature_recurring_requests: boolean
+  feature_data_export: boolean
   is_active: boolean
   is_public: boolean
   sort_order: number
