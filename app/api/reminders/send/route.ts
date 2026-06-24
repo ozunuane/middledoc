@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withAuth } from '@/lib/middleware'
-import { getOne } from '@/lib/db'
+import { getOne, getMany } from '@/lib/db'
 import {
   sendReminderEmail,
   hasReminderBeenSent,
@@ -105,12 +105,20 @@ export async function POST(request: NextRequest) {
         )
       }
 
+      // Fetch notification BCC emails
+      const notificationEmails = await getMany<{ email: string }>(
+        `SELECT email FROM notification_emails WHERE accountant_id = $1`,
+        [accountantId]
+      )
+
+      const bccEmails = [requestData.accountant_email, ...notificationEmails.map(n => n.email)]
+
       // Send the email
       const result = await sendReminderEmail({
         clientEmail: requestData.client_email,
         clientName: requestData.client_name || 'there',
         accountantName: requestData.accountant_name || 'Your accountant',
-        accountantEmail: requestData.accountant_email,
+        bccEmails,
         requestTitle: requestData.title,
         dueDate: requestData.due_date,
         shareToken: requestData.share_token,

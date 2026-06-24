@@ -70,3 +70,63 @@ export interface Document {
   client_name: string
   client_email: string
 }
+
+export interface Team {
+  id: number
+  name: string
+  owner_id: number
+  created_at: string
+}
+
+export interface TeamMember {
+  id: number
+  team_id: number
+  accountant_id: number
+  role: 'owner' | 'admin' | 'member'
+  joined_at: string
+  name?: string
+  email?: string
+}
+
+export interface TeamInvitation {
+  id: number
+  team_id: number
+  email: string
+  role: string
+  token: string
+  expires_at: string
+  accepted_at?: string
+}
+
+export interface Group {
+  id: number
+  team_id: number
+  name: string
+  created_at: string
+  member_count?: number
+  client_count?: number
+}
+
+export interface ClientEmail {
+  id: number
+  client_id: number
+  email: string
+  label: string
+  is_primary: boolean
+}
+
+export interface NotificationEmail {
+  id: number
+  email: string
+  label?: string
+}
+
+export interface ClientAssignment {
+  id: number
+  team_member_id: number
+  client_id: number
+  assigned_by: number
+  assigned_at: string
+  member_name?: string
+  client_name?: string
+}

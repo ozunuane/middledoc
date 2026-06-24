@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withAuth } from '@/lib/middleware'
-import { query, getOne } from '@/lib/db'
+import { query, getOne, getMany } from '@/lib/db'
 import { sendReminderEmail } from '@/lib/email'
 
 export async function POST(request: NextRequest) {
@@ -80,12 +80,20 @@ export async function POST(request: NextRequest) {
         [doc.request_id]
       )
 
+      // Fetch notification BCC emails
+      const notificationEmails = await getMany<{ email: string }>(
+        `SELECT email FROM notification_emails WHERE accountant_id = $1`,
+        [accountantId]
+      )
+
+      const bccEmails = [doc.accountant_email, ...notificationEmails.map(n => n.email)]
+
       // Send rejection email to the client
       await sendReminderEmail({
         clientEmail: doc.client_email,
         clientName: doc.client_name,
         accountantName: doc.accountant_name,
-        accountantEmail: doc.accountant_email,
+        bccEmails,
         requestTitle: doc.request_title,
         dueDate: doc.due_date,
         shareToken: doc.share_token,
