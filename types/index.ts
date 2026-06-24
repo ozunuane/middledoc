@@ -130,3 +130,52 @@ export interface ClientAssignment {
   member_name?: string
   client_name?: string
 }
+
+// ============================================================
+// ADMIN & SUBSCRIPTION TYPES
+// ============================================================
+
+export interface Plan {
+  id: number
+  slug: string
+  display_name: string
+  description?: string
+  monthly_price_cents: number
+  annual_price_cents: number
+  max_clients: number
+  max_storage_gb: number
+  included_team_members: number
+  max_team_members: number
+  max_email_reminders_per_month: number
+  feature_teams: boolean
+  feature_groups: boolean
+  is_active: boolean
+  is_public: boolean
+  sort_order: number
+}
+
+export interface Subscription {
+  id: number
+  accountant_id: number
+  plan_id: number
+  status: 'active' | 'past_due' | 'cancelled' | 'trialing'
+  current_period_start: string
+  current_period_end: string
+}
+
+export interface SuperAdmin {
+  id: number
+  email: string
+  name: string
+  role: 'super_admin' | 'admin' | 'support'
+}
+
+export interface AdminAuditEntry {
+  id: number
+  admin_id: number
+  action: string
+  target_type: string
+  target_id?: number
+  details: Record<string, unknown>
+  created_at: string
+}
