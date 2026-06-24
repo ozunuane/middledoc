@@ -31,6 +31,26 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'File exceeds maximum size of 10MB' }, { status: 400 })
       }
 
+      const ALLOWED_TYPES = [
+        'application/pdf',
+        'image/jpeg', 'image/png', 'image/gif', 'image/webp',
+        'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'text/csv', 'text/plain',
+      ]
+
+      const ALLOWED_EXTENSIONS = ['.pdf', '.jpg', '.jpeg', '.png', '.gif', '.webp', '.doc', '.docx', '.xls', '.xlsx', '.csv', '.txt']
+
+      const sanitizedName = path.basename(file.name).replace(/[^a-zA-Z0-9._-]/g, '_')
+      const ext = path.extname(sanitizedName).toLowerCase()
+      if (!ALLOWED_EXTENSIONS.includes(ext)) {
+        return NextResponse.json({ error: `File type ${ext} is not allowed` }, { status: 400 })
+      }
+
+      if (file.type && !ALLOWED_TYPES.includes(file.type)) {
+        return NextResponse.json({ error: 'File MIME type is not allowed' }, { status: 400 })
+      }
+
       // Verify request ownership
       const requestResult = await query(
         'SELECT id, client_id, accountant_id FROM document_requests WHERE id = $1',

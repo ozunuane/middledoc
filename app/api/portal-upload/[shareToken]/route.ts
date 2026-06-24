@@ -41,9 +41,28 @@ export async function POST(
       return NextResponse.json({ error: 'File exceeds maximum size of 10MB' }, { status: 400 })
     }
 
+    const ALLOWED_TYPES = [
+      'application/pdf',
+      'image/jpeg', 'image/png', 'image/gif', 'image/webp',
+      'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'text/csv', 'text/plain',
+    ]
+
+    const ALLOWED_EXTENSIONS = ['.pdf', '.jpg', '.jpeg', '.png', '.gif', '.webp', '.doc', '.docx', '.xls', '.xlsx', '.csv', '.txt']
+
     // Save file to filesystem
     const fileUuid = randomUUID()
     const safeFileName = path.basename(file.name).replace(/[^a-zA-Z0-9._-]/g, '_')
+
+    const ext = path.extname(safeFileName).toLowerCase()
+    if (!ALLOWED_EXTENSIONS.includes(ext)) {
+      return NextResponse.json({ error: `File type ${ext} is not allowed` }, { status: 400 })
+    }
+
+    if (file.type && !ALLOWED_TYPES.includes(file.type)) {
+      return NextResponse.json({ error: 'File MIME type is not allowed' }, { status: 400 })
+    }
     const relativeDir = String(requestId)
     const fileName = `${fileUuid}_${safeFileName}`
     const absoluteDir = path.join(UPLOADS_BASE, relativeDir)

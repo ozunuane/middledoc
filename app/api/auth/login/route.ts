@@ -41,12 +41,13 @@ export async function POST(request: NextRequest) {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
+      path: '/',
+      maxAge: 60 * 60 * 24, // 24 hours
     })
 
     return response
   } catch (error) {
-    console.error('Login error:', error)
+    console.error('Login error:', error instanceof Error ? error.message : 'Unknown error')
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

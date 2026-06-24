@@ -134,6 +134,10 @@ export async function DELETE(request: NextRequest) {
         return NextResponse.json({ error: 'You are not part of a team' }, { status: 400 })
       }
 
+      if (membership.role !== 'owner' && membership.role !== 'admin') {
+        return NextResponse.json({ error: 'Only owners and admins can manage groups' }, { status: 403 })
+      }
+
       // Verify group belongs to team
       const group = await getOne<{ id: number; team_id: number }>(
         `SELECT id, team_id FROM groups WHERE id = $1`,

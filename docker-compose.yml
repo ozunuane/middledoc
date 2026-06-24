@@ -9,7 +9,7 @@ services:
       POSTGRES_PASSWORD: dev_password_change_me
       POSTGRES_DB: accountant_hub
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
@@ -27,7 +27,7 @@ services:
     environment:
       NODE_ENV: development
       DATABASE_URL: postgresql://accountant:dev_password_change_me@postgres:5432/accountant_hub
-      NEXTAUTH_SECRET: your_secret_key_change_this
+      NEXTAUTH_SECRET: a3f8c2d1e9b4a7f6c0d3e8b1a4f7c2d5e9b0a3f6c1d4e7b2a5f8c3d6e9b0a3f7
       NEXTAUTH_URL: http://localhost
     depends_on:
       postgres:

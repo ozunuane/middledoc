@@ -11,8 +11,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
-    if (password.length < 8) {
-      return NextResponse.json({ error: 'Password must be at least 8 characters' }, { status: 400 })
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      return NextResponse.json({ error: 'Invalid email format' }, { status: 400 })
+    }
+
+    if (password.length < 10) {
+      return NextResponse.json({ error: 'Password must be at least 10 characters' }, { status: 400 })
+    }
+    const commonPasswords = ['password123', '12345678910', 'qwertyuiop', 'letmein1234', 'password1234']
+    if (commonPasswords.includes(password.toLowerCase())) {
+      return NextResponse.json({ error: 'This password is too common. Please choose a stronger one.' }, { status: 400 })
     }
 
     // Check if user exists
@@ -41,12 +50,13 @@ export async function POST(request: NextRequest) {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
+      path: '/',
+      maxAge: 60 * 60 * 24, // 24 hours
     })
 
     return response
   } catch (error) {
-    console.error('Signup error:', error)
+    console.error('Signup error:', error instanceof Error ? error.message : 'Unknown error')
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

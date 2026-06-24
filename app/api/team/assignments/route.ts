@@ -83,10 +83,15 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Team member not found' }, { status: 404 })
       }
 
-      // Verify client exists
+      // Verify client belongs to the team owner
+      const teamOwner = await getOne<{ owner_id: number }>(
+        `SELECT owner_id FROM teams WHERE id = $1`,
+        [membership.team_id]
+      )
+
       const client = await getOne<{ id: number }>(
-        `SELECT id FROM clients WHERE id = $1`,
-        [client_id]
+        `SELECT id FROM clients WHERE id = $1 AND accountant_id = $2`,
+        [client_id, teamOwner?.owner_id]
       )
 
       if (!client) {

@@ -2,18 +2,17 @@ FROM node:20.9.0-alpine
 
 WORKDIR /app
 
-# Copy package files
 COPY package*.json ./
+RUN npm ci --omit=dev
 
-# Install dependencies
-RUN npm ci
-
-# Copy application code
 COPY . .
-
-# Build Next.js
 RUN npm run build
+
+# Create non-root user
+RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser
+RUN chown -R appuser:appgroup /app
+USER appuser
 
 EXPOSE 3000
 
-CMD ["npm", "run", "dev"]
+CMD ["npm", "start"]

@@ -1,3 +1,6 @@
+// TODO: Integrate getAccessibleClientIds() into GET /api/clients, /api/requests, /api/documents
+// to enforce group-based access control for team members with 'member' role.
+
 import { query } from './db'
 
 /**

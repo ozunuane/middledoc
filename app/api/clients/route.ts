@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json(result.rows[0], { status: 201 })
     } catch (error) {
-      console.error('POST /api/clients error:', error)
+      console.error('POST /api/clients error:', error instanceof Error ? error.message : 'Unknown error')
       return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
     }
   })
@@ -106,7 +106,7 @@ export async function GET(request: NextRequest) {
       )
       return NextResponse.json(result.rows)
     } catch (error) {
-      console.error('GET /api/clients error:', error)
+      console.error('GET /api/clients error:', error instanceof Error ? error.message : 'Unknown error')
       return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
     }
   })

@@ -1,6 +1,15 @@
 import sgMail from '@sendgrid/mail'
 import { query, getOne } from '@/lib/db'
 
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
 // Initialize
 const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY
 const FROM_EMAIL = process.env.FROM_EMAIL || 'noreply@middledoc.app'
@@ -98,19 +107,19 @@ function getBarColor(reminderType: ReminderType): string {
 function getSubject(reminderType: ReminderType, requestTitle: string, pendingItems?: string[], fileName?: string): string {
   switch (reminderType) {
     case 'initial':
-      return `A few documents for your ${requestTitle}`
+      return `A few documents for your ${escapeHtml(requestTitle)}`
     case '7day':
-      return `A few documents for your ${requestTitle}`
+      return `A few documents for your ${escapeHtml(requestTitle)}`
     case '3day': {
       const count = pendingItems?.length ?? 0
       return count > 0
         ? `${count} document${count === 1 ? '' : 's'} left before the deadline`
-        : `Documents still needed for ${requestTitle}`
+        : `Documents still needed for ${escapeHtml(requestTitle)}`
     }
     case 'deadline':
       return `Today's the deadline -- but we have options`
     case 'rejection':
-      return `Action needed: ${fileName ?? 'your document'} was not accepted`
+      return `Action needed: ${escapeHtml(fileName ?? 'your document')} was not accepted`
   }
 }
 
@@ -130,8 +139,8 @@ function getBodyHtml(params: SendReminderParams): string {
     case 'initial':
     case '7day':
       return `
-        <p style="font-size:14.5px; line-height:1.6; color:#3A3D42; margin:0 0 14px;">Hi ${params.clientName},</p>
-        <p style="font-size:14.5px; line-height:1.6; color:#3A3D42; margin:0 0 14px;">I've put together everything I'll need for <strong style="color:#17191C;">${params.requestTitle}</strong>. There's no rush yet &mdash; the documents are due <strong style="color:#17191C;">${formattedDue}</strong>, but I wanted to get this to you early so you can gather things at your own pace.</p>
+        <p style="font-size:14.5px; line-height:1.6; color:#3A3D42; margin:0 0 14px;">Hi ${escapeHtml(params.clientName)},</p>
+        <p style="font-size:14.5px; line-height:1.6; color:#3A3D42; margin:0 0 14px;">I've put together everything I'll need for <strong style="color:#17191C;">${escapeHtml(params.requestTitle)}</strong>. There's no rush yet &mdash; the documents are due <strong style="color:#17191C;">${formattedDue}</strong>, but I wanted to get this to you early so you can gather things at your own pace.</p>
         <p style="font-size:14.5px; line-height:1.6; color:#3A3D42; margin:0 0 22px;">Everything's listed on one page. You can upload as you go &mdash; no account or password needed.</p>
       `
 
@@ -141,33 +150,33 @@ function getBodyHtml(params: SendReminderParams): string {
         const items = params.pendingItems
           .map(
             (item) =>
-              `<div style="display:flex; align-items:center; gap:9px; margin-bottom:9px;"><div style="width:16px;height:16px;border-radius:50%;border:1.5px solid #C9A24A;"></div><span style="font-size:14px; color:#17191C;">${item}</span></div>`
+              `<div style="display:flex; align-items:center; gap:9px; margin-bottom:9px;"><div style="width:16px;height:16px;border-radius:50%;border:1.5px solid #C9A24A;"></div><span style="font-size:14px; color:#17191C;">${escapeHtml(item)}</span></div>`
           )
           .join('')
         pendingBlock = `<div style="background:#FEFAEE; border:1px solid #F0E0AE; border-radius:10px; padding:14px 16px; margin-bottom:20px;">${items}</div>`
       }
 
       return `
-        <p style="font-size:14.5px; line-height:1.6; color:#3A3D42; margin:0 0 14px;">Hi ${params.clientName},</p>
-        <p style="font-size:14.5px; line-height:1.6; color:#3A3D42; margin:0 0 16px;">You're almost done. To wrap up <strong style="color:#17191C;">${params.requestTitle}</strong> by <strong style="color:#17191C;">${formattedDue}</strong>, I still need:</p>
+        <p style="font-size:14.5px; line-height:1.6; color:#3A3D42; margin:0 0 14px;">Hi ${escapeHtml(params.clientName)},</p>
+        <p style="font-size:14.5px; line-height:1.6; color:#3A3D42; margin:0 0 16px;">You're almost done. To wrap up <strong style="color:#17191C;">${escapeHtml(params.requestTitle)}</strong> by <strong style="color:#17191C;">${formattedDue}</strong>, I still need:</p>
         ${pendingBlock}
       `
     }
 
     case 'deadline':
       return `
-        <p style="font-size:14.5px; line-height:1.6; color:#3A3D42; margin:0 0 14px;">Hi ${params.clientName},</p>
-        <p style="font-size:14.5px; line-height:1.6; color:#3A3D42; margin:0 0 14px;">Today is the deadline for <strong style="color:#17191C;">${params.requestTitle}</strong>. If you can get the remaining documents to me by end of day, we'll stay on track.</p>
+        <p style="font-size:14.5px; line-height:1.6; color:#3A3D42; margin:0 0 14px;">Hi ${escapeHtml(params.clientName)},</p>
+        <p style="font-size:14.5px; line-height:1.6; color:#3A3D42; margin:0 0 14px;">Today is the deadline for <strong style="color:#17191C;">${escapeHtml(params.requestTitle)}</strong>. If you can get the remaining documents to me by end of day, we'll stay on track.</p>
         <p style="font-size:14.5px; line-height:1.6; color:#3A3D42; margin:0 0 22px;">If you're stuck on anything or need an extension, just reply to this email and we'll sort it out together.</p>
       `
 
     case 'rejection':
       return `
-        <p style="font-size:14.5px; line-height:1.6; color:#3A3D42; margin:0 0 14px;">Hi ${params.clientName},</p>
-        <p style="font-size:14.5px; line-height:1.6; color:#3A3D42; margin:0 0 14px;">I reviewed <strong style="color:#17191C;">${params.fileName ?? 'your document'}</strong> and unfortunately need a different version.</p>
+        <p style="font-size:14.5px; line-height:1.6; color:#3A3D42; margin:0 0 14px;">Hi ${escapeHtml(params.clientName)},</p>
+        <p style="font-size:14.5px; line-height:1.6; color:#3A3D42; margin:0 0 14px;">I reviewed <strong style="color:#17191C;">${escapeHtml(params.fileName ?? 'your document')}</strong> and unfortunately need a different version.</p>
         <div style="background:#FEF2F0; border:1px solid #F0C0B8; border-radius:10px; padding:14px 16px; margin-bottom:20px;">
           <p style="font-size:14px; color:#8B2517; margin:0; font-weight:600;">Reason</p>
-          <p style="font-size:14px; color:#3A3D42; margin:6px 0 0;">${params.rejectionReason ?? ''}</p>
+          <p style="font-size:14px; color:#3A3D42; margin:6px 0 0;">${escapeHtml(params.rejectionReason ?? '')}</p>
         </div>
         <p style="font-size:14.5px; line-height:1.6; color:#3A3D42; margin:0 0 22px;">Please re-upload through the link below.</p>
       `
@@ -194,8 +203,8 @@ function buildEmailHtml(params: SendReminderParams): string {
   const body = getBodyHtml(params)
   const ctaText = getCtaText(params.reminderType, params.pendingItems?.length)
   const signature = params.accountantFirm
-    ? `${params.accountantName} &middot; ${params.accountantFirm}`
-    : params.accountantName
+    ? `${escapeHtml(params.accountantName)} &middot; ${escapeHtml(params.accountantFirm)}`
+    : escapeHtml(params.accountantName)
 
   return `<!DOCTYPE html>
 <html>
@@ -239,7 +248,7 @@ function buildBatchEmailHtml(params: BatchReminderParams): string {
       const due = formatDueDate(r.dueDate)
       return `<tr>
         <td style="padding:10px 0; border-bottom:1px solid #EFEAE0;">
-          <a href="${url}" style="font-size:14px; color:#0F7A63; font-weight:600; text-decoration:none;">${r.title}</a>
+          <a href="${url}" style="font-size:14px; color:#0F7A63; font-weight:600; text-decoration:none;">${escapeHtml(r.title)}</a>
           <div style="font-size:12px; color:#7A7468; margin-top:2px;">Due ${due}</div>
         </td>
       </tr>`
@@ -262,11 +271,11 @@ function buildBatchEmailHtml(params: BatchReminderParams): string {
           <span style="font-size:14px; font-weight:600; color:#17191C;">MiddleDoc</span>
         </div>
       </div>
-      <p style="font-size:14.5px; line-height:1.6; color:#3A3D42; margin:0 0 14px;">Hi ${params.clientName},</p>
+      <p style="font-size:14.5px; line-height:1.6; color:#3A3D42; margin:0 0 14px;">Hi ${escapeHtml(params.clientName)},</p>
       <p style="font-size:14.5px; line-height:1.6; color:#3A3D42; margin:0 0 18px;">You have ${params.requests.length} pending request${params.requests.length === 1 ? '' : 's'} that still need your documents:</p>
       <table style="width:100%; border-collapse:collapse; margin-bottom:22px;">${requestRows}</table>
       <a href="${BASE_URL}/portal/${params.requests[0].shareToken}" style="display:inline-block; background:#0F7A63; color:#fff; font-size:14.5px; font-weight:600; padding:12px 24px; border-radius:9px; text-decoration:none; margin-bottom:22px;">View your requests</a>
-      <p style="font-size:14.5px; line-height:1.6; color:#3A3D42; margin:0;">${params.accountantName}</p>
+      <p style="font-size:14.5px; line-height:1.6; color:#3A3D42; margin:0;">${escapeHtml(params.accountantName)}</p>
     </div>
   </div>
 </div>

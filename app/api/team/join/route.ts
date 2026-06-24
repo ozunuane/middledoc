@@ -32,6 +32,12 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'This invitation has expired' }, { status: 400 })
       }
 
+      // Verify the joining user's email matches the invitation
+      const user = await getOne<{ email: string }>('SELECT email FROM accountants WHERE id = $1', [accountantId])
+      if (user && invitation.email.toLowerCase() !== user.email.toLowerCase()) {
+        return NextResponse.json({ error: 'This invitation was sent to a different email address' }, { status: 403 })
+      }
+
       // Check if user is already in a team
       const existingMembership = await getOne<{ id: number }>(
         `SELECT id FROM team_members WHERE accountant_id = $1`,

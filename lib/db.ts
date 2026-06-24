@@ -10,7 +10,9 @@ export function getPool(): Pool {
     }
     pool = new Pool({
       connectionString: databaseUrl,
-      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+      ssl: process.env.NODE_ENV === 'production'
+        ? { rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED !== 'false' }
+        : false,
     })
   }
   return pool
