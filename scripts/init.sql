@@ -101,3 +101,23 @@ VALUES
   (1, 2, 'Quarterly Income Statement', 'Q1 2026 financial statements needed', '2026-02-28', 'received'),
   (1, 3, 'Expense Receipts', 'All receipts from January 2026', '2026-02-15', 'overdue')
 ON CONFLICT DO NOTHING;
+
+-- Document rejection fields
+ALTER TABLE document_uploads ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'uploaded';
+ALTER TABLE document_uploads ADD COLUMN IF NOT EXISTS rejection_reason TEXT;
+ALTER TABLE document_uploads ADD COLUMN IF NOT EXISTS rejected_at TIMESTAMP;
+
+-- Email templates table for customizable templates
+CREATE TABLE IF NOT EXISTS email_templates (
+  id SERIAL PRIMARY KEY,
+  accountant_id INTEGER NOT NULL REFERENCES accountants(id) ON DELETE CASCADE,
+  template_type VARCHAR(50) NOT NULL,  -- 'initial', '7day', '3day', 'deadline', 'rejection'
+  subject TEXT NOT NULL,
+  body_text TEXT NOT NULL,
+  cta_text VARCHAR(100),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(accountant_id, template_type)
+);
+
+CREATE INDEX IF NOT EXISTS idx_email_templates_accountant_id ON email_templates(accountant_id);

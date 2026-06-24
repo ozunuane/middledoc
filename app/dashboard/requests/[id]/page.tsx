@@ -8,9 +8,20 @@ import { StatusBadge } from '@/components/ui/StatusBadge'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import type { DocumentRequest, Client } from '@/types/index'
 
+interface UploadedFile {
+  id: number
+  file_name: string
+  file_size?: number
+  uploaded_at: string
+  status?: 'uploaded' | 'rejected'
+  rejection_reason?: string
+  rejected_at?: string
+}
+
 interface RequestDetail extends DocumentRequest {
   accountant_name?: string
   accountant_email?: string
+  uploaded_files?: UploadedFile[]
   documents?: Array<{
     id: number
     name: string
@@ -31,7 +42,7 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
   const { user } = useAuth(true)
 
   const [requestId, setRequestId] = useState<string>('')
-  const { data: request, loading } = useApi<RequestDetail>(`/api/request-details/${requestId}`, {
+  const { data: request, loading, refetch } = useApi<RequestDetail>(`/api/request-details/${requestId}`, {
     skip: !requestId,
   })
   const { data: clients } = useApi<Client[]>('/api/clients')
@@ -42,6 +53,11 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
 
   const [sending, setSending] = useState(false)
   const [sendResult, setSendResult] = useState<string | null>(null)
+
+  // Rejection state
+  const [rejectingFileId, setRejectingFileId] = useState<number | null>(null)
+  const [rejectReason, setRejectReason] = useState('')
+  const [rejecting, setRejecting] = useState(false)
 
   const handleSendReminder = async () => {
     if (sending || !request) return
@@ -64,6 +80,33 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
     } finally {
       setSending(false)
       setTimeout(() => setSendResult(null), 3000)
+    }
+  }
+
+  const handleReject = async () => {
+    if (rejecting || !rejectingFileId || !rejectReason.trim()) return
+    setRejecting(true)
+    try {
+      const res = await fetch('/api/documents/reject', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          document_id: rejectingFileId,
+          reason: rejectReason.trim(),
+        }),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setRejectingFileId(null)
+        setRejectReason('')
+        refetch()
+      } else {
+        alert(data.error || 'Failed to reject document')
+      }
+    } catch {
+      alert('Network error -- please try again')
+    } finally {
+      setRejecting(false)
     }
   }
 
@@ -287,6 +330,51 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
                 )}
               </div>
             </div>
+
+            {/* Uploaded files with rejection support */}
+            {request.uploaded_files && request.uploaded_files.length > 0 && (
+              <div className="bg-white border border-neutral-200 rounded-card overflow-hidden mt-6">
+                <div className="px-[22px] py-[18px] border-b border-[#EFEAE0]">
+                  <h2 className="text-body-md font-semibold text-neutral-900">Uploaded files</h2>
+                </div>
+                <div className="divide-y divide-neutral-200">
+                  {request.uploaded_files.map((file) => (
+                    <div key={file.id} className="px-[22px] py-[15px]">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="text-body-md font-medium text-neutral-900 truncate">{file.file_name}</span>
+                            {file.status === 'rejected' && (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-red-50 text-red-700 border border-red-200">
+                                Rejected
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-xs text-neutral-500 mt-1">
+                            {formatBytes(file.file_size)} · uploaded {formatDateTime(file.uploaded_at)}
+                          </div>
+                          {file.status === 'rejected' && file.rejection_reason && (
+                            <div className="text-xs text-red-600 mt-1">
+                              Rejected: {file.rejection_reason}
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 ml-4">
+                          {file.status !== 'rejected' && (
+                            <button
+                              onClick={() => { setRejectingFileId(file.id); setRejectReason('') }}
+                              className="text-xs font-medium text-red-600 hover:text-red-700 px-3 py-1.5 rounded-button border border-red-200 hover:bg-red-50 transition"
+                            >
+                              Reject
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Right: Share link and activity */}
@@ -344,6 +432,37 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
           </div>
         </div>
       </div>
+
+      {/* Rejection modal */}
+      {rejectingFileId !== null && (
+        <div className="fixed inset-0 bg-neutral-900/40 flex items-center justify-center z-50">
+          <div className="bg-neutral-50 rounded-[16px] shadow-hero max-w-sm w-full p-6">
+            <h3 className="text-lg font-serif text-neutral-900 mb-2">Reject document</h3>
+            <p className="text-[13.5px] text-neutral-500 mb-4">The client will be notified and asked to re-upload.</p>
+            <textarea
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              placeholder="Reason for rejection (e.g., 'Wrong tax year', 'File is corrupted')"
+              className="w-full bg-white border border-neutral-300 rounded-[9px] px-[14px] py-[12px] text-[13px] h-24 resize-none mb-4 focus:outline-none focus:border-primary-600"
+            />
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => { setRejectingFileId(null); setRejectReason('') }}
+                className="text-xs font-medium text-neutral-700 px-4 py-2.5 rounded-button border border-neutral-300 hover:bg-neutral-100 transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleReject}
+                disabled={!rejectReason.trim() || rejecting}
+                className="text-xs font-semibold text-white bg-red-600 px-4 py-2.5 rounded-button hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {rejecting ? 'Rejecting...' : 'Reject & notify'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

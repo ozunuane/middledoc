@@ -33,14 +33,29 @@ export interface DocumentUpload {
   file_path: string
   file_size: number
   uploaded_at: string
+  status: 'uploaded' | 'rejected'
+  rejection_reason?: string
+  rejected_at?: string
 }
 
 export interface EmailReminder {
   id: number
   request_id: number
   client_id: number
-  reminder_type: 'initial' | '7day' | '3day' | 'deadline'
+  reminder_type: 'initial' | '7day' | '3day' | 'deadline' | 'rejection'
   sent_at: string
+}
+
+export interface EmailTemplate {
+  id?: number
+  accountant_id?: number
+  template_type: string
+  subject: string
+  body_text: string
+  cta_text?: string
+  is_custom?: boolean
+  created_at?: string
+  updated_at?: string
 }
 
 export interface Document {

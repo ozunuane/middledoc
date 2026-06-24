@@ -45,7 +45,7 @@ export async function GET(
       }
 
       const uploadsResult = await query(
-        `SELECT id, file_name, file_size, uploaded_at
+        `SELECT id, file_name, file_size, uploaded_at, status, rejection_reason, rejected_at
          FROM document_uploads
          WHERE request_id = $1
          ORDER BY uploaded_at ASC`,

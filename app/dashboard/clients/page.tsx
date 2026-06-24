@@ -343,7 +343,7 @@ export default function ClientsPage() {
                     </button>
 
                     {openMenuId === client.id && (
-                      <div className="absolute right-0 top-8 bg-white border border-neutral-200 rounded-[9px] shadow-medium py-1 w-40 z-50">
+                      <div className="absolute right-0 bottom-full mb-1 bg-white border border-neutral-200 rounded-[9px] shadow-dark py-1 w-40 z-[60]">
                         <button
                           onClick={(e) => { e.stopPropagation(); setEditClient(client); setOpenMenuId(null) }}
                           className="w-full text-left px-4 py-2 text-[13px] text-neutral-900 hover:bg-neutral-50 transition cursor-pointer"

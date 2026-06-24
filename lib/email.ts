@@ -10,7 +10,7 @@ if (SENDGRID_API_KEY) {
   sgMail.setApiKey(SENDGRID_API_KEY)
 }
 
-export type ReminderType = 'initial' | '7day' | '3day' | 'deadline'
+export type ReminderType = 'initial' | '7day' | '3day' | 'deadline' | 'rejection'
 
 interface SendReminderParams {
   clientEmail: string
@@ -22,6 +22,51 @@ interface SendReminderParams {
   shareToken: string
   pendingItems?: string[]
   reminderType: ReminderType
+  /** Only used for rejection emails */
+  fileName?: string
+  rejectionReason?: string
+}
+
+// ---------------------------------------------------------------------------
+// Default email templates
+// ---------------------------------------------------------------------------
+
+export interface DefaultTemplate {
+  subject: string
+  body: string
+  cta: string
+}
+
+export const DEFAULT_TEMPLATES: Record<string, DefaultTemplate> = {
+  initial: {
+    subject: 'A few documents for your {requestTitle}',
+    body: "Tax season's underway and I've put together everything I'll need for {requestTitle}. There's no rush yet -- the documents are due {dueDate}, but I wanted to get this to you early so you can gather things at your own pace.\n\nEverything's listed on one page. You can upload as you go -- no account or password needed.",
+    cta: "See what's needed",
+  },
+  '7day': {
+    subject: 'A few documents for your {requestTitle}',
+    body: "Tax season's underway and I've put together everything I'll need for {requestTitle}. There's no rush yet -- the documents are due {dueDate}, but I wanted to get this to you early so you can gather things at your own pace.\n\nEverything's listed on one page. You can upload as you go -- no account or password needed.",
+    cta: "See what's needed",
+  },
+  '3day': {
+    subject: '{pendingCount} document(s) left before the deadline',
+    body: "You're almost done. To wrap up {requestTitle} by {dueDate}, I still need a few items.",
+    cta: 'Upload remaining',
+  },
+  deadline: {
+    subject: "Today's the deadline -- but we have options",
+    body: "Today's the filing deadline for {requestTitle}. No problem if today's tight -- if you can get them to me by end of day, we'll stay on schedule.\n\nIf you're stuck on anything or need an extension, just reply to this email and we'll sort it out together.",
+    cta: 'Upload now',
+  },
+  rejection: {
+    subject: 'Action needed: {fileName} was not accepted',
+    body: 'I reviewed {fileName} and unfortunately need a different version. Here\'s why:\n\n{rejectionReason}\n\nPlease re-upload through the link below.',
+    cta: 'Re-upload document',
+  },
+}
+
+export function getDefaultTemplates(): Record<string, DefaultTemplate> {
+  return { ...DEFAULT_TEMPLATES }
 }
 
 interface BatchReminderParams {
@@ -43,11 +88,12 @@ function getBarColor(reminderType: ReminderType): string {
     case '3day':
       return '#E6A23C'
     case 'deadline':
+    case 'rejection':
       return '#C0492F'
   }
 }
 
-function getSubject(reminderType: ReminderType, requestTitle: string, pendingItems?: string[]): string {
+function getSubject(reminderType: ReminderType, requestTitle: string, pendingItems?: string[], fileName?: string): string {
   switch (reminderType) {
     case 'initial':
       return `A few documents for your ${requestTitle}`
@@ -61,6 +107,8 @@ function getSubject(reminderType: ReminderType, requestTitle: string, pendingIte
     }
     case 'deadline':
       return `Today's the deadline -- but we have options`
+    case 'rejection':
+      return `Action needed: ${fileName ?? 'your document'} was not accepted`
   }
 }
 
@@ -110,6 +158,17 @@ function getBodyHtml(params: SendReminderParams): string {
         <p style="font-size:14.5px; line-height:1.6; color:#3A3D42; margin:0 0 14px;">Today's the filing deadline for <strong style="color:#17191C;">${params.requestTitle}</strong>. No problem if today's tight &mdash; if you can get them to me by end of day, we'll stay on schedule.</p>
         <p style="font-size:14.5px; line-height:1.6; color:#3A3D42; margin:0 0 22px;">If you're stuck on anything or need an extension, just reply to this email and we'll sort it out together.</p>
       `
+
+    case 'rejection':
+      return `
+        <p style="font-size:14.5px; line-height:1.6; color:#3A3D42; margin:0 0 14px;">Hi ${params.clientName},</p>
+        <p style="font-size:14.5px; line-height:1.6; color:#3A3D42; margin:0 0 14px;">I reviewed <strong style="color:#17191C;">${params.fileName ?? 'your document'}</strong> and unfortunately need a different version.</p>
+        <div style="background:#FEF2F0; border:1px solid #F0C0B8; border-radius:10px; padding:14px 16px; margin-bottom:20px;">
+          <p style="font-size:14px; color:#8B2517; margin:0; font-weight:600;">Reason</p>
+          <p style="font-size:14px; color:#3A3D42; margin:6px 0 0;">${params.rejectionReason ?? ''}</p>
+        </div>
+        <p style="font-size:14.5px; line-height:1.6; color:#3A3D42; margin:0 0 22px;">Please re-upload through the link below.</p>
+      `
   }
 }
 
@@ -122,6 +181,8 @@ function getCtaText(reminderType: ReminderType, pendingCount?: number): string {
       return pendingCount ? `Upload the last ${pendingCount}` : 'Upload remaining'
     case 'deadline':
       return 'Upload now'
+    case 'rejection':
+      return 'Re-upload document'
   }
 }
 
@@ -218,7 +279,7 @@ function buildBatchEmailHtml(params: BatchReminderParams): string {
 export async function sendReminderEmail(
   params: SendReminderParams
 ): Promise<{ success: boolean; error?: string }> {
-  const subject = getSubject(params.reminderType, params.requestTitle, params.pendingItems)
+  const subject = getSubject(params.reminderType, params.requestTitle, params.pendingItems, params.fileName)
   const html = buildEmailHtml(params)
 
   if (!SENDGRID_API_KEY) {
