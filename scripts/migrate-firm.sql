@@ -1,0 +1,1 @@
+ALTER TABLE accountants ADD COLUMN IF NOT EXISTS firm_name VARCHAR(255);

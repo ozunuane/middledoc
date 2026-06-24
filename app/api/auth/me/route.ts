@@ -5,7 +5,7 @@ import { query } from '@/lib/db'
 export async function GET(request: NextRequest) {
   return withAuth(request, async (req, accountantId) => {
     const result = await query(
-      'SELECT id, email, name FROM accountants WHERE id = $1',
+      'SELECT id, email, name, firm_name FROM accountants WHERE id = $1',
       [accountantId]
     )
 

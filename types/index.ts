@@ -2,6 +2,7 @@ export interface Accountant {
   id: number
   email: string
   name: string
+  firm_name?: string
 }
 
 export interface Client {

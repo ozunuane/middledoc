@@ -172,11 +172,12 @@ export default function ClientsPage() {
             <span className="text-sm text-neutral-900 font-semibold">Clients</span>
             <Link href="/dashboard/requests" className="text-sm text-neutral-500 hover:text-neutral-900 transition">Requests</Link>
             <Link href="/dashboard/documents" className="text-sm text-neutral-500 hover:text-neutral-900 transition">Documents</Link>
+            <Link href="/dashboard/settings" className="text-sm text-neutral-500 hover:text-neutral-900 transition">Settings</Link>
           </div>
         </div>
 
         {/* User Avatar */}
-        <Link href="/dashboard/settings/email-templates" className="cursor-pointer">
+        <Link href="/dashboard/settings" className="cursor-pointer">
           <div className="w-8 h-8 rounded-full bg-primary-600 text-white flex items-center justify-center text-xs font-semibold">
             {user?.name ? user.name.split(' ').map(n => n[0]).join('') : ''}
           </div>

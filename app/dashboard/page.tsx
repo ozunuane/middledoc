@@ -163,6 +163,7 @@ export default function DashboardPage() {
               <Link href="/dashboard/clients" className="text-sm text-neutral-500 hover:text-neutral-900 transition cursor-pointer">Clients</Link>
               <Link href="/dashboard/requests" className="text-sm text-neutral-500 hover:text-neutral-900 transition cursor-pointer">Requests</Link>
               <Link href="/dashboard/documents" className="text-sm text-neutral-500 hover:text-neutral-900 transition cursor-pointer">Documents</Link>
+              <Link href="/dashboard/settings" className="text-sm text-neutral-500 hover:text-neutral-900 transition cursor-pointer">Settings</Link>
             </div>
           </div>
 
@@ -171,7 +172,7 @@ export default function DashboardPage() {
             <button onClick={() => setShowNewRequest(true)} className="bg-primary-600 text-white text-[13px] font-semibold px-4 py-[9px] rounded-lg hover:bg-primary-700 transition cursor-pointer">
               + New request
             </button>
-            <Link href="/dashboard/settings/email-templates" className="cursor-pointer">
+            <Link href="/dashboard/settings" className="cursor-pointer">
               <div className="w-8 h-8 rounded-full bg-primary-600 text-white flex items-center justify-center text-xs font-semibold">
                 {user.name.split(' ').map(n => n[0]).join('')}
               </div>
