@@ -14,11 +14,13 @@ export function useApi<T>(
   const optionsRef = useRef(options)
   optionsRef.current = options
 
+  const skip = options?.skip ?? false
+
   const call = useCallback(async (): Promise<T> => {
-    const opts = optionsRef.current
     setLoading(true)
     setError(null)
     try {
+      const opts = optionsRef.current
       const res = await fetch(url, {
         method: opts?.method ?? 'GET',
         body: opts?.body !== undefined ? JSON.stringify(opts.body) : undefined,
@@ -41,10 +43,9 @@ export function useApi<T>(
   }, [url])
 
   useEffect(() => {
-    if (optionsRef.current?.skip) return
+    if (skip) return
     void call()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [url])
+  }, [url, skip, call])
 
   return { data, loading, error, refetch: call }
 }
