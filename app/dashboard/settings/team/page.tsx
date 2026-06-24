@@ -396,7 +396,7 @@ export default function TeamPage() {
       const res = await fetch('/api/team/groups/members', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ group_id: groupId, member_id: Number(selectedGroupMemberId) }),
+        body: JSON.stringify({ group_id: groupId, team_member_id: Number(selectedGroupMemberId) }),
       })
       if (res.ok) {
         showToast('Member added to group')
@@ -418,7 +418,7 @@ export default function TeamPage() {
       const res = await fetch('/api/team/groups/members', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ group_id: groupId, member_id: memberId }),
+        body: JSON.stringify({ group_id: groupId, team_member_id: memberId }),
       })
       if (res.ok) {
         showToast('Member removed from group')
