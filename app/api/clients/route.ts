@@ -39,11 +39,70 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
-  return withAuth(request, async (_req, accountantId) => {
+  return withAuth(request, async (req, accountantId) => {
     try {
+      const searchParams = req.nextUrl.searchParams
+      const pageParam = searchParams.get('page')
+      const limitParam = searchParams.get('limit')
+      const sortParam = searchParams.get('sort')
+      const orderParam = searchParams.get('order')
+      const searchTerm = searchParams.get('search')
+
+      // Validate sort column
+      const validSorts: Record<string, string> = {
+        name: 'name',
+        email: 'email',
+        created_at: 'created_at',
+      }
+      const sortColumn = validSorts[sortParam ?? 'name'] ?? 'name'
+
+      // Validate order direction
+      const orderDirection = orderParam === 'desc' ? 'DESC' : 'ASC'
+
+      // Build WHERE clause
+      const conditions: string[] = ['accountant_id = $1']
+      const values: (string | number)[] = [accountantId]
+
+      if (searchTerm) {
+        values.push(`%${searchTerm}%`)
+        const idx = values.length
+        conditions.push(`(name ILIKE $${idx} OR email ILIKE $${idx})`)
+      }
+
+      const whereClause = conditions.join(' AND ')
+
+      // If page is provided, return paginated response
+      if (pageParam) {
+        const page = Math.max(1, parseInt(pageParam, 10) || 1)
+        const limit = Math.min(200, Math.max(1, parseInt(limitParam ?? '50', 10) || 50))
+        const offset = (page - 1) * limit
+
+        const countResult = await query(
+          `SELECT COUNT(*) FROM clients WHERE ${whereClause}`,
+          values
+        )
+        const total = parseInt(countResult.rows[0].count, 10)
+        const totalPages = Math.ceil(total / limit)
+
+        const dataValues = [...values, limit, offset]
+        const result = await query(
+          `SELECT id, email, name, created_at FROM clients WHERE ${whereClause} ORDER BY ${sortColumn} ${orderDirection} LIMIT $${dataValues.length - 1} OFFSET $${dataValues.length}`,
+          dataValues
+        )
+
+        return NextResponse.json({
+          data: result.rows,
+          total,
+          page,
+          limit,
+          totalPages,
+        })
+      }
+
+      // Backward compatible: return plain array
       const result = await query(
-        'SELECT id, email, name, created_at FROM clients WHERE accountant_id = $1 ORDER BY created_at DESC',
-        [accountantId]
+        `SELECT id, email, name, created_at FROM clients WHERE ${whereClause} ORDER BY ${sortColumn} ${orderDirection}`,
+        values
       )
       return NextResponse.json(result.rows)
     } catch (error) {
