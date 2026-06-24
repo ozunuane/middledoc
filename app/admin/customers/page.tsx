@@ -39,8 +39,25 @@ export default function AdminCustomersPage() {
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
   const [searchInput, setSearchInput] = useState('')
+  const [sortField, setSortField] = useState('created_at')
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
   const [loading, setLoading] = useState(true)
   const limit = 50
+
+  const handleSort = (field: string) => {
+    if (sortField === field) {
+      setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortField(field)
+      setSortOrder(field === 'name' ? 'asc' : 'desc')
+    }
+    setPage(1)
+  }
+
+  const sortIndicator = (field: string) => {
+    if (sortField !== field) return ''
+    return sortOrder === 'asc' ? ' ↑' : ' ↓'
+  }
 
   const fetchCustomers = useCallback(async () => {
     setLoading(true)
@@ -48,8 +65,8 @@ export default function AdminCustomersPage() {
       const params = new URLSearchParams({
         page: String(page),
         limit: String(limit),
-        sort: 'created_at',
-        order: 'desc',
+        sort: sortField,
+        order: sortOrder,
       })
       if (search) params.set('search', search)
 
@@ -65,7 +82,7 @@ export default function AdminCustomersPage() {
     } finally {
       setLoading(false)
     }
-  }, [page, search])
+  }, [page, search, sortField, sortOrder])
 
   useEffect(() => {
     fetchCustomers()
@@ -148,13 +165,13 @@ export default function AdminCustomersPage() {
           <table className="w-full text-left">
             <thead>
               <tr className="bg-neutral-100 text-[12px] text-neutral-500 uppercase tracking-wide">
-                <th className="px-5 py-3 font-medium">Name</th>
-                <th className="px-5 py-3 font-medium">Email</th>
+                <th className="px-5 py-3 font-medium cursor-pointer hover:text-neutral-700 transition select-none" onClick={() => handleSort('name')}>Name{sortIndicator('name')}</th>
+                <th className="px-5 py-3 font-medium cursor-pointer hover:text-neutral-700 transition select-none" onClick={() => handleSort('email')}>Email{sortIndicator('email')}</th>
                 <th className="px-5 py-3 font-medium">Firm</th>
-                <th className="px-5 py-3 font-medium text-right">Clients</th>
-                <th className="px-5 py-3 font-medium text-right">Requests</th>
-                <th className="px-5 py-3 font-medium text-right">Storage</th>
-                <th className="px-5 py-3 font-medium">Joined</th>
+                <th className="px-5 py-3 font-medium text-right cursor-pointer hover:text-neutral-700 transition select-none" onClick={() => handleSort('client_count')}>Clients{sortIndicator('client_count')}</th>
+                <th className="px-5 py-3 font-medium text-right cursor-pointer hover:text-neutral-700 transition select-none" onClick={() => handleSort('request_count')}>Requests{sortIndicator('request_count')}</th>
+                <th className="px-5 py-3 font-medium text-right cursor-pointer hover:text-neutral-700 transition select-none" onClick={() => handleSort('storage_used')}>Storage{sortIndicator('storage_used')}</th>
+                <th className="px-5 py-3 font-medium cursor-pointer hover:text-neutral-700 transition select-none" onClick={() => handleSort('created_at')}>Joined{sortIndicator('created_at')}</th>
                 <th className="px-5 py-3 font-medium text-right">Actions</th>
               </tr>
             </thead>
