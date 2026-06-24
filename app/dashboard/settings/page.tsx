@@ -161,6 +161,24 @@ export default function SettingsPage() {
             Manage templates &rarr;
           </Link>
         </div>
+
+        {/* Team Section */}
+        <div className="bg-white border border-neutral-200 rounded-card p-6 mb-6">
+          <h2 className="text-body-md font-semibold text-neutral-900 mb-1">Team</h2>
+          <p className="text-[13px] text-neutral-500 mb-4">Manage your team members, groups, and access control.</p>
+          <Link href="/dashboard/settings/team" className="text-[13px] text-primary-600 font-semibold hover:text-primary-700 cursor-pointer">
+            Manage team &rarr;
+          </Link>
+        </div>
+
+        {/* Notification Emails Section */}
+        <div className="bg-white border border-neutral-200 rounded-card p-6 mb-6">
+          <h2 className="text-body-md font-semibold text-neutral-900 mb-1">Notification Emails (BCC)</h2>
+          <p className="text-[13px] text-neutral-500 mb-4">Add email addresses to receive copies of all client communications.</p>
+          <Link href="/dashboard/settings/notifications" className="text-[13px] text-primary-600 font-semibold hover:text-primary-700 cursor-pointer">
+            Manage notification emails &rarr;
+          </Link>
+        </div>
       </div>
 
       {/* Success toast */}
