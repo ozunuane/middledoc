@@ -39,28 +39,28 @@ export interface DefaultTemplate {
 
 export const DEFAULT_TEMPLATES: Record<string, DefaultTemplate> = {
   initial: {
-    subject: 'A few documents for your {requestTitle}',
-    body: "Tax season's underway and I've put together everything I'll need for {requestTitle}. There's no rush yet -- the documents are due {dueDate}, but I wanted to get this to you early so you can gather things at your own pace.\n\nEverything's listed on one page. You can upload as you go -- no account or password needed.",
+    subject: 'Documents needed for {requestTitle}',
+    body: "I've put together a list of documents I'll need for {requestTitle}. There's no rush yet — everything is due by {dueDate}, but I wanted to send this early so you can gather things at your own pace.\n\nEverything's listed on one page. You can upload as you go — no account or password needed.",
     cta: "See what's needed",
   },
   '7day': {
-    subject: 'A few documents for your {requestTitle}',
-    body: "Tax season's underway and I've put together everything I'll need for {requestTitle}. There's no rush yet -- the documents are due {dueDate}, but I wanted to get this to you early so you can gather things at your own pace.\n\nEverything's listed on one page. You can upload as you go -- no account or password needed.",
-    cta: "See what's needed",
+    subject: 'Reminder: {requestTitle} due {dueDate}',
+    body: "Just a friendly reminder that I'll need the documents for {requestTitle} by {dueDate}. You can upload them anytime — no account or login required.\n\nIf you have any questions, just reply to this email.",
+    cta: "View & upload",
   },
   '3day': {
-    subject: '{pendingCount} document(s) left before the deadline',
-    body: "You're almost done. To wrap up {requestTitle} by {dueDate}, I still need a few items.",
+    subject: 'Due soon: {requestTitle}',
+    body: "Quick heads up — {requestTitle} is due in a few days ({dueDate}). If you haven't had a chance to upload everything yet, there's still time.\n\nClick below to see what's still needed.",
     cta: 'Upload remaining',
   },
   deadline: {
-    subject: "Today's the deadline -- but we have options",
-    body: "Today's the filing deadline for {requestTitle}. No problem if today's tight -- if you can get them to me by end of day, we'll stay on schedule.\n\nIf you're stuck on anything or need an extension, just reply to this email and we'll sort it out together.",
+    subject: "Today's the deadline for {requestTitle}",
+    body: "Today is the deadline for {requestTitle}. If you can get the remaining documents to me by end of day, we'll stay on track.\n\nIf you need more time or have any questions, just reply to this email and we'll work it out.",
     cta: 'Upload now',
   },
   rejection: {
-    subject: 'Action needed: {fileName} was not accepted',
-    body: 'I reviewed {fileName} and unfortunately need a different version. Here\'s why:\n\n{rejectionReason}\n\nPlease re-upload through the link below.',
+    subject: 'Action needed: {fileName} requires re-upload',
+    body: 'I reviewed {fileName} and unfortunately need a different version. Here\'s why:\n\n{rejectionReason}\n\nPlease upload a corrected file through the link below.',
     cta: 'Re-upload document',
   },
 }
@@ -155,7 +155,7 @@ function getBodyHtml(params: SendReminderParams): string {
     case 'deadline':
       return `
         <p style="font-size:14.5px; line-height:1.6; color:#3A3D42; margin:0 0 14px;">Hi ${params.clientName},</p>
-        <p style="font-size:14.5px; line-height:1.6; color:#3A3D42; margin:0 0 14px;">Today's the filing deadline for <strong style="color:#17191C;">${params.requestTitle}</strong>. No problem if today's tight &mdash; if you can get them to me by end of day, we'll stay on schedule.</p>
+        <p style="font-size:14.5px; line-height:1.6; color:#3A3D42; margin:0 0 14px;">Today is the deadline for <strong style="color:#17191C;">${params.requestTitle}</strong>. If you can get the remaining documents to me by end of day, we'll stay on track.</p>
         <p style="font-size:14.5px; line-height:1.6; color:#3A3D42; margin:0 0 22px;">If you're stuck on anything or need an extension, just reply to this email and we'll sort it out together.</p>
       `
 

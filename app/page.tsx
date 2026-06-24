@@ -1,8 +1,24 @@
 'use client'
 
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from "next/link"
 
 export default function Home() {
+  const router = useRouter()
+  const [checked, setChecked] = useState(false)
+
+  useEffect(() => {
+    fetch('/api/auth/me')
+      .then(res => {
+        if (res.ok) router.push('/dashboard')
+        else setChecked(true)
+      })
+      .catch(() => setChecked(true))
+  }, [router])
+
+  if (!checked) return null
+
   return (
     <div className="min-h-screen bg-neutral-50">
       {/* Navigation */}
