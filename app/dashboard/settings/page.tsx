@@ -174,6 +174,15 @@ export default function SettingsPage() {
           </form>
         </div>
 
+        {/* Billing & Plan Section */}
+        <div className="bg-white border border-neutral-200 rounded-card p-6 mb-6">
+          <h2 className="text-body-md font-semibold text-neutral-900 mb-1">Billing & Plan</h2>
+          <p className="text-[13px] text-neutral-500 mb-4">Manage your subscription and billing.</p>
+          <Link href="/dashboard/settings/billing" className="text-[13px] text-primary-600 font-semibold hover:text-primary-700 cursor-pointer">
+            Manage billing &rarr;
+          </Link>
+        </div>
+
         {/* Email Templates Section */}
         <div className="bg-white border border-neutral-200 rounded-card p-6 mb-6">
           <div className="mb-4">

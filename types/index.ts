@@ -195,8 +195,39 @@ export interface Subscription {
   accountant_id: number
   plan_id: number
   status: 'active' | 'past_due' | 'cancelled' | 'trialing'
+  billing_interval: 'monthly' | 'annual'
   current_period_start: string
   current_period_end: string
+  cancel_at_period_end: boolean
+  cancelled_at?: string
+  paystack_subscription_code?: string
+  paystack_customer_code?: string
+  paystack_authorization_code?: string
+  paystack_email_token?: string
+  paystack_transaction_ref?: string
+}
+
+export interface BillingSubscription {
+  id: number
+  plan_id: number
+  status: 'active' | 'past_due' | 'cancelled' | 'trialing'
+  billing_interval: 'monthly' | 'annual'
+  current_period_start: string
+  current_period_end: string
+  cancel_at_period_end: boolean
+  cancelled_at?: string
+  paystack_subscription_code?: string
+  paystack_customer_code?: string
+  // Joined plan fields
+  slug?: string
+  display_name?: string
+  monthly_price_cents?: number
+  annual_price_cents?: number
+  max_clients?: number
+  max_storage_gb?: number
+  included_team_members?: number
+  max_team_members?: number
+  max_email_reminders_per_month?: number
 }
 
 export interface SuperAdmin {
