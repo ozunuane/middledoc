@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { query } from '@/lib/db'
+import { query, getOne } from '@/lib/db'
 import { writeFile, mkdir, rename } from 'fs/promises'
 import path from 'path'
 import { randomUUID } from 'crypto'
 import { checkStorageLimit } from '@/lib/plan-enforcement'
+import { classifyDocument } from '@/lib/ai-classify'
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10 MB
 const UPLOADS_BASE = '/app/uploads'
@@ -95,6 +96,19 @@ export async function POST(
 
     // Only move to final location if DB insert succeeded
     await rename(tempPath, absolutePath)
+
+    // Async AI classification (non-blocking)
+    const requestData = await getOne<{ checklist_items: string[] }>(
+      'SELECT checklist_items FROM document_requests WHERE id = $1',
+      [requestId]
+    )
+
+    void classifyDocument(
+      insertResult.rows[0].id,
+      absolutePath,
+      file.name,
+      requestData?.checklist_items || []
+    )
 
     return NextResponse.json(
       {

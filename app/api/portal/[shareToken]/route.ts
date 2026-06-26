@@ -26,6 +26,7 @@ export async function GET(
          dr.due_date,
          dr.status,
          dr.created_at,
+         dr.checklist_items,
          c.email AS client_email
        FROM document_requests dr
        JOIN clients c ON c.id = dr.client_id
@@ -53,6 +54,7 @@ export async function GET(
       created_at: row.created_at,
       uploaded_file_count: countResult.rows[0].file_count,
       client_email: row.client_email,
+      checklist_items: row.checklist_items || [],
     })
   } catch (error) {
     console.error('GET /api/portal/[shareToken] error:', error)

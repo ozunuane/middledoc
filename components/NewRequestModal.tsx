@@ -20,6 +20,12 @@ export function NewRequestModal({ isOpen, onClose, onRequestCreated }: NewReques
   const [description, setDescription] = useState('')
   const [dueDate, setDueDate] = useState('')
 
+  const [checklistItems, setChecklistItems] = useState<string[]>([])
+  const [newChecklistItem, setNewChecklistItem] = useState('')
+  const [priorYearCategories, setPriorYearCategories] = useState<Array<{ slug: string; display_name: string; count: number }>>([])
+  const [priorYearLoading, setPriorYearLoading] = useState(false)
+  const [showPriorYear, setShowPriorYear] = useState(true)
+
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -53,9 +59,31 @@ export function NewRequestModal({ isOpen, onClose, onRequestCreated }: NewReques
       setDescription('')
       setDueDate('')
       setSelectedTemplateId('')
+      setChecklistItems([])
+      setNewChecklistItem('')
+      setPriorYearCategories([])
+      setShowPriorYear(true)
       setError(null)
     }
   }, [isOpen])
+
+  // Fetch prior-year data when client is selected
+  useEffect(() => {
+    if (!clientId) {
+      setPriorYearCategories([])
+      return
+    }
+    setPriorYearLoading(true)
+    setShowPriorYear(true)
+    fetch(`/api/clients/${clientId}/prior-year`)
+      .then(async (res) => {
+        if (!res.ok) throw new Error('Failed')
+        const data = await res.json()
+        setPriorYearCategories(data.categories || [])
+      })
+      .catch(() => setPriorYearCategories([]))
+      .finally(() => setPriorYearLoading(false))
+  }, [clientId])
 
   const selectedTemplate = templates.find((t) => String(t.id) === selectedTemplateId)
   const selectedClient = clients.find((c) => String(c.id) === clientId)
@@ -66,7 +94,28 @@ export function NewRequestModal({ isOpen, onClose, onRequestCreated }: NewReques
     if (template) {
       setTitle(template.name)
       setDescription(template.description ?? '')
+      if (template.checklist_items.length > 0) {
+        setChecklistItems(template.checklist_items)
+      }
     }
+  }
+
+  const handleAddChecklistItem = () => {
+    const item = newChecklistItem.trim()
+    if (item && !checklistItems.includes(item)) {
+      setChecklistItems((prev) => [...prev, item])
+      setNewChecklistItem('')
+    }
+  }
+
+  const handleRemoveChecklistItem = (index: number) => {
+    setChecklistItems((prev) => prev.filter((_, i) => i !== index))
+  }
+
+  const handleUsePriorYear = () => {
+    const items = priorYearCategories.map((c) => c.display_name)
+    setChecklistItems(items)
+    setShowPriorYear(false)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -83,6 +132,7 @@ export function NewRequestModal({ isOpen, onClose, onRequestCreated }: NewReques
           title,
           description: description || undefined,
           due_date: dueDate,
+          checklist_items: checklistItems.length > 0 ? checklistItems : undefined,
         }),
       })
 
@@ -109,7 +159,7 @@ export function NewRequestModal({ isOpen, onClose, onRequestCreated }: NewReques
         if (e.target === e.currentTarget) onClose()
       }}
     >
-      <div className="bg-neutral-50 rounded-[16px] shadow-hero max-w-[560px] w-full">
+      <div className="bg-neutral-50 rounded-[16px] shadow-hero max-w-[560px] w-full max-h-[90vh] flex flex-col">
         {/* Header */}
         <div className="border-b border-neutral-200 px-[28px] py-[24px] flex items-center justify-between">
           <h2 className="font-serif text-[26px] text-neutral-900">New request</h2>
@@ -124,7 +174,7 @@ export function NewRequestModal({ isOpen, onClose, onRequestCreated }: NewReques
 
         {/* Form */}
         <form onSubmit={handleSubmit}>
-          <div className="px-[28px] py-[24px] flex flex-col gap-5">
+          <div className="px-[28px] py-[24px] flex flex-col gap-5 overflow-y-auto">
             {/* Error */}
             {error && (
               <div className="bg-danger-50 border border-danger-200 text-danger-700 text-[13px] rounded-[9px] px-[14px] py-[10px]">
@@ -226,6 +276,93 @@ export function NewRequestModal({ isOpen, onClose, onRequestCreated }: NewReques
                 placeholder="Describe what documents you need..."
                 className="bg-white border border-neutral-300 rounded-[9px] px-[14px] py-[12px] text-[14px] text-neutral-900 w-full resize-none focus:border-[1.5px] focus:border-primary-600 focus:shadow-focus outline-none"
               />
+            </div>
+
+            {/* Prior year smart suggestions */}
+            {clientId && showPriorYear && priorYearCategories.length > 0 && !priorYearLoading && (
+              <div className="bg-blue-50 border border-blue-200 rounded-[9px] px-[14px] py-[12px]">
+                <div className="text-[12px] font-semibold text-blue-800 mb-2">
+                  Based on prior requests, this client typically submits:
+                </div>
+                <div className="flex flex-wrap gap-1.5 mb-3">
+                  {priorYearCategories.map((cat) => (
+                    <span
+                      key={cat.slug}
+                      className="inline-flex items-center gap-1 text-[12px] text-blue-700 bg-blue-100 px-2 py-1 rounded-full"
+                    >
+                      <span className="text-blue-500 text-[10px]">&#10003;</span>
+                      {cat.display_name} ({cat.count})
+                    </span>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={handleUsePriorYear}
+                    className="text-[12px] font-semibold text-blue-700 bg-blue-100 hover:bg-blue-200 px-3 py-1.5 rounded-[7px] transition cursor-pointer"
+                  >
+                    Use as checklist
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowPriorYear(false)}
+                    className="text-[12px] text-blue-500 hover:text-blue-700 px-2 py-1.5 transition cursor-pointer"
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Checklist items editor */}
+            <div>
+              <label className="text-[13px] font-semibold text-neutral-700 block mb-[7px]">
+                Checklist items <span className="font-normal text-neutral-400">(optional)</span>
+              </label>
+              {checklistItems.length > 0 && (
+                <div className="space-y-1.5 mb-3">
+                  {checklistItems.map((item, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center gap-2 bg-white border border-neutral-200 rounded-[7px] px-3 py-2"
+                    >
+                      <span className="text-primary-600 text-xs">&#10003;</span>
+                      <span className="text-[13px] text-neutral-800 flex-1">{item}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveChecklistItem(idx)}
+                        className="text-neutral-400 hover:text-red-500 text-sm leading-none cursor-pointer"
+                        aria-label="Remove item"
+                      >
+                        &times;
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={newChecklistItem}
+                  onChange={(e) => setNewChecklistItem(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      handleAddChecklistItem()
+                    }
+                  }}
+                  placeholder="e.g. W-2, 1099-INT, Bank Statements..."
+                  className="bg-white border border-neutral-300 rounded-[9px] px-[14px] py-[10px] text-[13px] text-neutral-900 flex-1 focus:border-[1.5px] focus:border-primary-600 focus:shadow-focus outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={handleAddChecklistItem}
+                  disabled={!newChecklistItem.trim()}
+                  className="bg-white border border-neutral-300 text-neutral-700 text-[13px] font-medium px-3 py-[10px] rounded-[9px] hover:bg-neutral-100 transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  Add
+                </button>
+              </div>
             </div>
 
             {/* Due date */}

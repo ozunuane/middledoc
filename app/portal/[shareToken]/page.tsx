@@ -11,6 +11,7 @@ interface PortalRequest {
   accountant_name: string
   accountant_firm?: string
   document_types?: string[]
+  checklist_items?: string[]
 }
 
 interface UploadedFile {
@@ -284,9 +285,9 @@ export default function PortalPage({ params }: { params: Promise<{ shareToken: s
           )}
 
           {/* Checklist */}
-          {request.document_types && request.document_types.length > 0 && (
+          {((request.checklist_items && request.checklist_items.length > 0) || (request.document_types && request.document_types.length > 0)) && (
             <div className="space-y-[9px] mb-6">
-              {request.document_types.map((doc, idx) => {
+              {(request.checklist_items && request.checklist_items.length > 0 ? request.checklist_items : request.document_types || []).map((doc, idx) => {
                 const isUploaded = uploadedFiles.some(f => f.name.toLowerCase().includes(doc.toLowerCase()))
                 return (
                   <div

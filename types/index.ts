@@ -140,6 +140,21 @@ export interface RequestTemplate {
   is_default: boolean
 }
 
+export interface DocumentClassification {
+  id: number
+  upload_id: number
+  document_category: string
+  document_year?: number
+  confidence: number
+  issues: string[]
+  matched_checklist_item?: string
+  match_confidence?: number
+  processing_status: 'queued' | 'processing' | 'completed' | 'failed'
+  processing_error?: string
+  accountant_override?: string
+  category_display_name?: string
+}
+
 export interface ActivityLogEntry {
   id: number
   accountant_id: number

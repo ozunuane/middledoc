@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
   return withAuth(request, async (req, accountantId) => {
     try {
       const body = await req.json()
-      const { client_id, title, description, due_date } = body
+      const { client_id, title, description, due_date, checklist_items } = body
 
       if (!client_id || !title || !due_date) {
         return NextResponse.json(
@@ -35,11 +35,15 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Client not found or not owned by user' }, { status: 404 })
       }
 
+      const sanitizedChecklist = Array.isArray(checklist_items)
+        ? checklist_items.filter((item: unknown) => typeof item === 'string' && item.trim().length > 0)
+        : []
+
       const result = await query(
-        `INSERT INTO document_requests (accountant_id, client_id, title, description, due_date)
-         VALUES ($1, $2, $3, $4, $5)
-         RETURNING id, client_id, title, due_date, status, share_token, created_at`,
-        [accountantId, client_id, title, description ?? null, due_date]
+        `INSERT INTO document_requests (accountant_id, client_id, title, description, due_date, checklist_items)
+         VALUES ($1, $2, $3, $4, $5, $6)
+         RETURNING id, client_id, title, due_date, status, share_token, created_at, checklist_items`,
+        [accountantId, client_id, title, description ?? null, due_date, sanitizedChecklist]
       )
 
       const newRequest = result.rows[0]

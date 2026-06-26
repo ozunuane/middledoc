@@ -16,11 +16,22 @@ interface UploadedFile {
   status?: 'uploaded' | 'rejected'
   rejection_reason?: string
   rejected_at?: string
+  // Classification fields
+  document_category?: string
+  document_year?: number
+  confidence?: number
+  issues?: string[]
+  matched_checklist_item?: string
+  match_confidence?: number
+  classification_status?: 'queued' | 'processing' | 'completed' | 'failed'
+  accountant_override?: string
+  category_display_name?: string
 }
 
 interface RequestDetail extends DocumentRequest {
   accountant_name?: string
   accountant_email?: string
+  checklist_items?: string[]
   uploaded_files?: UploadedFile[]
   documents?: Array<{
     id: number
@@ -66,6 +77,69 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
 
   // Preview state
   const [previewFile, setPreviewFile] = useState<UploadedFile | null>(null)
+
+  // Classification override state
+  const [overrideFileId, setOverrideFileId] = useState<number | null>(null)
+  const [overrideCategory, setOverrideCategory] = useState('')
+  const [overriding, setOverriding] = useState(false)
+
+  const CATEGORY_OPTIONS = [
+    { slug: 'w2', label: 'W-2' }, { slug: '1099_nec', label: '1099-NEC' },
+    { slug: '1099_int', label: '1099-INT' }, { slug: '1099_div', label: '1099-DIV' },
+    { slug: '1099_b', label: '1099-B' }, { slug: '1099_r', label: '1099-R' },
+    { slug: '1099_misc', label: '1099-MISC' }, { slug: 'k1', label: 'K-1' },
+    { slug: 'w9', label: 'W-9' }, { slug: 'bank_statement', label: 'Bank Statement' },
+    { slug: 'credit_card_statement', label: 'Credit Card Statement' },
+    { slug: 'mortgage_statement', label: 'Mortgage Statement' },
+    { slug: 'property_tax', label: 'Property Tax Statement' },
+    { slug: 'profit_loss', label: 'Profit & Loss' }, { slug: 'balance_sheet', label: 'Balance Sheet' },
+    { slug: 'payroll_record', label: 'Payroll Record' }, { slug: 'invoice', label: 'Invoice' },
+    { slug: 'charity_receipt', label: 'Charitable Donation Receipt' },
+    { slug: 'medical_receipt', label: 'Medical Expense' },
+    { slug: 'business_expense', label: 'Business Expense Receipt' },
+    { slug: 'tax_return_prior', label: 'Prior Year Tax Return' },
+    { slug: 'id_document', label: 'ID / Government Document' },
+    { slug: 'insurance', label: 'Insurance Document' },
+    { slug: 'contract', label: 'Contract / Agreement' },
+    { slug: 'other', label: 'Other' },
+  ]
+
+  const handleConfirmClassification = async (uploadId: number, override?: string) => {
+    setOverriding(true)
+    try {
+      const res = await fetch('/api/classifications', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          upload_id: uploadId,
+          override_category: override || undefined,
+        }),
+      })
+      if (res.ok) {
+        setOverrideFileId(null)
+        setOverrideCategory('')
+        refetch()
+      }
+    } catch {
+      // silently fail
+    } finally {
+      setOverriding(false)
+    }
+  }
+
+  const handleReprocess = async (uploadId: number) => {
+    try {
+      await fetch('/api/classifications/reprocess', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ upload_id: uploadId }),
+      })
+      // Poll for update after a short delay
+      setTimeout(() => refetch(), 3000)
+    } catch {
+      // silently fail
+    }
+  }
 
   const handleSendReminder = async () => {
     if (sending || !request) return
@@ -365,15 +439,40 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
                   {request.uploaded_files.map((file) => {
                     const ext = getFileExtension(file.file_name)
                     const isPreviewable = ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)
+                    const confidencePct = file.confidence ? Math.round(file.confidence * 100) : null
                     return (
                       <div key={file.id} className="px-[22px] py-[15px]">
                         <div className="flex items-center justify-between">
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
                               <span className="text-body-md font-medium text-neutral-900 truncate">{file.file_name}</span>
                               {file.status === 'rejected' && (
                                 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-red-50 text-red-700 border border-red-200">
                                   Rejected
+                                </span>
+                              )}
+                              {/* Classification badge */}
+                              {file.classification_status === 'processing' && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                                  <span className="inline-block w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></span>
+                                  Analyzing...
+                                </span>
+                              )}
+                              {file.classification_status === 'completed' && file.category_display_name && (
+                                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold border ${
+                                  file.accountant_override
+                                    ? 'bg-green-50 text-green-700 border-green-200'
+                                    : confidencePct && confidencePct >= 80
+                                      ? 'bg-primary-50 text-primary-700 border-primary-200'
+                                      : 'bg-amber-50 text-amber-700 border-amber-200'
+                                }`}>
+                                  {file.category_display_name} {confidencePct !== null && !file.accountant_override ? `(${confidencePct}%)` : ''}
+                                  {file.document_year ? ` · ${file.document_year}` : ''}
+                                </span>
+                              )}
+                              {file.classification_status === 'failed' && (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-red-50 text-red-600 border border-red-200">
+                                  Classification failed
                                 </span>
                               )}
                             </div>
@@ -385,8 +484,49 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
                                 Rejected: {file.rejection_reason}
                               </div>
                             )}
+                            {/* Checklist match */}
+                            {file.matched_checklist_item && (
+                              <div className="text-xs text-green-700 mt-1 flex items-center gap-1">
+                                <span className="text-green-600 font-bold">&#10003;</span> Matches: {file.matched_checklist_item}
+                              </div>
+                            )}
+                            {/* Issues */}
+                            {file.issues && file.issues.length > 0 && (
+                              <div className="text-xs text-amber-600 mt-1 flex items-center gap-1">
+                                <span title={file.issues.join('; ')}>&#9888; {file.issues[0]}{file.issues.length > 1 ? ` (+${file.issues.length - 1} more)` : ''}</span>
+                              </div>
+                            )}
                           </div>
-                          <div className="flex items-center gap-2 ml-4">
+                          <div className="flex items-center gap-2 ml-4 flex-shrink-0">
+                            {/* Classification actions */}
+                            {file.classification_status === 'completed' && !file.accountant_override && (
+                              <>
+                                <button
+                                  onClick={() => handleConfirmClassification(file.id)}
+                                  disabled={overriding}
+                                  className="text-xs text-green-600 hover:text-green-700 cursor-pointer"
+                                  title="Confirm classification"
+                                >
+                                  Confirm
+                                </button>
+                                <button
+                                  onClick={() => { setOverrideFileId(file.id); setOverrideCategory(file.document_category || '') }}
+                                  className="text-xs text-neutral-500 hover:text-neutral-700 cursor-pointer"
+                                  title="Override classification"
+                                >
+                                  Override
+                                </button>
+                              </>
+                            )}
+                            {(file.classification_status === 'failed' || file.classification_status === 'completed') && (
+                              <button
+                                onClick={() => handleReprocess(file.id)}
+                                className="text-xs text-blue-600 hover:text-blue-700 cursor-pointer"
+                                title="Re-analyze document"
+                              >
+                                Re-analyze
+                              </button>
+                            )}
                             {isPreviewable && (
                               <button
                                 onClick={() => setPreviewFile(file)}
@@ -405,6 +545,35 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
                             )}
                           </div>
                         </div>
+
+                        {/* Override dropdown */}
+                        {overrideFileId === file.id && (
+                          <div className="mt-3 flex items-center gap-2 bg-neutral-50 rounded-lg p-3 border border-neutral-200">
+                            <select
+                              value={overrideCategory}
+                              onChange={(e) => setOverrideCategory(e.target.value)}
+                              className="text-xs border border-neutral-300 rounded-[7px] px-2 py-1.5 bg-white flex-1"
+                            >
+                              <option value="">Select category...</option>
+                              {CATEGORY_OPTIONS.map((opt) => (
+                                <option key={opt.slug} value={opt.slug}>{opt.label}</option>
+                              ))}
+                            </select>
+                            <button
+                              onClick={() => overrideCategory && handleConfirmClassification(file.id, overrideCategory)}
+                              disabled={!overrideCategory || overriding}
+                              className="text-xs font-semibold text-white bg-primary-600 px-3 py-1.5 rounded-[7px] hover:bg-primary-700 disabled:opacity-50"
+                            >
+                              {overriding ? 'Saving...' : 'Save'}
+                            </button>
+                            <button
+                              onClick={() => { setOverrideFileId(null); setOverrideCategory('') }}
+                              className="text-xs text-neutral-500 hover:text-neutral-700"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        )}
                       </div>
                     )
                   })}

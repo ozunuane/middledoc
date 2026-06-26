@@ -27,6 +27,7 @@ export async function GET(
            dr.share_token,
            dr.created_at,
            dr.accountant_id,
+           dr.checklist_items,
            c.name AS client_name,
            c.email AS client_email
          FROM document_requests dr
@@ -57,10 +58,17 @@ export async function GET(
       }
 
       const uploadsResult = await query(
-        `SELECT id, file_name, file_size, uploaded_at, status, rejection_reason, rejected_at
-         FROM document_uploads
-         WHERE request_id = $1
-         ORDER BY uploaded_at ASC`,
+        `SELECT du.id, du.file_name, du.file_size, du.uploaded_at, du.status, du.rejection_reason, du.rejected_at,
+           dc.document_category, dc.document_year, dc.confidence,
+           dc.issues, dc.matched_checklist_item, dc.match_confidence,
+           dc.processing_status AS classification_status,
+           dc.accountant_override,
+           dcl.display_name AS category_display_name
+         FROM document_uploads du
+         LEFT JOIN document_classifications dc ON dc.upload_id = du.id
+         LEFT JOIN document_category_labels dcl ON dcl.slug = COALESCE(dc.accountant_override, dc.document_category)
+         WHERE du.request_id = $1
+         ORDER BY du.uploaded_at ASC`,
         [requestId]
       )
 
@@ -73,6 +81,7 @@ export async function GET(
         status: row.status,
         share_token: row.share_token,
         created_at: row.created_at,
+        checklist_items: row.checklist_items || [],
         client: {
           name: row.client_name,
           email: row.client_email,
