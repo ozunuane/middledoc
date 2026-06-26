@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { withAuth } from '@/lib/middleware'
 import { getOne, query } from '@/lib/db'
 import { disableSubscription, getSubscription } from '@/lib/paystack'
+import { cancelStripeSubscription } from '@/lib/stripe-service'
 
 export async function POST(request: NextRequest) {
   return withAuth(request, async (_req, accountantId) => {
@@ -11,12 +12,15 @@ export async function POST(request: NextRequest) {
         id: number
         plan_id: number
         status: string
+        payment_provider: string | null
         paystack_subscription_code: string | null
         paystack_email_token: string | null
+        stripe_subscription_id: string | null
         current_period_end: string
       }>(
-        `SELECT id, plan_id, status, paystack_subscription_code,
-                paystack_email_token, current_period_end
+        `SELECT id, plan_id, status, payment_provider,
+                paystack_subscription_code, paystack_email_token,
+                stripe_subscription_id, current_period_end
          FROM subscriptions
          WHERE accountant_id = $1 AND status IN ('active', 'trialing', 'past_due')
          ORDER BY created_at DESC LIMIT 1`,
@@ -37,8 +41,17 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Cannot cancel the free plan' }, { status: 400 })
       }
 
-      // If there's a Paystack subscription, disable it
-      if (sub.paystack_subscription_code) {
+      // Cancel based on payment provider
+      if (sub.payment_provider === 'stripe' && sub.stripe_subscription_id) {
+        // Stripe: cancel at period end
+        try {
+          await cancelStripeSubscription(sub.stripe_subscription_id)
+        } catch (stripeError) {
+          // Log but don't fail -- we still want to cancel locally
+          console.error('Failed to cancel Stripe subscription:', stripeError)
+        }
+      } else if (sub.paystack_subscription_code) {
+        // Paystack: disable subscription
         try {
           let emailToken = sub.paystack_email_token
 

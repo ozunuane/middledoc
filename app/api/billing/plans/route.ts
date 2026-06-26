@@ -14,6 +14,7 @@ export async function GET() {
               feature_api_readonly, feature_api_full, feature_sso,
               feature_webhooks, feature_activity_log, feature_custom_fields,
               feature_recurring_requests, feature_data_export,
+              stripe_monthly_price_id, stripe_annual_price_id,
               sort_order
        FROM plans
        WHERE is_active = true AND is_public = true

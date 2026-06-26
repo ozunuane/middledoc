@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { query, getOne } from '@/lib/db'
 import { initializeTransaction } from '@/lib/paystack'
+import { getPaymentProvider } from '@/lib/payment-provider'
+import { createInvoiceCheckoutSession } from '@/lib/stripe-service'
 
 const BASE_URL = process.env.NEXTAUTH_URL || 'http://localhost:3000'
 
@@ -79,10 +81,12 @@ export async function POST(
       request_id: number
       amount_cents: number
       currency: string
+      description: string | null
       status: string
       client_email: string
     }>(
-      `SELECT i.id AS invoice_id, i.request_id, i.amount_cents, i.currency, i.status,
+      `SELECT i.id AS invoice_id, i.request_id, i.amount_cents, i.currency,
+              i.description, i.status,
               c.email AS client_email
        FROM client_invoices i
        JOIN document_requests dr ON dr.id = i.request_id
@@ -103,31 +107,59 @@ export async function POST(
       return NextResponse.json({ error: 'Invoice has been cancelled' }, { status: 400 })
     }
 
-    // Initialize Paystack transaction
-    const callbackUrl = `${BASE_URL}/portal/${shareToken}?payment=callback`
+    // Determine payment provider based on currency
+    const provider = getPaymentProvider(row.currency)
 
-    const paystackRes = await initializeTransaction({
-      email: row.client_email,
-      amount: row.amount_cents,
-      currency: row.currency,
-      callback_url: callbackUrl,
-      metadata: {
-        invoice_id: row.invoice_id,
-        request_id: row.request_id,
-      },
-    })
+    if (provider === 'stripe') {
+      // Stripe checkout for invoice payment
+      const { url, sessionId } = await createInvoiceCheckoutSession({
+        customerEmail: row.client_email,
+        amountCents: row.amount_cents,
+        currency: row.currency,
+        description: row.description || 'Document preparation fee',
+        invoiceId: row.invoice_id,
+        shareToken,
+      })
 
-    // Store the reference on the invoice
-    await query(
-      `UPDATE client_invoices SET paystack_reference = $1, paystack_authorization_url = $2, updated_at = NOW()
-       WHERE id = $3`,
-      [paystackRes.data.reference, paystackRes.data.authorization_url, row.invoice_id]
-    )
+      // Store the Stripe session ID on the invoice
+      await query(
+        `UPDATE client_invoices SET stripe_session_id = $1, payment_provider = 'stripe', updated_at = NOW()
+         WHERE id = $2`,
+        [sessionId, row.invoice_id]
+      )
 
-    return NextResponse.json({
-      authorization_url: paystackRes.data.authorization_url,
-      reference: paystackRes.data.reference,
-    })
+      return NextResponse.json({
+        url,
+        provider: 'stripe',
+      })
+    } else {
+      // Paystack checkout (existing flow)
+      const callbackUrl = `${BASE_URL}/portal/${shareToken}?payment=callback`
+
+      const paystackRes = await initializeTransaction({
+        email: row.client_email,
+        amount: row.amount_cents,
+        currency: row.currency,
+        callback_url: callbackUrl,
+        metadata: {
+          invoice_id: row.invoice_id,
+          request_id: row.request_id,
+        },
+      })
+
+      // Store the reference on the invoice
+      await query(
+        `UPDATE client_invoices SET paystack_reference = $1, paystack_authorization_url = $2, updated_at = NOW()
+         WHERE id = $3`,
+        [paystackRes.data.reference, paystackRes.data.authorization_url, row.invoice_id]
+      )
+
+      return NextResponse.json({
+        authorization_url: paystackRes.data.authorization_url,
+        reference: paystackRes.data.reference,
+        provider: 'paystack',
+      })
+    }
   } catch (error) {
     console.error('POST /api/portal-pay/[shareToken] error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

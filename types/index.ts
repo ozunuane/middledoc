@@ -233,11 +233,14 @@ export interface Subscription {
   current_period_end: string
   cancel_at_period_end: boolean
   cancelled_at?: string
+  payment_provider?: 'stripe' | 'paystack'
   paystack_subscription_code?: string
   paystack_customer_code?: string
   paystack_authorization_code?: string
   paystack_email_token?: string
   paystack_transaction_ref?: string
+  stripe_subscription_id?: string
+  stripe_customer_id?: string
 }
 
 export interface BillingSubscription {
@@ -249,8 +252,11 @@ export interface BillingSubscription {
   current_period_end: string
   cancel_at_period_end: boolean
   cancelled_at?: string
+  payment_provider?: 'stripe' | 'paystack'
   paystack_subscription_code?: string
   paystack_customer_code?: string
+  stripe_subscription_id?: string
+  stripe_customer_id?: string
   // Joined plan fields
   slug?: string
   display_name?: string
@@ -261,6 +267,11 @@ export interface BillingSubscription {
   included_team_members?: number
   max_team_members?: number
   max_email_reminders_per_month?: number
+}
+
+export interface PaymentProviderInfo {
+  provider: 'stripe' | 'paystack'
+  configured: boolean
 }
 
 export interface SuperAdmin {

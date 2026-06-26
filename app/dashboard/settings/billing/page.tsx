@@ -73,14 +73,18 @@ export default function BillingPage() {
     setTimeout(() => setToast(null), 4000)
   }
 
-  // Show billing status from URL params
+  // Show billing status from URL params (Paystack and Stripe callbacks)
   useEffect(() => {
     const billing = searchParams.get('billing')
-    if (billing === 'success') {
+    const stripeStatus = searchParams.get('stripe')
+
+    if (billing === 'success' || stripeStatus === 'success') {
       showToast('Your plan has been updated successfully.')
     } else if (billing === 'error') {
       const reason = searchParams.get('reason') || 'unknown'
       showToast(`Payment failed: ${reason.replace(/_/g, ' ')}`)
+    } else if (stripeStatus === 'cancelled') {
+      showToast('Checkout was cancelled.')
     }
   }, [searchParams])
 
@@ -161,7 +165,10 @@ export default function BillingPage() {
         return
       }
 
-      if (data.authorization_url) {
+      if (data.url) {
+        // Redirect to Stripe checkout
+        window.location.href = data.url
+      } else if (data.authorization_url) {
         // Redirect to Paystack checkout
         window.location.href = data.authorization_url
       }
@@ -276,6 +283,11 @@ export default function BillingPage() {
               {subscription && !subscription.cancel_at_period_end && subscription.current_period_end && (
                 <p className="text-[13px] text-neutral-400 mt-1">
                   Renews {formatDate(subscription.current_period_end)}
+                </p>
+              )}
+              {subscription && subscription.payment_provider && (
+                <p className="text-[11px] text-neutral-400 mt-2">
+                  Powered by {subscription.payment_provider === 'stripe' ? 'Stripe' : 'Paystack'}
                 </p>
               )}
             </div>

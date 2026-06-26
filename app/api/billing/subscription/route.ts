@@ -11,6 +11,7 @@ export async function GET(request: NextRequest) {
                 s.current_period_start, s.current_period_end,
                 s.cancel_at_period_end, s.cancelled_at,
                 s.paystack_subscription_code, s.paystack_customer_code,
+                s.payment_provider, s.stripe_subscription_id, s.stripe_customer_id,
                 p.slug, p.display_name, p.monthly_price_cents, p.annual_price_cents,
                 p.max_clients, p.max_storage_gb,
                 p.included_team_members, p.max_team_members,
