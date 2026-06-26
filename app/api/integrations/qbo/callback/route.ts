@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { query, getOne } from '@/lib/db'
-import { exchangeCodeForTokens, qboRequest, syncCustomers } from '@/lib/qbo'
+import { exchangeCodeForTokens, qboRequest, syncCustomers, encryptToken } from '@/lib/qbo'
 
 export async function GET(request: NextRequest) {
   try {
@@ -44,13 +44,15 @@ export async function GET(request: NextRequest) {
       // Non-critical, use default
     }
 
-    // Store connection (upsert)
+    // Store connection (upsert) — encrypt tokens at rest
+    const encryptedAccessToken = encryptToken(tokens.access_token)
+    const encryptedRefreshToken = encryptToken(tokens.refresh_token)
     await query(
       `INSERT INTO qbo_connections (accountant_id, realm_id, access_token, refresh_token, token_expires_at, company_name)
        VALUES ($1, $2, $3, $4, $5, $6)
        ON CONFLICT (accountant_id) DO UPDATE SET
          realm_id = $2, access_token = $3, refresh_token = $4, token_expires_at = $5, company_name = $6, is_active = true, sync_error = NULL`,
-      [accountantId, realmId, tokens.access_token, tokens.refresh_token, expiresAt.toISOString(), companyName]
+      [accountantId, realmId, encryptedAccessToken, encryptedRefreshToken, expiresAt.toISOString(), companyName]
     )
 
     // Get connection ID for sync

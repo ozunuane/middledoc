@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { query } from '@/lib/db'
+import { query, getOne } from '@/lib/db'
 import { embedSignatureInPdf } from '@/lib/pdf-sign'
 import { randomUUID } from 'crypto'
 import path from 'path'
@@ -155,6 +155,18 @@ export async function POST(
       'unknown'
     const userAgent = request.headers.get('user-agent') || 'unknown'
 
+    // Look up signer email from client associated with the document request
+    const clientInfo = await getOne<{ email: string }>(
+      `SELECT c.email FROM clients c
+       JOIN document_requests dr ON dr.client_id = c.id
+       WHERE dr.id = $1`,
+      [requestId]
+    )
+    const signerEmail = clientInfo?.email || 'unknown'
+
+    // Generate unique signature event ID
+    const signatureEventId = randomUUID()
+
     // Embed signature into PDF
     await embedSignatureInPdf(originalPath, signature_data, signer_name.trim(), signedAbsPath)
 
@@ -166,16 +178,18 @@ export async function POST(
            signer_name = $2,
            signed_at = CURRENT_TIMESTAMP,
            signer_ip = $3,
-           signer_user_agent = $4
-       WHERE id = $5`,
-      [signedRelPath, signer_name.trim(), ip, userAgent, signature_request_id]
+           signer_user_agent = $4,
+           signer_email = $5,
+           signature_event_id = $6
+       WHERE id = $7`,
+      [signedRelPath, signer_name.trim(), ip, userAgent, signerEmail, signatureEventId, signature_request_id]
     )
 
     // Insert audit log entry
     await query(
-      `INSERT INTO signature_audit_log (signature_request_id, event, ip_address, user_agent)
-       VALUES ($1, 'signed', $2, $3)`,
-      [signature_request_id, ip, userAgent]
+      `INSERT INTO signature_audit_log (signature_request_id, event, ip_address, user_agent, signature_event_id)
+       VALUES ($1, 'signed', $2, $3, $4)`,
+      [signature_request_id, ip, userAgent, signatureEventId]
     )
 
     return NextResponse.json({ success: true, status: 'signed' })

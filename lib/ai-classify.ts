@@ -4,6 +4,10 @@ import { readFile } from 'fs/promises'
 import path from 'path'
 import { query, getOne } from './db'
 
+// PRIVACY NOTE: Document content is sent to OpenAI/Anthropic for classification.
+// Both providers' API terms prohibit using API inputs for training.
+// Consider on-premise models for highest sensitivity requirements.
+
 // Provider selection: set AI_PROVIDER=anthropic or AI_PROVIDER=openai in .env.local
 const AI_PROVIDER = process.env.AI_PROVIDER || 'openai'
 
@@ -230,7 +234,7 @@ export async function classifyDocument(
         result.issues || [],
         result.matched_checklist_item || null,
         result.match_confidence || null,
-        JSON.stringify({ ...result, provider: provider === 'anthropic' ? 'anthropic' : 'openai' }),
+        JSON.stringify({ category: result.category, year: result.year, provider: provider === 'anthropic' ? 'anthropic' : 'openai' }),
       ]
     )
   } catch (err) {

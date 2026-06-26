@@ -15,6 +15,10 @@ export async function POST(request: NextRequest) {
         )
       }
 
+      if (!Number.isInteger(amount_cents) || amount_cents <= 0 || amount_cents > 10000000) {
+        return NextResponse.json({ error: 'Amount must be between $0.01 and $100,000' }, { status: 400 })
+      }
+
       // Verify the accountant owns the request
       const docRequest = await getOne<{ id: number; client_id: number }>(
         'SELECT id, client_id FROM document_requests WHERE id = $1 AND accountant_id = $2',

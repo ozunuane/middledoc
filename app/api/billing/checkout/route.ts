@@ -115,7 +115,7 @@ export async function POST(request: NextRequest) {
         })
       } else {
         // Paystack checkout path (existing flow)
-        const origin = req.headers.get('origin') || process.env.NEXTAUTH_URL || 'http://localhost:3000'
+        const origin = process.env.NEXTAUTH_URL || 'http://localhost:3000'
         const callbackUrl = `${origin}/dashboard/settings/billing/callback`
 
         const result = await initializeTransaction({

@@ -139,10 +139,12 @@ export function constructWebhookEvent(
   signature: string
 ): Stripe.Event {
   if (!stripe) throw new Error('Stripe is not configured')
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
+  if (!webhookSecret) throw new Error('STRIPE_WEBHOOK_SECRET not configured')
   return stripe.webhooks.constructEvent(
     body,
     signature,
-    process.env.STRIPE_WEBHOOK_SECRET || ''
+    webhookSecret
   )
 }
 

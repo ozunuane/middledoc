@@ -121,7 +121,10 @@ export async function createCustomer(params: {
 // Verify webhook signature
 export function verifyWebhookSignature(body: string, signature: string): boolean {
   const secret = process.env.PAYSTACK_WEBHOOK_SECRET
-  if (!secret) return true // skip verification in dev when secret is not set
+  if (!secret) {
+    console.error('PAYSTACK_WEBHOOK_SECRET not configured — rejecting webhook')
+    return false  // NEVER skip verification
+  }
   const hash = crypto
     .createHmac('sha512', secret)
     .update(body)

@@ -14,4 +14,6 @@ USER appuser
 
 EXPOSE 3000
 
+# NOTE: Using dev mode due to lightningcss ARM64 build issue.
+# For production, use a multi-stage build with npm run build + npm start.
 CMD ["npm", "run", "dev"]

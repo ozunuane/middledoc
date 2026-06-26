@@ -11,8 +11,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Token and password are required' }, { status: 400 })
     }
 
-    if (password.length < 8) {
-      return NextResponse.json({ error: 'Password must be at least 8 characters' }, { status: 400 })
+    if (password.length < 10) {
+      return NextResponse.json({ error: 'Password must be at least 10 characters' }, { status: 400 })
+    }
+
+    const commonPasswords = ['password123', '12345678910', 'qwertyuiop', 'letmein1234', 'password1234']
+    if (commonPasswords.includes(password.toLowerCase())) {
+      return NextResponse.json({ error: 'This password is too common. Please choose a stronger one.' }, { status: 400 })
     }
 
     // Find the token - must be valid, not expired, and not used

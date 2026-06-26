@@ -49,6 +49,11 @@ export async function POST(request: NextRequest) {
       const newRequest = result.rows[0]
       await logActivity(accountantId, 'created', 'request', newRequest.id, { title: newRequest.title })
 
+      // Validate fee amount if provided
+      if (fee_amount && (!Number.isInteger(fee_amount) || fee_amount <= 0 || fee_amount > 10000000)) {
+        return NextResponse.json({ error: 'Fee amount must be between $0.01 and $100,000' }, { status: 400 })
+      }
+
       // Create invoice if fee is provided
       if (fee_amount && fee_amount > 0) {
         const invoiceResult = await query(

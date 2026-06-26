@@ -19,26 +19,30 @@ self.addEventListener('activate', (event) => {
   self.clients.claim()
 })
 
-// Fetch — network first for API, cache first for static
+// Fetch — only cache static assets, never authenticated pages
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url)
 
-  // Never cache API calls
-  if (url.pathname.startsWith('/api/')) {
+  // Never cache API calls or authenticated pages
+  if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/dashboard') || url.pathname.startsWith('/admin')) {
     event.respondWith(fetch(event.request))
     return
   }
 
-  // Network first, fallback to cache for pages
-  event.respondWith(
-    fetch(event.request)
-      .then((response) => {
+  // Only cache static assets
+  if (url.pathname.startsWith('/_next/static/') || url.pathname.startsWith('/icons/') || url.pathname === '/manifest.json') {
+    event.respondWith(
+      caches.match(event.request).then(cached => cached || fetch(event.request).then(response => {
         const clone = response.clone()
-        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone))
+        caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone))
         return response
-      })
-      .catch(() => caches.match(event.request))
-  )
+      }))
+    )
+    return
+  }
+
+  // Everything else: network only
+  event.respondWith(fetch(event.request))
 })
 
 // Push notifications

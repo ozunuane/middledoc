@@ -1,4 +1,30 @@
 import { query, getOne } from './db'
+import { createCipheriv, createDecipheriv, randomBytes } from 'crypto'
+
+const ENCRYPTION_KEY = process.env.QBO_ENCRYPTION_KEY || process.env.NEXTAUTH_SECRET?.slice(0, 32) || ''
+
+export function encryptToken(text: string): string {
+  return encrypt(text)
+}
+
+function encrypt(text: string): string {
+  if (!ENCRYPTION_KEY || ENCRYPTION_KEY.length < 16) return text // fallback in dev
+  const iv = randomBytes(16)
+  const cipher = createCipheriv('aes-256-cbc', Buffer.from(ENCRYPTION_KEY.padEnd(32, '0').slice(0, 32)), iv)
+  let encrypted = cipher.update(text, 'utf8', 'hex')
+  encrypted += cipher.final('hex')
+  return iv.toString('hex') + ':' + encrypted
+}
+
+function decrypt(text: string): string {
+  if (!ENCRYPTION_KEY || ENCRYPTION_KEY.length < 16) return text
+  if (!text.includes(':')) return text // not encrypted (legacy)
+  const [ivHex, encrypted] = text.split(':')
+  const decipher = createDecipheriv('aes-256-cbc', Buffer.from(ENCRYPTION_KEY.padEnd(32, '0').slice(0, 32)), Buffer.from(ivHex, 'hex'))
+  let decrypted = decipher.update(encrypted, 'hex', 'utf8')
+  decrypted += decipher.final('utf8')
+  return decrypted
+}
 
 const QBO_CLIENT_ID = process.env.QBO_CLIENT_ID || ''
 const QBO_CLIENT_SECRET = process.env.QBO_CLIENT_SECRET || ''
@@ -92,20 +118,21 @@ export async function getValidToken(connectionId: number): Promise<{ accessToken
   now.setMinutes(now.getMinutes() + 5)
 
   if (now >= expiresAt) {
-    // Refresh the token
-    const newTokens = await refreshAccessToken(conn.refresh_token)
+    // Refresh the token (decrypt stored refresh token first)
+    const decryptedRefreshToken = decrypt(conn.refresh_token)
+    const newTokens = await refreshAccessToken(decryptedRefreshToken)
     const newExpiry = new Date()
     newExpiry.setSeconds(newExpiry.getSeconds() + newTokens.expires_in)
 
     await query(
       `UPDATE qbo_connections SET access_token = $1, refresh_token = $2, token_expires_at = $3 WHERE id = $4`,
-      [newTokens.access_token, newTokens.refresh_token, newExpiry.toISOString(), connectionId]
+      [encrypt(newTokens.access_token), encrypt(newTokens.refresh_token), newExpiry.toISOString(), connectionId]
     )
 
     return { accessToken: newTokens.access_token, realmId: conn.realm_id }
   }
 
-  return { accessToken: conn.access_token, realmId: conn.realm_id }
+  return { accessToken: decrypt(conn.access_token), realmId: conn.realm_id }
 }
 
 // QBO API request

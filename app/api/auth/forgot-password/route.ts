@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
 </body>
 </html>`,
       })
-    } else {
+    } else if (process.env.NODE_ENV !== 'production') {
       console.log('[DEV] Password reset email would be sent:')
       console.log(`  To: ${email}`)
       console.log(`  Reset URL: ${resetUrl}`)

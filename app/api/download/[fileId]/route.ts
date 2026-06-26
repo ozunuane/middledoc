@@ -29,7 +29,12 @@ export async function GET(
     if (!file) return NextResponse.json({ error: 'File not found' }, { status: 404 })
 
     try {
+      const UPLOADS_BASE = process.env.FILE_UPLOAD_DIR || '/app/uploads'
       const filePath = path.resolve(file.file_path)
+      const uploadsBase = path.resolve(UPLOADS_BASE)
+      if (!filePath.startsWith(uploadsBase)) {
+        return NextResponse.json({ error: 'Invalid file path' }, { status: 400 })
+      }
       const buffer = await readFile(filePath)
 
       const ext = path.extname(file.file_name).toLowerCase()
@@ -44,10 +49,11 @@ export async function GET(
         '.csv': 'text/csv', '.txt': 'text/plain',
       }
 
+      const safeName = file.file_name.replace(/["\r\n\\]/g, '_')
       return new NextResponse(buffer, {
         headers: {
           'Content-Type': mimeTypes[ext] || 'application/octet-stream',
-          'Content-Disposition': `attachment; filename="${file.file_name}"`,
+          'Content-Disposition': `attachment; filename="${safeName}"`,
           'Content-Length': String(buffer.length),
           'X-Content-Type-Options': 'nosniff',
         },

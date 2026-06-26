@@ -3,7 +3,7 @@ import { withAuth } from '@/lib/middleware'
 import { query } from '@/lib/db'
 import { getVapidPublicKey } from '@/lib/web-push-service'
 
-// GET: Return the VAPID public key so the client can subscribe
+// GET is intentionally unauthenticated — VAPID public key is not a secret
 export async function GET() {
   const vapidPublicKey = getVapidPublicKey()
   if (!vapidPublicKey) {
