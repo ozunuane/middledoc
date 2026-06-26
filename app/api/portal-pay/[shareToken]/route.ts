@@ -31,7 +31,7 @@ export async function GET(
       payment_required: boolean
     }>(
       `SELECT i.id, i.amount_cents, i.currency, i.description, i.status, i.payment_required
-       FROM invoices i
+       FROM client_invoices i
        JOIN document_requests dr ON dr.id = i.request_id
        WHERE dr.share_token = $1`,
       [shareToken]
@@ -84,7 +84,7 @@ export async function POST(
     }>(
       `SELECT i.id AS invoice_id, i.request_id, i.amount_cents, i.currency, i.status,
               c.email AS client_email
-       FROM invoices i
+       FROM client_invoices i
        JOIN document_requests dr ON dr.id = i.request_id
        JOIN clients c ON c.id = i.client_id
        WHERE dr.share_token = $1`,
@@ -119,7 +119,7 @@ export async function POST(
 
     // Store the reference on the invoice
     await query(
-      `UPDATE invoices SET paystack_reference = $1, paystack_authorization_url = $2, updated_at = NOW()
+      `UPDATE client_invoices SET paystack_reference = $1, paystack_authorization_url = $2, updated_at = NOW()
        WHERE id = $3`,
       [paystackRes.data.reference, paystackRes.data.authorization_url, row.invoice_id]
     )

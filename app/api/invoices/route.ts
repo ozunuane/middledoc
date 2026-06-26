@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
 
       // Check if an invoice already exists for this request
       const existing = await getOne<{ id: number }>(
-        'SELECT id FROM invoices WHERE request_id = $1',
+        'SELECT id FROM client_invoices WHERE request_id = $1',
         [request_id]
       )
 
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
       }
 
       const result = await query(
-        `INSERT INTO invoices (request_id, accountant_id, client_id, amount_cents, currency, description, payment_required)
+        `INSERT INTO client_invoices (request_id, accountant_id, client_id, amount_cents, currency, description, payment_required)
          VALUES ($1, $2, $3, $4, $5, $6, $7)
          RETURNING id, request_id, accountant_id, client_id, amount_cents, currency, description, status, payment_required, created_at`,
         [
@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
       const requestIdFilter = searchParams.get('request_id')
 
       let sql = `SELECT id, request_id, accountant_id, client_id, amount_cents, currency, description, status, payment_required, paid_at, created_at
-                 FROM invoices WHERE accountant_id = $1`
+                 FROM client_invoices WHERE accountant_id = $1`
       const params: (string | number)[] = [accountantId]
 
       if (requestIdFilter) {

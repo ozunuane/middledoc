@@ -33,12 +33,12 @@ export async function POST(request: NextRequest) {
         const invoiceId = data.metadata?.invoice_id as number | undefined
         if (invoiceId) {
           const inv = await getOne<{ id: number; status: string }>(
-            'SELECT id, status FROM invoices WHERE id = $1',
+            'SELECT id, status FROM client_invoices WHERE id = $1',
             [invoiceId]
           )
           if (inv && inv.status !== 'paid') {
             await query(
-              `UPDATE invoices SET status = 'paid', paid_at = NOW(), paystack_reference = $1, updated_at = NOW()
+              `UPDATE client_invoices SET status = 'paid', paid_at = NOW(), paystack_reference = $1, updated_at = NOW()
                WHERE id = $2`,
               [data.reference, invoiceId]
             )

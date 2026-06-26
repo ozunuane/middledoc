@@ -20,7 +20,7 @@ export async function GET(
                 i.description, i.status, i.payment_required, i.paid_at, i.created_at,
                 dr.title AS request_title, dr.due_date AS request_due_date,
                 c.name AS client_name, c.email AS client_email
-         FROM invoices i
+         FROM client_invoices i
          JOIN document_requests dr ON dr.id = i.request_id
          JOIN clients c ON c.id = i.client_id
          WHERE i.id = $1 AND i.accountant_id = $2`,
@@ -54,7 +54,7 @@ export async function PATCH(
 
       // Check invoice exists and is not paid
       const existing = await getOne<{ id: number; status: string }>(
-        'SELECT id, status FROM invoices WHERE id = $1 AND accountant_id = $2',
+        'SELECT id, status FROM client_invoices WHERE id = $1 AND accountant_id = $2',
         [invoiceId, accountantId]
       )
 
@@ -97,7 +97,7 @@ export async function PATCH(
       values.push(accountantId)
 
       const result = await query(
-        `UPDATE invoices SET ${updates.join(', ')} WHERE id = $${values.length - 1} AND accountant_id = $${values.length}
+        `UPDATE client_invoices SET ${updates.join(', ')} WHERE id = $${values.length - 1} AND accountant_id = $${values.length}
          RETURNING id, request_id, accountant_id, client_id, amount_cents, currency, description, status, payment_required, paid_at, created_at`,
         values
       )
@@ -124,7 +124,7 @@ export async function DELETE(
       }
 
       const result = await query(
-        `UPDATE invoices SET status = 'cancelled', updated_at = NOW()
+        `UPDATE client_invoices SET status = 'cancelled', updated_at = NOW()
          WHERE id = $1 AND accountant_id = $2 AND status != 'paid'
          RETURNING id, status`,
         [invoiceId, accountantId]

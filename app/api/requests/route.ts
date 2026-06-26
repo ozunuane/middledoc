@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
       // Create invoice if fee is provided
       if (fee_amount && fee_amount > 0) {
         const invoiceResult = await query(
-          `INSERT INTO invoices (request_id, accountant_id, client_id, amount_cents, currency, description, payment_required)
+          `INSERT INTO client_invoices (request_id, accountant_id, client_id, amount_cents, currency, description, payment_required)
            VALUES ($1, $2, $3, $4, $5, $6, $7)
            RETURNING id, amount_cents, status`,
           [newRequest.id, accountantId, client_id, fee_amount, fee_currency || 'USD', fee_description || '', fee_payment_required || false]

@@ -83,7 +83,7 @@ export async function GET(
         paid_at: string | null
       }>(
         `SELECT id, amount_cents, currency, description, status, payment_required, paid_at
-         FROM invoices WHERE request_id = $1`,
+         FROM client_invoices WHERE request_id = $1`,
         [requestId]
       )
 

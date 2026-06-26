@@ -29,7 +29,7 @@ export async function GET(
     // Find the invoice by the reference
     const invoice = await getOne<{ id: number; status: string }>(
       `SELECT i.id, i.status
-       FROM invoices i
+       FROM client_invoices i
        JOIN document_requests dr ON dr.id = i.request_id
        WHERE dr.share_token = $1 AND i.paystack_reference = $2`,
       [shareToken, reference]
@@ -42,7 +42,7 @@ export async function GET(
     // Update invoice to paid if not already
     if (invoice.status !== 'paid') {
       await query(
-        `UPDATE invoices SET status = 'paid', paid_at = NOW(), updated_at = NOW()
+        `UPDATE client_invoices SET status = 'paid', paid_at = NOW(), updated_at = NOW()
          WHERE id = $1`,
         [invoice.id]
       )

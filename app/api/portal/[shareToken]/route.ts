@@ -58,7 +58,7 @@ export async function GET(
       payment_required: boolean
     }>(
       `SELECT id, amount_cents, currency, description, status, payment_required
-       FROM invoices WHERE request_id = $1`,
+       FROM client_invoices WHERE request_id = $1`,
       [row.id]
     )
 
