@@ -280,6 +280,18 @@ export interface AdminAuditEntry {
   created_at: string
 }
 
+export interface QboConnection {
+  id: number
+  accountant_id: number
+  realm_id: string
+  company_name?: string
+  last_synced_at?: string
+  sync_status: 'idle' | 'syncing' | 'error'
+  sync_error?: string
+  is_active: boolean
+  created_at: string
+}
+
 export interface SignatureRequest {
   id: number
   request_id: number

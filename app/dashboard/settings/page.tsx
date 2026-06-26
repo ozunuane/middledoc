@@ -216,6 +216,15 @@ export default function SettingsPage() {
           </Link>
         </div>
 
+        {/* Integrations Section */}
+        <div className="bg-white border border-neutral-200 rounded-card p-6 mb-6">
+          <h2 className="text-body-md font-semibold text-neutral-900 mb-1">Integrations</h2>
+          <p className="text-[13px] text-neutral-500 mb-4">Connect external services to sync data automatically.</p>
+          <Link href="/dashboard/settings/integrations" className="text-[13px] text-primary-600 font-semibold hover:text-primary-700 cursor-pointer">
+            Manage integrations &rarr;
+          </Link>
+        </div>
+
         {/* Data Export Section */}
         <div className="bg-white border border-neutral-200 rounded-card p-6 mb-6">
           <h2 className="text-body-md font-semibold text-neutral-900 mb-1">Export my data</h2>
