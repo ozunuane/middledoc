@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { query } from '@/lib/db'
+import { query, getOne } from '@/lib/db'
 
 export async function GET(
   _request: NextRequest,
@@ -27,9 +27,12 @@ export async function GET(
          dr.status,
          dr.created_at,
          dr.checklist_items,
-         c.email AS client_email
+         c.email AS client_email,
+         a.name AS accountant_name,
+         a.firm_name AS accountant_firm
        FROM document_requests dr
        JOIN clients c ON c.id = dr.client_id
+       JOIN accountants a ON a.id = dr.accountant_id
        WHERE dr.share_token = $1`,
       [shareToken]
     )
@@ -45,6 +48,20 @@ export async function GET(
       [row.id]
     )
 
+    // Fetch invoice if one exists
+    const invoice = await getOne<{
+      id: number
+      amount_cents: number
+      currency: string
+      description: string | null
+      status: string
+      payment_required: boolean
+    }>(
+      `SELECT id, amount_cents, currency, description, status, payment_required
+       FROM invoices WHERE request_id = $1`,
+      [row.id]
+    )
+
     return NextResponse.json({
       id: row.id,
       title: row.title,
@@ -55,6 +72,9 @@ export async function GET(
       uploaded_file_count: countResult.rows[0].file_count,
       client_email: row.client_email,
       checklist_items: row.checklist_items || [],
+      accountant_name: row.accountant_name,
+      accountant_firm: row.accountant_firm,
+      invoice: invoice || null,
     })
   } catch (error) {
     console.error('GET /api/portal/[shareToken] error:', error)

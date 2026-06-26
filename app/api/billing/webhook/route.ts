@@ -29,6 +29,23 @@ export async function POST(request: NextRequest) {
           authorization: { authorization_code: string }
         }
 
+        // Handle invoice payments
+        const invoiceId = data.metadata?.invoice_id as number | undefined
+        if (invoiceId) {
+          const inv = await getOne<{ id: number; status: string }>(
+            'SELECT id, status FROM invoices WHERE id = $1',
+            [invoiceId]
+          )
+          if (inv && inv.status !== 'paid') {
+            await query(
+              `UPDATE invoices SET status = 'paid', paid_at = NOW(), paystack_reference = $1, updated_at = NOW()
+               WHERE id = $2`,
+              [data.reference, invoiceId]
+            )
+          }
+          break
+        }
+
         const accountantId = data.metadata?.accountant_id as number | undefined
         const planId = data.metadata?.plan_id as number | undefined
         const interval = (data.metadata?.interval as string) || 'monthly'

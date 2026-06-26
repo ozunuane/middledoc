@@ -263,3 +263,51 @@ INSERT INTO document_category_labels (slug, display_name, sort_order) VALUES
   ('id_document', 'ID / Government Document', 41), ('insurance', 'Insurance Document', 42),
   ('contract', 'Contract / Agreement', 43), ('other', 'Other Document', 99)
 ON CONFLICT (slug) DO NOTHING;
+
+-- Invoices for client invoicing
+CREATE TABLE IF NOT EXISTS invoices (
+  id SERIAL PRIMARY KEY,
+  request_id INTEGER NOT NULL REFERENCES document_requests(id) ON DELETE CASCADE,
+  accountant_id INTEGER NOT NULL REFERENCES accountants(id) ON DELETE CASCADE,
+  client_id INTEGER NOT NULL REFERENCES clients(id) ON DELETE CASCADE,
+  amount_cents INTEGER NOT NULL,
+  currency VARCHAR(3) DEFAULT 'USD',
+  description VARCHAR(500),
+  status VARCHAR(20) DEFAULT 'sent',
+  payment_required BOOLEAN DEFAULT false,
+  paystack_reference VARCHAR(100),
+  paystack_authorization_url TEXT,
+  paid_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(request_id)
+);
+CREATE INDEX IF NOT EXISTS idx_invoices_accountant ON invoices(accountant_id);
+CREATE INDEX IF NOT EXISTS idx_invoices_status ON invoices(status);
+CREATE INDEX IF NOT EXISTS idx_invoices_paystack_ref ON invoices(paystack_reference);
+
+-- E-Signature tables
+CREATE TABLE IF NOT EXISTS signature_requests (
+  id SERIAL PRIMARY KEY,
+  request_id INTEGER NOT NULL REFERENCES document_requests(id) ON DELETE CASCADE,
+  original_file_name VARCHAR(255) NOT NULL,
+  original_file_path VARCHAR(500) NOT NULL,
+  signed_file_path VARCHAR(500),
+  status VARCHAR(20) DEFAULT 'pending',
+  signer_name VARCHAR(255),
+  signed_at TIMESTAMPTZ,
+  signer_ip VARCHAR(45),
+  signer_user_agent TEXT,
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_sig_requests_request ON signature_requests(request_id);
+
+CREATE TABLE IF NOT EXISTS signature_audit_log (
+  id SERIAL PRIMARY KEY,
+  signature_request_id INTEGER NOT NULL REFERENCES signature_requests(id) ON DELETE CASCADE,
+  event VARCHAR(50) NOT NULL,
+  ip_address VARCHAR(45),
+  user_agent TEXT,
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_sig_audit_request ON signature_audit_log(signature_request_id);

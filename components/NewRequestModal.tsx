@@ -26,6 +26,11 @@ export function NewRequestModal({ isOpen, onClose, onRequestCreated }: NewReques
   const [priorYearLoading, setPriorYearLoading] = useState(false)
   const [showPriorYear, setShowPriorYear] = useState(true)
 
+  const [showFee, setShowFee] = useState(false)
+  const [feeAmount, setFeeAmount] = useState('')
+  const [feeDescription, setFeeDescription] = useState('')
+  const [feeRequired, setFeeRequired] = useState(false)
+
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -63,6 +68,10 @@ export function NewRequestModal({ isOpen, onClose, onRequestCreated }: NewReques
       setNewChecklistItem('')
       setPriorYearCategories([])
       setShowPriorYear(true)
+      setShowFee(false)
+      setFeeAmount('')
+      setFeeDescription('')
+      setFeeRequired(false)
       setError(null)
     }
   }, [isOpen])
@@ -133,6 +142,9 @@ export function NewRequestModal({ isOpen, onClose, onRequestCreated }: NewReques
           description: description || undefined,
           due_date: dueDate,
           checklist_items: checklistItems.length > 0 ? checklistItems : undefined,
+          fee_amount: showFee && feeAmount ? Math.round(parseFloat(feeAmount) * 100) : undefined,
+          fee_description: showFee ? feeDescription : undefined,
+          fee_payment_required: showFee ? feeRequired : undefined,
         }),
       })
 
@@ -363,6 +375,36 @@ export function NewRequestModal({ isOpen, onClose, onRequestCreated }: NewReques
                   Add
                 </button>
               </div>
+            </div>
+
+            {/* Fee Section */}
+            <div className="border-t border-neutral-200 pt-4 mt-4">
+              <button type="button" onClick={() => setShowFee(!showFee)} className="text-[13px] text-primary-600 font-semibold cursor-pointer">
+                {showFee ? '− Remove fee' : '+ Add preparation fee'}
+              </button>
+              {showFee && (
+                <div className="mt-3 space-y-3">
+                  <div className="flex gap-3">
+                    <div className="flex-1">
+                      <label className="text-[13px] font-semibold text-neutral-700 block mb-[7px]">Fee amount</label>
+                      <div className="flex items-center">
+                        <span className="text-neutral-400 mr-1">$</span>
+                        <input type="number" min="0" step="0.01" value={feeAmount} onChange={e => setFeeAmount(e.target.value)}
+                          className="flex-1 bg-white border border-neutral-300 rounded-[9px] px-[14px] py-[12px] text-[14px]" placeholder="0.00" />
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <label className="text-[13px] font-semibold text-neutral-700 block mb-[7px]">Description</label>
+                      <input type="text" value={feeDescription} onChange={e => setFeeDescription(e.target.value)}
+                        className="w-full bg-white border border-neutral-300 rounded-[9px] px-[14px] py-[12px] text-[14px]" placeholder="Tax preparation fee" />
+                    </div>
+                  </div>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" checked={feeRequired} onChange={e => setFeeRequired(e.target.checked)} className="accent-primary-600" />
+                    <span className="text-[13px] text-neutral-600">Require payment before document delivery</span>
+                  </label>
+                </div>
+              )}
             </div>
 
             {/* Due date */}

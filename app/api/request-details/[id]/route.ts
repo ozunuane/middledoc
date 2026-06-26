@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withAuth } from '@/lib/middleware'
-import { query } from '@/lib/db'
+import { query, getOne } from '@/lib/db'
 import { getAccessibleClientIds, getUserTeamInfo, resolveOwnerAccountantId } from '@/lib/access'
 
 export async function GET(
@@ -72,6 +72,21 @@ export async function GET(
         [requestId]
       )
 
+      // Fetch invoice if one exists
+      const invoice = await getOne<{
+        id: number
+        amount_cents: number
+        currency: string
+        description: string | null
+        status: string
+        payment_required: boolean
+        paid_at: string | null
+      }>(
+        `SELECT id, amount_cents, currency, description, status, payment_required, paid_at
+         FROM invoices WHERE request_id = $1`,
+        [requestId]
+      )
+
       return NextResponse.json({
         id: row.id,
         client_id: row.client_id,
@@ -87,6 +102,7 @@ export async function GET(
           email: row.client_email,
         },
         uploaded_files: uploadsResult.rows,
+        invoice: invoice || null,
       })
     } catch (error) {
       console.error('GET /api/requests/[id]/details error:', error)

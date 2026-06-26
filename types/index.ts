@@ -166,6 +166,24 @@ export interface ActivityLogEntry {
 }
 
 // ============================================================
+// INVOICE TYPES
+// ============================================================
+
+export interface Invoice {
+  id: number
+  request_id: number
+  accountant_id: number
+  client_id: number
+  amount_cents: number
+  currency: string
+  description?: string
+  status: 'sent' | 'paid' | 'cancelled'
+  payment_required: boolean
+  paid_at?: string
+  created_at: string
+}
+
+// ============================================================
 // ADMIN & SUBSCRIPTION TYPES
 // ============================================================
 
@@ -259,5 +277,15 @@ export interface AdminAuditEntry {
   target_type: string
   target_id?: number
   details: Record<string, unknown>
+  created_at: string
+}
+
+export interface SignatureRequest {
+  id: number
+  request_id: number
+  original_file_name: string
+  status: 'pending' | 'signed'
+  signer_name?: string
+  signed_at?: string
   created_at: string
 }

@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
   return withAuth(request, async (req, accountantId) => {
     try {
       const body = await req.json()
-      const { client_id, title, description, due_date, checklist_items } = body
+      const { client_id, title, description, due_date, checklist_items, fee_amount, fee_currency, fee_description, fee_payment_required } = body
 
       if (!client_id || !title || !due_date) {
         return NextResponse.json(
@@ -48,6 +48,17 @@ export async function POST(request: NextRequest) {
 
       const newRequest = result.rows[0]
       await logActivity(accountantId, 'created', 'request', newRequest.id, { title: newRequest.title })
+
+      // Create invoice if fee is provided
+      if (fee_amount && fee_amount > 0) {
+        const invoiceResult = await query(
+          `INSERT INTO invoices (request_id, accountant_id, client_id, amount_cents, currency, description, payment_required)
+           VALUES ($1, $2, $3, $4, $5, $6, $7)
+           RETURNING id, amount_cents, status`,
+          [newRequest.id, accountantId, client_id, fee_amount, fee_currency || 'USD', fee_description || '', fee_payment_required || false]
+        )
+        newRequest.invoice = invoiceResult.rows[0] || null
+      }
 
       return NextResponse.json(newRequest, { status: 201 })
     } catch (error) {

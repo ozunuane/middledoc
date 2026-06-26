@@ -2,6 +2,17 @@
 
 import React, { useState, useCallback, useEffect } from 'react'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
+import { SignatureCanvas } from '@/components/SignatureCanvas'
+import type { SignatureRequest } from '@/types/index'
+
+interface PortalInvoice {
+  id: number
+  amount_cents: number
+  currency: string
+  description?: string
+  status: 'sent' | 'paid' | 'cancelled'
+  payment_required: boolean
+}
 
 interface PortalRequest {
   id: number
@@ -12,6 +23,7 @@ interface PortalRequest {
   accountant_firm?: string
   document_types?: string[]
   checklist_items?: string[]
+  invoice?: PortalInvoice | null
 }
 
 interface UploadedFile {
@@ -36,11 +48,44 @@ export default function PortalPage({ params }: { params: Promise<{ shareToken: s
   const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({})
   const [uploadStatus, setUploadStatus] = useState<Record<string, 'idle' | 'uploading' | 'complete' | 'error'>>({})
   const [errorMessage, setErrorMessage] = useState<string>('')
+  const [paymentVerifying, setPaymentVerifying] = useState(false)
+
+  // Signature state
+  const [signatureRequests, setSignatureRequests] = useState<SignatureRequest[]>([])
+  const [signingRequest, setSigningRequest] = useState<SignatureRequest | null>(null)
+  const [signerName, setSignerName] = useState('')
+  const [signatureData, setSignatureData] = useState<string | null>(null)
+  const [consent, setConsent] = useState(false)
+  const [signing, setSigning] = useState(false)
 
   // Resolve the async params (Next.js App Router pattern)
   useEffect(() => {
     params.then((p) => setShareToken(p.shareToken))
   }, [params])
+
+  // Handle payment callback from Paystack redirect
+  useEffect(() => {
+    if (!shareToken) return
+    const urlParams = new URLSearchParams(window.location.search)
+    const isPaymentCallback = urlParams.get('payment') === 'callback'
+    const reference = urlParams.get('reference') || urlParams.get('trxref')
+    if (isPaymentCallback && reference) {
+      setPaymentVerifying(true)
+      fetch(`/api/portal-pay/${shareToken}/verify?reference=${encodeURIComponent(reference)}`)
+        .then(async (res) => {
+          if (res.ok) {
+            // Refresh request data to get updated invoice status
+            void fetchRequest()
+          }
+          // Clean up URL
+          window.history.replaceState({}, '', `/portal/${shareToken}`)
+        })
+        .catch(() => {
+          // silently fail, user can retry
+        })
+        .finally(() => setPaymentVerifying(false))
+    }
+  }, [shareToken]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchRequest = useCallback(async () => {
     if (!shareToken) return
@@ -134,6 +179,65 @@ export default function PortalPage({ params }: { params: Promise<{ shareToken: s
     },
     [request, shareToken]
   )
+
+  const handlePayInvoice = async () => {
+    try {
+      const res = await fetch(`/api/portal-pay/${shareToken}`, { method: 'POST' })
+      const data = await res.json()
+      if (data.authorization_url) {
+        window.location.href = data.authorization_url
+      }
+    } catch {
+      // silently fail
+    }
+  }
+
+  // Signature functions
+  const fetchSignatureRequests = useCallback(async () => {
+    if (!shareToken) return
+    try {
+      const res = await fetch(`/api/portal-sign/${shareToken}`)
+      if (res.ok) {
+        const data: SignatureRequest[] = await res.json()
+        setSignatureRequests(data)
+      }
+    } catch {
+      // silently fail
+    }
+  }, [shareToken])
+
+  useEffect(() => {
+    if (shareToken) {
+      void fetchSignatureRequests()
+    }
+  }, [fetchSignatureRequests, shareToken])
+
+  const handleSign = async () => {
+    if (!signingRequest || !signatureData || !signerName.trim() || !consent) return
+    setSigning(true)
+    try {
+      const res = await fetch(`/api/portal-sign/${shareToken}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          signature_request_id: signingRequest.id,
+          signature_data: signatureData,
+          signer_name: signerName.trim(),
+        }),
+      })
+      if (res.ok) {
+        setSigningRequest(null)
+        setSignatureData(null)
+        setSignerName('')
+        setConsent(false)
+        fetchSignatureRequests()
+      }
+    } catch {
+      // silently fail
+    } finally {
+      setSigning(false)
+    }
+  }
 
   // ── Not found ────────────────────────────────────────────────────────────────
   if (pageState === 'not_found') {
@@ -284,6 +388,38 @@ export default function PortalPage({ params }: { params: Promise<{ shareToken: s
             </div>
           )}
 
+          {/* Invoice / Payment */}
+          {request.invoice && (
+            <div className="bg-neutral-50 border border-neutral-200 rounded-[10px] p-4 mb-6">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-[13px] font-semibold text-neutral-900">Preparation Fee</span>
+                <span className="text-lg font-semibold font-mono text-neutral-900">
+                  ${(request.invoice.amount_cents / 100).toFixed(2)}
+                </span>
+              </div>
+              {request.invoice.description && (
+                <p className="text-[12px] text-neutral-500 mb-3">{request.invoice.description}</p>
+              )}
+              {request.invoice.status === 'paid' ? (
+                <div className="flex items-center gap-2 text-[13px] text-primary-600 font-semibold">
+                  <span>&#10003;</span> Paid
+                </div>
+              ) : paymentVerifying ? (
+                <div className="text-[13px] text-neutral-500 text-center py-2">Verifying payment...</div>
+              ) : (
+                <button
+                  onClick={handlePayInvoice}
+                  className="w-full bg-primary-600 text-white text-[13px] font-semibold py-2.5 rounded-[9px] hover:bg-primary-700 transition cursor-pointer"
+                >
+                  Pay ${(request.invoice.amount_cents / 100).toFixed(2)}
+                </button>
+              )}
+              {request.invoice.payment_required && request.invoice.status !== 'paid' && (
+                <p className="text-[11px] text-neutral-400 mt-2 text-center">Payment is required to access completed documents</p>
+              )}
+            </div>
+          )}
+
           {/* Checklist */}
           {((request.checklist_items && request.checklist_items.length > 0) || (request.document_types && request.document_types.length > 0)) && (
             <div className="space-y-[9px] mb-6">
@@ -313,6 +449,32 @@ export default function PortalPage({ params }: { params: Promise<{ shareToken: s
                   </div>
                 )
               })}
+            </div>
+          )}
+
+          {/* Documents to sign */}
+          {signatureRequests.length > 0 && (
+            <div className="mb-6">
+              <h3 className="text-body-md font-semibold text-neutral-900 mb-3">Documents to Sign</h3>
+              {signatureRequests.map((sig) => (
+                <div key={sig.id} className="border border-neutral-200 rounded-[10px] p-4 mb-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[14px] text-neutral-900">{sig.original_file_name}</span>
+                    {sig.status === 'signed' ? (
+                      <span className="text-[11px] font-semibold text-primary-600 bg-primary-50 px-2 py-0.5 rounded-full">
+                        Signed
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => setSigningRequest(sig)}
+                        className="text-[13px] text-primary-600 font-semibold cursor-pointer"
+                      >
+                        Sign now
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
           )}
 
@@ -371,6 +533,72 @@ export default function PortalPage({ params }: { params: Promise<{ shareToken: s
           </p>
         </div>
       </div>
+
+      {/* Signing modal */}
+      {signingRequest && (
+        <div className="fixed inset-0 bg-neutral-900/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-[16px] max-w-lg w-full p-6">
+            <h3 className="text-lg font-serif text-neutral-900 mb-1">Sign Document</h3>
+            <p className="text-[13px] text-neutral-500 mb-4">{signingRequest.original_file_name}</p>
+
+            {/* PDF Preview */}
+            <div className="border border-neutral-200 rounded-[9px] mb-4 overflow-hidden" style={{ height: '200px' }}>
+              <iframe
+                src={`/api/portal-sign/${shareToken}?preview=${signingRequest.id}`}
+                className="w-full h-full"
+                title="Document preview"
+              />
+            </div>
+
+            {/* Signer Name */}
+            <input
+              type="text"
+              placeholder="Your full name"
+              value={signerName}
+              onChange={(e) => setSignerName(e.target.value)}
+              className="w-full border border-neutral-300 rounded-[9px] px-[14px] py-[12px] text-[14px] mb-4 focus:outline-none focus:border-primary-600"
+            />
+
+            {/* Signature Canvas */}
+            <SignatureCanvas onSignatureChange={setSignatureData} />
+
+            {/* Consent */}
+            <label className="flex items-start gap-2 mt-4 mb-4 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={consent}
+                onChange={(e) => setConsent(e.target.checked)}
+                className="mt-1 accent-primary-600"
+              />
+              <span className="text-[12px] text-neutral-500">
+                I agree that this electronic signature is legally binding and equivalent to my handwritten signature.
+              </span>
+            </label>
+
+            {/* Actions */}
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => {
+                  setSigningRequest(null)
+                  setSignatureData(null)
+                  setSignerName('')
+                  setConsent(false)
+                }}
+                className="px-4 py-2.5 text-[13px] border border-neutral-300 rounded-[9px] hover:bg-neutral-50 transition cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSign}
+                disabled={!consent || !signatureData || !signerName.trim() || signing}
+                className="px-5 py-2.5 text-[13px] font-semibold bg-primary-600 text-white rounded-[9px] disabled:opacity-50 hover:bg-primary-700 transition cursor-pointer"
+              >
+                {signing ? 'Signing...' : 'Sign document'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

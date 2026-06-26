@@ -6,7 +6,7 @@ import { useApi } from '@/hooks/useApi'
 import { useAuth } from '@/hooks/useAuth'
 import { StatusBadge } from '@/components/ui/StatusBadge'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
-import type { DocumentRequest, Client } from '@/types/index'
+import type { DocumentRequest, Client, SignatureRequest } from '@/types/index'
 
 interface UploadedFile {
   id: number
@@ -28,11 +28,22 @@ interface UploadedFile {
   category_display_name?: string
 }
 
+interface RequestInvoice {
+  id: number
+  amount_cents: number
+  currency: string
+  description?: string
+  status: 'sent' | 'paid' | 'cancelled'
+  payment_required: boolean
+  paid_at?: string
+}
+
 interface RequestDetail extends DocumentRequest {
   accountant_name?: string
   accountant_email?: string
   checklist_items?: string[]
   uploaded_files?: UploadedFile[]
+  invoice?: RequestInvoice | null
   documents?: Array<{
     id: number
     name: string
@@ -82,6 +93,12 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
   const [overrideFileId, setOverrideFileId] = useState<number | null>(null)
   const [overrideCategory, setOverrideCategory] = useState('')
   const [overriding, setOverriding] = useState(false)
+
+  // Signature state
+  const [signatureRequests, setSignatureRequests] = useState<SignatureRequest[]>([])
+  const [showAddSignature, setShowAddSignature] = useState(false)
+  const [signatureFile, setSignatureFile] = useState<File | null>(null)
+  const [uploadingSignature, setUploadingSignature] = useState(false)
 
   const CATEGORY_OPTIONS = [
     { slug: 'w2', label: 'W-2' }, { slug: '1099_nec', label: '1099-NEC' },
@@ -189,6 +206,55 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
       alert('Network error -- please try again')
     } finally {
       setRejecting(false)
+    }
+  }
+
+  // Fetch signature requests
+  const fetchSignatureRequests = useCallback(async () => {
+    if (!requestId) return
+    try {
+      const res = await fetch(`/api/signature-requests?request_id=${requestId}`)
+      if (res.ok) {
+        const data: SignatureRequest[] = await res.json()
+        setSignatureRequests(data)
+      }
+    } catch {
+      // silently fail
+    }
+  }, [requestId])
+
+  useEffect(() => {
+    if (requestId) {
+      void fetchSignatureRequests()
+    }
+  }, [fetchSignatureRequests, requestId])
+
+  const handleSignatureFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null
+    setSignatureFile(file)
+  }
+
+  const handleUploadForSigning = async () => {
+    if (!signatureFile || !requestId) return
+    setUploadingSignature(true)
+    try {
+      const formData = new FormData()
+      formData.append('request_id', requestId)
+      formData.append('file', signatureFile)
+
+      const res = await fetch('/api/signature-requests', {
+        method: 'POST',
+        body: formData,
+      })
+      if (res.ok) {
+        setShowAddSignature(false)
+        setSignatureFile(null)
+        fetchSignatureRequests()
+      }
+    } catch {
+      // silently fail
+    } finally {
+      setUploadingSignature(false)
     }
   }
 
@@ -580,6 +646,57 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
                 </div>
               </div>
             )}
+
+            {/* Documents for signing */}
+            <div className="bg-white border border-neutral-200 rounded-card overflow-hidden mt-6">
+              <div className="px-[22px] py-[18px] border-b border-[#EFEAE0] flex justify-between items-center">
+                <h2 className="text-body-md font-semibold text-neutral-900">Documents for signing</h2>
+                <button
+                  onClick={() => setShowAddSignature(true)}
+                  className="text-xs font-semibold text-primary-600 hover:text-primary-700 cursor-pointer"
+                >
+                  + Add document
+                </button>
+              </div>
+              <div className="divide-y divide-neutral-200">
+                {signatureRequests.length > 0 ? (
+                  signatureRequests.map((sig) => (
+                    <div key={sig.id} className="px-[22px] py-[15px] flex items-center justify-between">
+                      <div className="flex-1 min-w-0">
+                        <span className="text-body-md font-medium text-neutral-900 truncate block">{sig.original_file_name}</span>
+                        <div className="text-xs text-neutral-500 mt-1">
+                          Added {new Date(sig.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                          {sig.signer_name && ` · Signed by ${sig.signer_name}`}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 ml-4 flex-shrink-0">
+                        {sig.status === 'signed' ? (
+                          <>
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-green-50 text-green-700 border border-green-200">
+                              Signed
+                            </span>
+                            <a
+                              href={`/api/signature-requests/${sig.id}/download`}
+                              className="text-xs text-primary-600 hover:text-primary-700 font-medium cursor-pointer"
+                            >
+                              Download signed
+                            </a>
+                          </>
+                        ) : (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                            Pending
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="px-6 py-8 text-center text-neutral-500 text-xs">
+                    No documents added for signing yet
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Right: Share link and activity */}
@@ -607,6 +724,34 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
                 </button>
               </div>
             </div>
+
+            {/* Invoice */}
+            {request.invoice && (
+              <div className="bg-white border border-neutral-200 rounded-card p-6">
+                <h3 className="text-body-md font-semibold text-neutral-900 mb-3">Invoice</h3>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <span className="text-2xl font-semibold font-mono text-neutral-900">
+                      ${(request.invoice.amount_cents / 100).toFixed(2)}
+                    </span>
+                    {request.invoice.description && (
+                      <p className="text-[13px] text-neutral-500 mt-1">{request.invoice.description}</p>
+                    )}
+                  </div>
+                  <span className={`text-[11px] font-semibold uppercase px-2.5 py-1 rounded-full ${
+                    request.invoice.status === 'paid' ? 'bg-success-50 text-success-600' : request.invoice.status === 'cancelled' ? 'bg-neutral-100 text-neutral-500' : 'bg-warning-100 text-warning-600'
+                  }`}>
+                    {request.invoice.status}
+                  </span>
+                </div>
+                {request.invoice.payment_required && (
+                  <p className="text-[11px] text-neutral-400 mt-2">Payment required before document delivery</p>
+                )}
+                {request.invoice.paid_at && (
+                  <p className="text-[11px] text-neutral-400 mt-1">Paid {formatDate(request.invoice.paid_at)}</p>
+                )}
+              </div>
+            )}
 
             {/* Activity */}
             <div className="bg-white border border-neutral-200 rounded-card p-6">
@@ -683,6 +828,39 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
               ) : (
                 <img src={`/api/download/${previewFile.id}`} alt={previewFile.file_name} className="max-w-full max-h-[70vh] object-contain" />
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add document for signing modal */}
+      {showAddSignature && (
+        <div className="fixed inset-0 bg-neutral-900/40 z-50 flex items-center justify-center">
+          <div className="bg-neutral-50 rounded-[16px] shadow-hero max-w-sm w-full p-6">
+            <h3 className="text-lg font-serif text-neutral-900 mb-4">Add Document for Signing</h3>
+            <p className="text-[13px] text-neutral-500 mb-4">
+              Upload a PDF that your client needs to sign. They will see it in the portal.
+            </p>
+            <input
+              type="file"
+              accept=".pdf"
+              onChange={handleSignatureFileSelect}
+              className="mb-4 text-[13px] text-neutral-700"
+            />
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => { setShowAddSignature(false); setSignatureFile(null) }}
+                className="px-4 py-2.5 text-[13px] border border-neutral-300 rounded-[9px] hover:bg-neutral-100 transition cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleUploadForSigning}
+                disabled={!signatureFile || uploadingSignature}
+                className="px-5 py-2.5 text-[13px] font-semibold bg-primary-600 text-white rounded-[9px] disabled:opacity-50 hover:bg-primary-700 transition cursor-pointer"
+              >
+                {uploadingSignature ? 'Uploading...' : 'Upload'}
+              </button>
             </div>
           </div>
         </div>

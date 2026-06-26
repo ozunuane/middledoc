@@ -19,7 +19,7 @@ if (SENDGRID_API_KEY) {
   sgMail.setApiKey(SENDGRID_API_KEY)
 }
 
-export type ReminderType = 'initial' | '7day' | '3day' | 'deadline' | 'rejection'
+export type ReminderType = 'initial' | '7day' | '3day' | 'deadline' | 'rejection' | 'invoice'
 
 interface SendReminderParams {
   clientEmail: string
@@ -35,6 +35,9 @@ interface SendReminderParams {
   /** Only used for rejection emails */
   fileName?: string
   rejectionReason?: string
+  /** Only used for invoice emails */
+  invoiceAmount?: string
+  invoiceDescription?: string
 }
 
 // ---------------------------------------------------------------------------
@@ -73,6 +76,11 @@ export const DEFAULT_TEMPLATES: Record<string, DefaultTemplate> = {
     body: 'I reviewed {fileName} and unfortunately need a different version. Here\'s why:\n\n{rejectionReason}\n\nPlease upload a corrected file through the link below.',
     cta: 'Re-upload document',
   },
+  invoice: {
+    subject: 'Invoice for {requestTitle} — ${invoiceAmount}',
+    body: 'Attached to your document request for {requestTitle} is a preparation fee of ${invoiceAmount}.\n\n{invoiceDescription}\n\nYou can review and pay securely through the link below.',
+    cta: 'View & pay',
+  },
 }
 
 export function getDefaultTemplates(): Record<string, DefaultTemplate> {
@@ -101,6 +109,8 @@ function getBarColor(reminderType: ReminderType): string {
     case 'deadline':
     case 'rejection':
       return '#C0492F'
+    case 'invoice':
+      return '#0F7A63'
   }
 }
 
@@ -120,6 +130,8 @@ function getSubject(reminderType: ReminderType, requestTitle: string, pendingIte
       return `Today's the deadline -- but we have options`
     case 'rejection':
       return `Action needed: ${escapeHtml(fileName ?? 'your document')} was not accepted`
+    case 'invoice':
+      return `Invoice for ${escapeHtml(requestTitle)}`
   }
 }
 
@@ -180,6 +192,18 @@ function getBodyHtml(params: SendReminderParams): string {
         </div>
         <p style="font-size:14.5px; line-height:1.6; color:#3A3D42; margin:0 0 22px;">Please re-upload through the link below.</p>
       `
+
+    case 'invoice':
+      return `
+        <p style="font-size:14.5px; line-height:1.6; color:#3A3D42; margin:0 0 14px;">Hi ${escapeHtml(params.clientName)},</p>
+        <p style="font-size:14.5px; line-height:1.6; color:#3A3D42; margin:0 0 14px;">Attached to your document request for <strong style="color:#17191C;">${escapeHtml(params.requestTitle)}</strong> is a preparation fee of <strong style="color:#17191C;">$${escapeHtml(params.invoiceAmount ?? '0.00')}</strong>.</p>
+        ${params.invoiceDescription ? `<p style="font-size:14px; line-height:1.5; color:#5A5D62; margin:0 0 14px;">${escapeHtml(params.invoiceDescription)}</p>` : ''}
+        <div style="background:#F0F9F6; border:1px solid #B8E0D4; border-radius:10px; padding:14px 16px; margin-bottom:20px;">
+          <p style="font-size:20px; color:#17191C; margin:0; font-weight:700; font-family:monospace;">$${escapeHtml(params.invoiceAmount ?? '0.00')}</p>
+          <p style="font-size:12px; color:#5A5D62; margin:4px 0 0;">Due with your document submission</p>
+        </div>
+        <p style="font-size:14.5px; line-height:1.6; color:#3A3D42; margin:0 0 22px;">You can review and pay securely through the link below.</p>
+      `
   }
 }
 
@@ -194,6 +218,8 @@ function getCtaText(reminderType: ReminderType, pendingCount?: number): string {
       return 'Upload now'
     case 'rejection':
       return 'Re-upload document'
+    case 'invoice':
+      return 'View & pay'
   }
 }
 
