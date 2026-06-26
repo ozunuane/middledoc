@@ -5,6 +5,7 @@ import path from 'path'
 import { randomUUID } from 'crypto'
 import { checkStorageLimit } from '@/lib/plan-enforcement'
 import { classifyDocument } from '@/lib/ai-classify'
+import { sendPushToAccountant } from '@/lib/web-push-service'
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10 MB
 const UPLOADS_BASE = '/app/uploads'
@@ -109,6 +110,17 @@ export async function POST(
       file.name,
       requestData?.checklist_items || []
     )
+
+    // Send push notification to the accountant (non-blocking)
+    const clientData = await getOne<{ name: string }>(
+      'SELECT name FROM clients WHERE id = $1',
+      [clientId]
+    )
+    void sendPushToAccountant(accountantId, {
+      title: 'New document uploaded',
+      body: `${file.name} uploaded${clientData?.name ? ` for ${clientData.name}` : ''}`,
+      url: `/dashboard/requests/${requestId}`,
+    }).catch(() => {})
 
     return NextResponse.json(
       {

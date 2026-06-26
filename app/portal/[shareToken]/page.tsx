@@ -3,6 +3,7 @@
 import React, { useState, useCallback, useEffect } from 'react'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { SignatureCanvas } from '@/components/SignatureCanvas'
+import { InstallPrompt } from '@/components/InstallPrompt'
 import type { SignatureRequest } from '@/types/index'
 
 interface PortalInvoice {
@@ -478,8 +479,42 @@ export default function PortalPage({ params }: { params: Promise<{ shareToken: s
             </div>
           )}
 
-          {/* File input */}
-          <div className="mb-4">
+          {/* Mobile Camera + File Buttons (visible on small screens only) */}
+          <div className="flex gap-3 mb-4 sm:hidden">
+            <label className="flex-1 cursor-pointer">
+              <input
+                type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={(e) => handleFilesSelected(e.target.files)}
+                className="hidden"
+                disabled={isUploading}
+              />
+              <div className="bg-primary-600 text-white text-center text-[13px] font-semibold py-3 rounded-[9px] flex items-center justify-center gap-2">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/>
+                  <circle cx="12" cy="13" r="4"/>
+                </svg>
+                Take Photo
+              </div>
+            </label>
+            <label className="flex-1 cursor-pointer">
+              <input
+                type="file"
+                multiple
+                accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.png,.jpg,.jpeg,.gif,.webp"
+                onChange={(e) => handleFilesSelected(e.target.files)}
+                className="hidden"
+                disabled={isUploading}
+              />
+              <div className="bg-white border border-neutral-300 text-neutral-900 text-center text-[13px] font-medium py-3 rounded-[9px]">
+                Choose Files
+              </div>
+            </label>
+          </div>
+
+          {/* Desktop drag-and-drop area (hidden on small screens) */}
+          <div className="mb-4 hidden sm:block">
             <label className="block">
               <input
                 type="file"
@@ -491,7 +526,7 @@ export default function PortalPage({ params }: { params: Promise<{ shareToken: s
               />
               <div className="border-[1.5px] border-dashed border-primary-200 bg-primary-50 rounded-[13px] p-8 text-center cursor-pointer hover:border-primary-500 hover:bg-primary-100 transition">
                 <div className="w-[44px] h-[44px] rounded-[12px] bg-primary-600 flex items-center justify-center mx-auto mb-3">
-                  <span className="text-white text-xl">↑</span>
+                  <span className="text-white text-xl">&uarr;</span>
                 </div>
                 <div className="text-body-md font-semibold text-neutral-900 mb-1">
                   Drop files here, or{' '}
@@ -533,6 +568,9 @@ export default function PortalPage({ params }: { params: Promise<{ shareToken: s
           </p>
         </div>
       </div>
+
+      {/* PWA Install Prompt */}
+      <InstallPrompt />
 
       {/* Signing modal */}
       {signingRequest && (

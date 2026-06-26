@@ -6,6 +6,17 @@ import { useAuth } from '@/hooks/useAuth'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import type { NotificationEmail } from '@/types/index'
 
+function urlBase64ToUint8Array(base64String: string): Uint8Array {
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4)
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/')
+  const rawData = window.atob(base64)
+  const outputArray = new Uint8Array(rawData.length)
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i)
+  }
+  return outputArray
+}
+
 export default function NotificationEmailsPage() {
   const { user, loading: authLoading } = useAuth(true)
 
@@ -20,6 +31,11 @@ export default function NotificationEmailsPage() {
 
   // Remove loading
   const [removingId, setRemovingId] = useState<number | null>(null)
+
+  // Push notification state
+  const [pushSupported, setPushSupported] = useState(false)
+  const [pushEnabled, setPushEnabled] = useState(false)
+  const [pushLoading, setPushLoading] = useState(false)
 
   const showToast = (message: string) => {
     setToast(message)
@@ -40,6 +56,93 @@ export default function NotificationEmailsPage() {
   useEffect(() => {
     if (user) void fetchEmails()
   }, [user, fetchEmails])
+
+  // Check push notification support and current state
+  useEffect(() => {
+    if ('serviceWorker' in navigator && 'PushManager' in window) {
+      setPushSupported(true)
+      navigator.serviceWorker.ready.then((reg) => {
+        reg.pushManager.getSubscription().then((sub) => {
+          setPushEnabled(!!sub)
+        })
+      })
+    }
+  }, [])
+
+  const handleEnablePush = async () => {
+    setPushLoading(true)
+    try {
+      // Get VAPID key from server
+      const keyRes = await fetch('/api/push-subscribe')
+      if (!keyRes.ok) {
+        showToast('Push notifications are not configured on the server')
+        return
+      }
+      const { vapidPublicKey } = await keyRes.json()
+
+      // Request permission
+      const permission = await Notification.requestPermission()
+      if (permission !== 'granted') {
+        showToast('Notification permission denied')
+        return
+      }
+
+      // Subscribe via the service worker
+      const reg = await navigator.serviceWorker.ready
+      const subscription = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(vapidPublicKey) as BufferSource,
+      })
+
+      const subJson = subscription.toJSON()
+
+      // Save subscription to server
+      const res = await fetch('/api/push-subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          endpoint: subJson.endpoint,
+          keys: subJson.keys,
+        }),
+      })
+
+      if (res.ok) {
+        setPushEnabled(true)
+        showToast('Push notifications enabled')
+      } else {
+        showToast('Failed to save push subscription')
+      }
+    } catch {
+      showToast('Failed to enable push notifications')
+    } finally {
+      setPushLoading(false)
+    }
+  }
+
+  const handleDisablePush = async () => {
+    setPushLoading(true)
+    try {
+      const reg = await navigator.serviceWorker.ready
+      const subscription = await reg.pushManager.getSubscription()
+      if (subscription) {
+        const endpoint = subscription.endpoint
+        await subscription.unsubscribe()
+
+        // Remove from server
+        await fetch('/api/push-subscribe', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ endpoint }),
+        })
+      }
+      setPushEnabled(false)
+      showToast('Push notifications disabled')
+    } catch {
+      showToast('Failed to disable push notifications')
+    } finally {
+      setPushLoading(false)
+    }
+  }
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -130,6 +233,40 @@ export default function NotificationEmailsPage() {
           <p className="text-body-md text-neutral-500">
             These email addresses will receive a BCC copy of every email sent to your clients (reminders, rejections, etc.).
           </p>
+        </div>
+
+        {/* Push Notifications */}
+        <div className="bg-white border border-neutral-200 rounded-card p-6 mb-4">
+          <h3 className="text-body-md font-semibold text-neutral-900 mb-2">Push Notifications</h3>
+          <p className="text-[13px] text-neutral-500 mb-4">
+            Get instant alerts on your device when clients upload documents.
+          </p>
+
+          {pushSupported ? (
+            pushEnabled ? (
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-primary-600"></span>
+                <span className="text-[13px] text-neutral-900">Push notifications enabled</span>
+                <button
+                  onClick={handleDisablePush}
+                  disabled={pushLoading}
+                  className="ml-auto text-[13px] text-danger-600 cursor-pointer disabled:opacity-50"
+                >
+                  {pushLoading ? 'Disabling...' : 'Disable'}
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={handleEnablePush}
+                disabled={pushLoading}
+                className="bg-primary-600 text-white text-[13px] font-semibold px-4 py-2.5 rounded-[9px] cursor-pointer disabled:opacity-50"
+              >
+                {pushLoading ? 'Enabling...' : 'Enable push notifications'}
+              </button>
+            )
+          ) : (
+            <p className="text-[13px] text-neutral-400">Push notifications are not supported in this browser.</p>
+          )}
         </div>
 
         {loading ? (
