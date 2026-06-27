@@ -50,12 +50,12 @@ export default function Home() {
       <nav className="bg-white border-b border-neutral-200" style={{ padding: '22px 48px' }}>
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center gap-3">
+          <Link href="/" className="flex items-center gap-3 cursor-pointer">
             <div className="w-[30px] h-[30px] rounded-[7px] bg-neutral-900 flex items-center justify-center">
               <div className="w-[11px] h-[11px] rounded-sm bg-primary-500"></div>
             </div>
             <span className="text-lg font-semibold text-neutral-900">MiddleDoc</span>
-          </div>
+          </Link>
 
           {/* Nav Links - hidden on mobile */}
           <div className="hidden md:flex items-center gap-[34px]">

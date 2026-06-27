@@ -199,12 +199,12 @@ export default function NotificationEmailsPage() {
       {/* Top Navigation */}
       <div className="bg-white border-b border-neutral-200 px-9 py-4.5 flex items-center justify-between mb-8">
         <div className="flex items-center gap-8">
-          <div className="flex items-center gap-3">
+          <Link href="/" className="flex items-center gap-3 cursor-pointer">
             <div className="w-7 h-7 rounded-lg bg-neutral-900 flex items-center justify-center">
               <div className="w-2.5 h-2.5 rounded-sm bg-primary-500"></div>
             </div>
             <span className="text-[16px] font-semibold text-neutral-900">MiddleDoc</span>
-          </div>
+          </Link>
           <div className="flex gap-6">
             <Link href="/dashboard" className="text-sm text-neutral-500 hover:text-neutral-900 transition">Dashboard</Link>
             <Link href="/dashboard/clients" className="text-sm text-neutral-500 hover:text-neutral-900 transition">Clients</Link>
