@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MiddleDoc — Pitch Deck 2026</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--emerald:#0F7A63;
+--dark:#17191C;
+--paper:#F7F4EE;
+--body:#3A3D42;
+--muted:#7A7468;
+--emerald-light:#e8f5f1;
+--emerald-dark:#0a5a49;
+}
+html{scroll-behavior:smooth;scroll-snap-type:y mandatory;overflow-x:hidden}
+body{font-family:system-ui,-apple-system,sans-serif;color:var(--body);background:var(--paper);line-height:1.6;overflow-x:hidden}
+h1,h2,h3,h4{font-family:Georgia,'Times New Roman',serif;font-weight:700;color:var(--dark)}
+section{min-height:100vh;width:100%;scroll-snap-align:start;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:3rem 2rem;position:relative}
+section:nth-child(even){background:#fff}
+section:nth-child(odd){background:var(--paper)}
+.container{max-width:1100px;width:100%;margin:0 auto}
+.big-number{font-family:Georgia,serif;font-size:clamp(2rem,5vw,3.5rem);color:var(--emerald);font-weight:700;line-height:1.1}
+.big-headline{font-size:clamp(1.8rem,4.5vw,3rem);line-height:1.2;max-width:800px;text-align:center;margin:0 auto}
+.subtitle{font-size:1.1rem;color:var(--muted);margin-top:.5rem}
+.cols{display:grid;gap:2rem}
+.cols-2{grid-template-columns:1fr 1fr}
+.cols-3{grid-template-columns:repeat(3,1fr)}
+.cols-4{grid-template-columns:repeat(4,1fr)}
+.card{background:#fff;border-radius:12px;padding:1.5rem;border:1px solid #e8e4dc;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.card-emerald{border-left:4px solid var(--emerald)}
+.tag{display:inline-block;background:var(--emerald-light);color:var(--emerald);padding:.2rem .7rem;border-radius:20px;font-size:.8rem;font-weight:600}
+.highlight{color:var(--emerald)}
+.stat-row{display:flex;gap:2rem;justify-content:center;flex-wrap:wrap;margin:2rem 0}
+.stat{text-align:center}
+.stat .big-number{display:block;margin-bottom:.3rem}
+.stat .label{font-size:.9rem;color:var(--muted)}
+.email-snippet{background:#fff;border-left:3px solid var(--muted);padding:.6rem 1rem;margin:.4rem 0;border-radius:0 6px 6px 0;font-size:.85rem;color:var(--body)}
+.email-snippet strong{color:var(--dark)}
+.cta-btn{display:inline-block;background:var(--emerald);color:#fff;padding:.8rem 2rem;border-radius:8px;font-size:1.1rem;font-weight:600;text-decoration:none;margin-top:1rem;border:none;cursor:pointer}
+.cta-btn:hover{background:var(--emerald-dark)}
+
+/* Logo */
+.logo{display:flex;align-items:center;gap:.8rem;margin-bottom:1rem}
+.logo-icon{width:56px;height:56px;background:var(--dark);border-radius:12px;position:relative;display:flex;align-items:center;justify-content:center}
+.logo-icon::after{content:'';width:14px;height:14px;background:var(--emerald);border-radius:50%;position:absolute}
+.logo-text{font-family:Georgia,serif;font-size:2rem;font-weight:700;color:var(--dark)}
+
+/* Slide counter */
+#counter{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--dark);color:#fff;padding:.4rem .9rem;border-radius:20px;font-size:.8rem;z-index:100;font-variant-numeric:tabular-nums}
+
+/* Feature grid */
+.feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem}
+.feature-card{padding:1.2rem;border-radius:10px;background:#fff;border:1px solid #e8e4dc}
+.feature-card h4{font-size:1rem;margin-bottom:.3rem;color:var(--emerald)}
+.feature-card p{font-size:.85rem;color:var(--muted)}
+
+/* Pricing */
+.price-card{text-align:center;padding:1.5rem 1rem;border-radius:12px;background:#fff;border:1px solid #e8e4dc}
+.price-card.featured{border:2px solid var(--emerald);box-shadow:0 4px 20px rgba(15,122,99,.15)}
+.price-card h4{font-size:1rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.price-card .price{font-family:Georgia,serif;font-size:2.2rem;color:var(--dark);margin:.5rem 0}
+.price-card .price span{font-size:.9rem;color:var(--muted);font-family:system-ui}
+.price-card ul{list-style:none;text-align:left;font-size:.82rem;color:var(--body);margin-top:.8rem}
+.price-card ul li{padding:.25rem 0;border-bottom:1px solid #f0ece4}
+.price-card ul li::before{content:"\2713 ";color:var(--emerald);font-weight:700}
+
+/* 2x2 map */
+.quad-map{width:100%;max-width:500px;aspect-ratio:1;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;border:2px solid #e8e4dc;border-radius:12px;overflow:hidden;margin:1.5rem auto}
+.quad-map .cell{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1rem;gap:.3rem;font-size:.85rem;text-align:center}
+.quad-map .cell:nth-child(1){background:var(--emerald-light);border-right:1px solid #e8e4dc;border-bottom:1px solid #e8e4dc}
+.quad-map .cell:nth-child(2){border-bottom:1px solid #e8e4dc}
+.quad-map .cell:nth-child(3){border-right:1px solid #e8e4dc}
+.quad-map .middledoc-dot{background:var(--emerald);color:#fff;padding:.3rem .8rem;border-radius:20px;font-weight:700;font-size:.9rem}
+.quad-map .comp-dot{color:var(--muted);font-weight:600}
+.axis-label{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+
+/* Timeline */
+.timeline{position:relative;padding-left:2rem}
+.timeline::before{content:'';position:absolute;left:.55rem;top:0;bottom:0;width:3px;background:var(--emerald);border-radius:2px}
+.timeline-item{position:relative;margin-bottom:1.5rem;padding-left:1.5rem}
+.timeline-item::before{content:'';position:absolute;left:-.95rem;top:.45rem;width:14px;height:14px;background:var(--emerald);border-radius:50%;border:3px solid var(--paper)}
+.timeline-item h4{font-size:1rem;color:var(--emerald)}
+.timeline-item p{font-size:.88rem;color:var(--body)}
+
+/* Mockups */
+.mockup{background:#fff;border:2px solid #e8e4dc;border-radius:12px;padding:1rem;width:100%}
+.mockup-bar{height:10px;border-radius:5px;margin:.4rem 0;background:#e8e4dc}
+.mockup-bar.filled{background:var(--emerald);opacity:.6}
+.mockup-bar.short{width:60%}
+.mockup-bar.medium{width:80%}
+.mockup-row{display:flex;gap:.5rem;margin:.4rem 0}
+.mockup-box{height:36px;border-radius:6px;flex:1;background:#f0ece4}
+.mockup-box.green{background:var(--emerald-light)}
+.mockup-header{background:var(--dark);color:#fff;padding:.5rem .8rem;border-radius:8px 8px 0 0;font-size:.75rem;font-weight:600}
+
+/* Role hierarchy */
+.role-tree{display:flex;flex-direction:column;align-items:center;gap:.5rem}
+.role-node{background:var(--emerald);color:#fff;padding:.5rem 1.5rem;border-radius:8px;font-weight:600;font-size:.9rem}
+.role-node.sub{background:var(--emerald-light);color:var(--emerald)}
+.role-connector{width:2px;height:20px;background:var(--emerald)}
+.role-branches{display:flex;gap:2rem;align-items:flex-start}
+
+/* GTM phases */
+.phase{display:flex;gap:1rem;align-items:flex-start;margin:.8rem 0}
+.phase-num{background:var(--emerald);color:#fff;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;flex-shrink:0}
+.phase-content h4{font-size:.95rem;color:var(--dark);margin-bottom:.15rem}
+.phase-content p{font-size:.85rem;color:var(--muted)}
+
+/* Flow arrow */
+.flow{display:flex;align-items:center;justify-content:center;gap:1rem;flex-wrap:wrap;margin:1.5rem 0}
+.flow-step{background:var(--emerald-light);border:2px solid var(--emerald);border-radius:10px;padding:1rem 1.5rem;text-align:center;min-width:140px}
+.flow-step h4{color:var(--emerald);font-size:1rem}
+.flow-step p{font-size:.8rem;color:var(--body);margin-top:.3rem}
+.flow-arrow{font-size:1.5rem;color:var(--emerald);font-weight:700}
+
+/* Traction grid */
+.traction-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem}
+.traction-item{text-align:center;padding:1rem;background:#fff;border-radius:10px;border:1px solid #e8e4dc}
+.traction-item .big-number{font-size:1.8rem;display:block}
+.traction-item .label{font-size:.82rem;color:var(--muted)}
+
+/* AI flow */
+.ai-flow{display:flex;flex-direction:column;align-items:center;gap:.3rem;margin:1.5rem 0}
+.ai-flow-step{background:var(--emerald-light);padding:.6rem 1.5rem;border-radius:8px;font-size:.88rem;text-align:center;width:100%;max-width:400px}
+.ai-flow-arrow{color:var(--emerald);font-size:1.2rem}
+
+@media(max-width:768px){
+  .cols-2,.cols-3,.cols-4,.feature-grid{grid-template-columns:1fr}
+  section{padding:2rem 1.2rem}
+  .flow{flex-direction:column}
+  .flow-arrow{transform:rotate(90deg)}
+  .role-branches{flex-direction:column;align-items:center}
+  .quad-map{max-width:100%}
+}
+</style>
+</head>
+<body>
+
+<!-- Slide Counter -->
+<div id="counter">1 / 15</div>
+
+<!-- SLIDE 1: Title -->
+<section>
+<div class="container" style="text-align:center">
+  <div class="logo" style="justify-content:center;margin-bottom:2rem">
+    <div class="logo-icon"></div>
+    <div class="logo-text">MiddleDoc</div>
+  </div>
+  <h1 style="font-size:clamp(1.5rem,4vw,2.5rem);margin-bottom:1rem">The document collection platform<br>built for accountants.</h1>
+  <p style="color:var(--muted);font-size:.95rem">Pitch Deck &middot; 2026</p>
+</div>
+</section>
+
+<!-- SLIDE 2: The Problem -->
+<section>
+<div class="container">
+  <h2 class="big-headline">Accountants lose 5-10 hours every week chasing documents.</h2>
+  <div style="max-width:600px;margin:2rem auto">
+    <div class="email-snippet"><strong>Email 1:</strong> "Hi Sarah, please send your W-2, 1099s, and bank statements."</div>
+    <div class="email-snippet"><strong>Email 2 (5 days later):</strong> "Just following up on those documents."</div>
+    <div class="email-snippet"><strong>Email 3 (2 days later):</strong> "Got the W-2 but still need the 1099-INT and bank statements."</div>
+    <div class="email-snippet"><strong>Email 4:</strong> "The file you sent is corrupted, can you resend?"</div>
+    <div class="email-snippet"><strong>Email 5:</strong> "Thanks, but this is from 2024 &mdash; I need 2025."</div>
+  </div>
+  <p style="text-align:center;margin-top:1.5rem;font-size:1.1rem"><strong class="highlight">150 clients &times; 5 follow-ups each = 750 emails per tax season</strong></p>
+</div>
+</section>
+
+<!-- SLIDE 3: Cost of the Problem -->
+<section>
+<div class="container" style="text-align:center">
+  <h2 style="margin-bottom:2rem">The Cost of the Problem</h2>
+  <div class="stat-row">
+    <div class="stat">
+      <span class="big-number">5-10 hrs/wk</span>
+      <span class="label">Lost to document chasing</span>
+    </div>
+    <div class="stat">
+      <span class="big-number">$39,000-156,000</span>
+      <span class="label">Per year in lost revenue<br>(at $150-300/hr billing rates)</span>
+    </div>
+  </div>
+  <div style="margin-top:2rem;padding:1.2rem;background:#fff;border-radius:10px;border:1px solid #e8e4dc;display:inline-block">
+    <p style="color:var(--muted);font-size:.9rem;margin-bottom:.5rem">Current "solutions" cost</p>
+    <p style="font-size:1.3rem;font-weight:700;color:var(--dark)">$67-150 / user / month</p>
+    <p style="font-size:.85rem;color:var(--muted);margin-top:.3rem">TaxDome &middot; Canopy &middot; Liscio &middot; SmartVault</p>
+  </div>
+  <p style="margin-top:1.5rem;font-size:1.15rem;font-weight:600;color:var(--dark)">Small firms are priced out.</p>
+</div>
+</section>
+
+<!-- SLIDE 4: The Solution -->
+<section>
+<div class="container" style="text-align:center">
+  <h2 style="margin-bottom:.5rem">One link. Zero friction. Every document.</h2>
+  <p class="subtitle" style="margin-bottom:2rem">Three steps. That is the entire workflow.</p>
+  <div class="flow">
+    <div class="flow-step">
+      <div style="font-size:2rem;margin-bottom:.3rem">&#9776;</div>
+      <h4>Create</h4>
+      <p>Build a request from a template or from scratch</p>
+    </div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-step">
+      <div style="font-size:2rem;margin-bottom:.3rem">&#9993;</div>
+      <h4>Share</h4>
+      <p>Send a secure link. Client needs no account.</p>
+    </div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-step">
+      <div style="font-size:2rem;margin-bottom:.3rem">&#10003;</div>
+      <h4>Track</h4>
+      <p>AI auto-matches uploads. Reminders send themselves.</p>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- SLIDE 5: Product Shot -->
+<section>
+<div class="container">
+  <h2 style="text-align:center;margin-bottom:2rem">What It Looks Like</h2>
+  <div class="cols cols-2">
+    <div>
+      <p style="font-weight:600;margin-bottom:.5rem;color:var(--emerald)">What the accountant sees</p>
+      <div class="mockup">
+        <div class="mockup-header">MiddleDoc &mdash; Dashboard</div>
+        <div style="padding:.8rem">
+          <div class="mockup-row"><div class="mockup-box green"></div><div class="mockup-box"></div><div class="mockup-box"></div></div>
+          <div class="mockup-bar filled"></div>
+          <div class="mockup-bar filled medium"></div>
+          <div class="mockup-bar short"></div>
+          <div class="mockup-row"><div class="mockup-box green"></div><div class="mockup-box green"></div><div class="mockup-box"></div></div>
+          <div class="mockup-bar filled"></div>
+          <div class="mockup-bar medium"></div>
+        </div>
+      </div>
+      <p style="font-size:.8rem;color:var(--muted);margin-top:.4rem">Every client, every document, every status in one view</p>
+    </div>
+    <div>
+      <p style="font-weight:600;margin-bottom:.5rem;color:var(--emerald)">What the client sees</p>
+      <div class="mockup">
+        <div class="mockup-header" style="background:var(--emerald)">Upload your documents</div>
+        <div style="padding:.8rem">
+          <div class="mockup-bar filled short"></div>
+          <div class="mockup-row"><div class="mockup-box green" style="height:48px"></div></div>
+          <div class="mockup-bar filled medium"></div>
+          <div class="mockup-row"><div class="mockup-box green" style="height:48px"></div></div>
+          <div class="mockup-bar short"></div>
+          <div class="mockup-row"><div class="mockup-box" style="height:48px"></div></div>
+        </div>
+      </div>
+      <p style="font-size:.8rem;color:var(--muted);margin-top:.4rem">No account needed. Click, upload, done.</p>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- SLIDE 6: AI -->
+<section>
+<div class="container" style="text-align:center">
+  <h2 style="margin-bottom:.5rem">AI knows a W-2 from a bank statement.</h2>
+  <p class="subtitle" style="margin-bottom:2rem">Every upload is structured data, not just a file drop.</p>
+  <div class="ai-flow">
+    <div class="ai-flow-step">Client uploads "sarah_w2_2025.pdf"</div>
+    <div class="ai-flow-arrow">&darr;</div>
+    <div class="ai-flow-step" style="background:var(--emerald);color:#fff">AI analyzes file content (not just filename)</div>
+    <div class="ai-flow-arrow">&darr;</div>
+    <div class="ai-flow-step">Classification: <strong>W-2</strong> (confidence: 94%)</div>
+    <div class="ai-flow-arrow">&darr;</div>
+    <div class="ai-flow-step">Auto-matched to checklist &bull; Status: Received</div>
+  </div>
+  <div class="stat-row" style="margin-top:1.5rem">
+    <div class="stat"><span class="big-number">25</span><span class="label">Document types</span></div>
+    <div class="stat"><span class="big-number">94%</span><span class="label">Accuracy</span></div>
+    <div class="stat"><span class="big-number">2</span><span class="label">AI providers<br>(OpenAI + Anthropic)</span></div>
+  </div>
+  <p style="color:var(--muted);font-size:.9rem;margin-top:.5rem">Smart requests: auto-generates next year's checklist from this year's uploads.</p>
+</div>
+</section>
+
+<!-- SLIDE 7: Features Grid -->
+<section>
+<div class="container">
+  <h2 style="text-align:center;margin-bottom:2rem">Key Features</h2>
+  <div class="feature-grid">
+    <div class="feature-card"><h4>No-Login Portal</h4><p>Clients upload via link. No account, no password, no friction.</p></div>
+    <div class="feature-card"><h4>AI Classification</h4><p>Auto-categorize every document across 25 types with dual AI providers.</p></div>
+    <div class="feature-card"><h4>$0 E-Signatures</h4><p>Built-in, unlimited, legally compliant. Competitors charge $1-3 each.</p></div>
+    <div class="feature-card"><h4>Auto Reminders</h4><p>7 days, 3 days, deadline. Hands-free follow-up that works.</p></div>
+    <div class="feature-card"><h4>Client Invoicing</h4><p>Collect fees through the same portal. Stripe + Paystack.</p></div>
+    <div class="feature-card"><h4>QuickBooks Sync</h4><p>Import clients with one click. OAuth 2.0 integration.</p></div>
+  </div>
+</div>
+</section>
+
+<!-- SLIDE 8: Teams -->
+<section>
+<div class="container" style="text-align:center">
+  <h2 style="margin-bottom:.5rem">Built for firms, not just solos.</h2>
+  <p class="subtitle" style="margin-bottom:2rem">Granular access control at every level.</p>
+  <div class="role-tree">
+    <div class="role-node">Owner</div>
+    <div class="role-connector"></div>
+    <div class="role-branches">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:.4rem">
+        <div class="role-node sub">Admin</div>
+        <div class="role-connector" style="height:12px"></div>
+        <div class="role-node sub">Member</div>
+      </div>
+    </div>
+  </div>
+  <div class="cols cols-2" style="margin-top:2rem;max-width:600px;margin-left:auto;margin-right:auto">
+    <div class="card card-emerald">
+      <h4 style="font-size:.95rem;color:var(--emerald)">Groups</h4>
+      <p style="font-size:.85rem">Tax Team sees tax clients.<br>Audit Team sees audit clients.</p>
+    </div>
+    <div class="card card-emerald">
+      <h4 style="font-size:.95rem;color:var(--emerald)">Contractors</h4>
+      <p style="font-size:.85rem">See only the clients you assign them. API-level enforcement.</p>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- SLIDE 9: Pricing -->
+<section>
+<div class="container" style="text-align:center">
+  <h2 style="margin-bottom:.3rem">Flat pricing. Not per-user.</h2>
+  <p class="subtitle" style="margin-bottom:2rem">Your bill stays the same as your team grows.</p>
+  <div class="cols cols-4">
+    <div class="price-card">
+      <h4>Free</h4>
+      <div class="price">$0<span>/mo</span></div>
+      <ul><li>1 user</li><li>5 clients</li><li>AI recognition</li><li>E-signatures</li><li>1 GB storage</li></ul>
+    </div>
+    <div class="price-card">
+      <h4>Solo</h4>
+      <div class="price">$19<span>/mo</span></div>
+      <ul><li>1 user</li><li>50 clients</li><li>Auto reminders</li><li>Full analytics</li><li>10 GB storage</li></ul>
+    </div>
+    <div class="price-card featured">
+      <h4>Team</h4>
+      <div class="price">$39<span>/mo</span></div>
+      <ul><li>Unlimited users</li><li>200 clients</li><li>Teams + groups</li><li>QuickBooks sync</li><li>50 GB storage</li></ul>
+    </div>
+    <div class="price-card">
+      <h4>Firm</h4>
+      <div class="price">$79<span>/mo</span></div>
+      <ul><li>Unlimited users</li><li>Unlimited clients</li><li>Everything in Team</li><li>Priority support</li><li>Unlimited storage</li></ul>
+    </div>
+  </div>
+  <div class="card" style="margin-top:1.5rem;display:inline-block;text-align:center;max-width:700px">
+    <p style="font-size:1rem"><strong>A 5-person firm pays <span class="highlight">$39/month</span> on MiddleDoc</strong></p>
+    <p style="font-size:.9rem;color:var(--muted)">vs $335-750/month on TaxDome, Canopy, or Liscio</p>
+  </div>
+</div>
+</section>
+
+<!-- SLIDE 10: Market -->
+<section>
+<div class="container" style="text-align:center">
+  <h2 style="margin-bottom:2rem">Market Opportunity</h2>
+  <div class="stat-row">
+    <div class="stat"><span class="big-number">$23.5B</span><span class="label">TAM &mdash; Global accounting<br>software market</span></div>
+    <div class="stat"><span class="big-number">50,885</span><span class="label">SAM &mdash; CPA practices<br>in the US</span></div>
+    <div class="stat"><span class="big-number">33,850</span><span class="label">SOM &mdash; Solo practitioners<br>Our beachhead</span></div>
+  </div>
+  <div class="cols cols-2" style="max-width:600px;margin:1.5rem auto 0;text-align:left">
+    <div class="card card-emerald">
+      <h4 style="font-size:.95rem;color:var(--emerald)">Secondary: West Africa</h4>
+      <p style="font-size:.85rem">Nigeria and Kenya. Growing accounting sector.<br><strong>Zero dedicated competition.</strong></p>
+    </div>
+    <div class="card card-emerald">
+      <h4 style="font-size:.95rem;color:var(--emerald)">Growth Rate</h4>
+      <p style="font-size:.85rem"><span style="font-family:Georgia,serif;font-size:1.5rem;color:var(--emerald);font-weight:700">8.85%</span><br>CAGR</p>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- SLIDE 11: Competitive Landscape -->
+<section>
+<div class="container" style="text-align:center">
+  <h2 style="margin-bottom:1.5rem">Competitive Landscape</h2>
+  <div style="display:flex;justify-content:center;gap:.3rem;align-items:center;margin-bottom:.3rem">
+    <span class="axis-label">Affordable</span>
+    <span style="flex:1"></span>
+  </div>
+  <div class="quad-map">
+    <div class="cell">
+      <span class="axis-label">Focused + Affordable</span>
+      <span class="middledoc-dot">MiddleDoc</span>
+    </div>
+    <div class="cell">
+      <span class="axis-label">Full Suite + Affordable</span>
+      <span class="comp-dot" style="opacity:.4">(gap)</span>
+    </div>
+    <div class="cell">
+      <span class="axis-label">Focused + Expensive</span>
+      <span class="comp-dot">SmartVault</span>
+      <span class="comp-dot">Liscio</span>
+    </div>
+    <div class="cell">
+      <span class="axis-label">Full Suite + Expensive</span>
+      <span class="comp-dot">TaxDome</span>
+      <span class="comp-dot">Canopy</span>
+    </div>
+  </div>
+  <p style="font-size:.9rem;color:var(--muted);margin-top:1rem;max-width:500px;margin-left:auto;margin-right:auto">MiddleDoc does one thing &mdash; document collection &mdash; and does it better and cheaper than every alternative.</p>
+</div>
+</section>
+
+<!-- SLIDE 12: Traction -->
+<section>
+<div class="container" style="text-align:center">
+  <h2 style="margin-bottom:.3rem">Built. Tested. Ready.</h2>
+  <p class="subtitle" style="margin-bottom:2rem">Production-ready with a perfect QA record.</p>
+  <div class="traction-grid">
+    <div class="traction-item"><span class="big-number">68</span><span class="label">Commits shipped</span></div>
+    <div class="traction-item"><span class="big-number">40/40</span><span class="label">QA pass rate</span></div>
+    <div class="traction-item"><span class="big-number">A-</span><span class="label">Security rating</span></div>
+    <div class="traction-item"><span class="big-number">48</span><span class="label">Vulnerabilities fixed</span></div>
+    <div class="traction-item"><span class="big-number">84</span><span class="label">Pages / routes</span></div>
+    <div class="traction-item"><span class="big-number">2</span><span class="label">Payment providers<br>(Stripe + Paystack)</span></div>
+  </div>
+  <p style="margin-top:1.5rem;font-size:.9rem;color:var(--muted)">PWA mobile support &bull; GDPR compliant &bull; ESIGN Act compliant</p>
+</div>
+</section>
+
+<!-- SLIDE 13: GTM -->
+<section>
+<div class="container">
+  <h2 style="text-align:center;margin-bottom:2rem">Go-to-Market</h2>
+  <div style="max-width:650px;margin:0 auto">
+    <div class="phase">
+      <div class="phase-num">1</div>
+      <div class="phase-content"><h4>Community (Months 1-3)</h4><p>Facebook groups, Reddit r/taxpros, free accounts for beta users. 500 free signups.</p></div>
+    </div>
+    <div class="phase">
+      <div class="phase-num">2</div>
+      <div class="phase-content"><h4>Content + SEO (Months 3-6)</h4><p>10 blog posts, templates, checklists. Target "[competitor] alternative" keywords.</p></div>
+    </div>
+    <div class="phase">
+      <div class="phase-num">3</div>
+      <div class="phase-content"><h4>Partnerships (Months 6-12)</h4><p>Accounting associations: AICPA, ICAN, ICPAK. Conference presence and co-marketing.</p></div>
+    </div>
+    <div class="phase">
+      <div class="phase-num">4</div>
+      <div class="phase-content"><h4>Paid Acquisition (Months 6-12)</h4><p>Google Ads targeting long-tail accounting keywords. LinkedIn for firm decision-makers.</p></div>
+    </div>
+  </div>
+  <p style="text-align:center;margin-top:1.5rem;font-size:1.1rem;font-weight:600;color:var(--emerald)">Target: 100 paying customers in 6 months</p>
+</div>
+</section>
+
+<!-- SLIDE 14: Roadmap -->
+<section>
+<div class="container">
+  <h2 style="text-align:center;margin-bottom:2rem">Roadmap</h2>
+  <div class="timeline" style="max-width:600px;margin:0 auto">
+    <div class="timeline-item">
+      <h4>Q3 2026</h4>
+      <p>Launch + first 50 users. Community-led growth in US and Africa.</p>
+    </div>
+    <div class="timeline-item">
+      <h4>Q4 2026</h4>
+      <p>Secure messaging in portal. Xero integration. White-label branding.</p>
+    </div>
+    <div class="timeline-item">
+      <h4>Q1 2027</h4>
+      <p>Zapier connector. Mobile app (if PWA insufficient). Advanced analytics.</p>
+    </div>
+    <div class="timeline-item">
+      <h4>Q2 2027</h4>
+      <p>SOC 2 certification. OCR data extraction. Enterprise features. API access.</p>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- SLIDE 15: Close -->
+<section style="background:var(--dark)">
+<div class="container" style="text-align:center">
+  <h2 style="color:#fff;font-size:clamp(1.8rem,4vw,2.8rem);margin-bottom:1.5rem">Stop chasing.<br>Start collecting.</h2>
+  <div class="logo" style="justify-content:center;margin-bottom:2rem">
+    <div class="logo-icon" style="background:#fff"><div style="width:14px;height:14px;background:var(--emerald);border-radius:50%"></div></div>
+    <div class="logo-text" style="color:#fff">MiddleDoc</div>
+  </div>
+  <p style="color:var(--muted);font-size:1rem;margin-bottom:2rem">middledoc.app</p>
+  <a href="#" class="cta-btn">Try free at middledoc.app</a>
+  <p style="color:var(--muted);font-size:.8rem;margin-top:2rem">Pitch Deck &middot; 2026</p>
+</div>
+</section>
+
+<script>
+(function(){
+  const sections = document.querySelectorAll('section');
+  const counter = document.getElementById('counter');
+  const total = sections.length;
+  let current = 0;
+
+  function updateCounter(){
+    const idx = Math.round(window.scrollY / window.innerHeight);
+    current = Math.min(Math.max(idx, 0), total - 1);
+    counter.textContent = (current + 1) + ' / ' + total;
+  }
+
+  function goTo(i){
+    i = Math.min(Math.max(i, 0), total - 1);
+    sections[i].scrollIntoView({behavior:'smooth'});
+    current = i;
+    counter.textContent = (current + 1) + ' / ' + total;
+  }
+
+  window.addEventListener('scroll', updateCounter, {passive:true});
+
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'ArrowRight' || e.key === 'ArrowDown'){e.preventDefault();goTo(current+1);}
+    else if(e.key === 'ArrowLeft' || e.key === 'ArrowUp'){e.preventDefault();goTo(current-1);}
+    else if(e.key === 'Escape'){e.preventDefault();goTo(0);}
+  });
+
+  document.addEventListener('click', function(e){
+    if(e.target.closest('a')) return;
+    goTo(current+1);
+  });
+
+  // Touch swipe
+  let touchStartY = 0, touchStartX = 0;
+  document.addEventListener('touchstart', function(e){
+    touchStartY = e.touches[0].clientY;
+    touchStartX = e.touches[0].clientX;
+  }, {passive:true});
+  document.addEventListener('touchend', function(e){
+    const dy = touchStartY - e.changedTouches[0].clientY;
+    const dx = touchStartX - e.changedTouches[0].clientX;
+    if(Math.abs(dy) > 50 || Math.abs(dx) > 50){
+      if(dy > 50 || dx > 50) goTo(current+1);
+      else goTo(current-1);
+    }
+  }, {passive:true});
+
+  updateCounter();
+})();
+</script>
+</body>
+</html>
