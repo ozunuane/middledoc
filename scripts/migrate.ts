@@ -14,8 +14,10 @@ async function migrate() {
 
   const client = new pg.Client({
     connectionString: dbUrl,
-    ssl: dbUrl.includes('render.com') ? { rejectUnauthorized: false } : false,
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED !== 'false' } : false,
   })
+
+  let hasErrors = false
 
   try {
     await client.connect()
@@ -45,8 +47,14 @@ async function migrate() {
           console.log(`  ⚠ ${file} (already applied)`)
         } else {
           console.error(`  ✗ ${file}: ${err.message}`)
+          hasErrors = true
         }
       }
+    }
+
+    if (hasErrors) {
+      console.error('\nSome migrations failed')
+      process.exit(1)
     }
 
     console.log('\nMigrations complete ✓')
