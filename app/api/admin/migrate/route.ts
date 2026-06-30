@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     ssl: process.env.DB_SSL_REJECT_UNAUTHORIZED === 'false' ? { rejectUnauthorized: false } : (dbUrl.includes('.render.com') ? { rejectUnauthorized: false } : false),
   })
 
-  const results: { file: string; status: string }[] = []
+  const results: { file: string; status: string; detail?: string }[] = []
 
   try {
     await client.connect()
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
     } catch (err: any) {
       await client.query('ROLLBACK')
       console.error('Migration init.sql failed:', err.message)
-      results.push({ file: 'init.sql', status: 'error' })
+      results.push({ file: 'init.sql', status: 'error', detail: err.message })
     }
 
     // Run all migrate-*.sql files
@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
           results.push({ file, status: 'already_applied' })
         } else {
           console.error(`Migration ${file} failed:`, err.message)
-          results.push({ file, status: 'error' })
+          results.push({ file, status: 'error', detail: err.message })
         }
       }
     }
