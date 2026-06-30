@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withAuth } from '@/lib/middleware'
 import { query } from '@/lib/db'
-import { unlink } from 'fs/promises'
-import path from 'path'
+import { deleteFile, filePathToKey } from '@/lib/storage'
 
 export async function POST(request: NextRequest) {
   return withAuth(request, async (req, accountantId) => {
@@ -60,13 +59,12 @@ export async function POST(request: NextRequest) {
         [accountantId, ...validIds]
       )
 
-      // Delete files from filesystem (best effort -- log failures but continue)
+      // Delete files from storage (best effort -- log failures but continue)
       for (const row of result.rows) {
         try {
-          const filePath = path.resolve(row.file_path)
-          await unlink(filePath)
+          const key = filePathToKey(row.file_path)
+          await deleteFile(key)
         } catch (fsError) {
-          // File may already be missing; log and continue
           console.warn(`Failed to delete file ${row.file_path}:`, fsError)
         }
       }

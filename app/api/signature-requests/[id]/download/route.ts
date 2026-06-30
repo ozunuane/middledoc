@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withAuth } from '@/lib/middleware'
 import { query } from '@/lib/db'
-import { readFile } from 'fs/promises'
-import path from 'path'
 import { getUserTeamInfo, resolveOwnerAccountantId } from '@/lib/access'
-
-const UPLOADS_BASE = '/app/uploads'
+import { downloadFile, filePathToKey } from '@/lib/storage'
 
 export async function GET(
   request: NextRequest,
@@ -45,16 +42,17 @@ export async function GET(
       }
 
       // Determine which file to serve
-      const filePath = row.status === 'signed' && row.signed_file_path
-        ? path.join(UPLOADS_BASE, row.signed_file_path)
-        : path.join(UPLOADS_BASE, row.original_file_path)
+      const rawPath = row.status === 'signed' && row.signed_file_path
+        ? row.signed_file_path
+        : row.original_file_path
+      const key = filePathToKey(rawPath)
 
-      const fileBuffer = await readFile(filePath)
+      const fileBuffer = await downloadFile(key)
       const fileName = row.status === 'signed'
         ? `signed_${row.original_file_name}`
         : row.original_file_name
 
-      return new NextResponse(fileBuffer, {
+      return new NextResponse(fileBuffer as unknown as BodyInit, {
         status: 200,
         headers: {
           'Content-Type': 'application/pdf',

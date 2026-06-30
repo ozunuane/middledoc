@@ -1,8 +1,8 @@
 import OpenAI from 'openai'
 import Anthropic from '@anthropic-ai/sdk'
-import { readFile } from 'fs/promises'
 import path from 'path'
 import { query, getOne } from './db'
+import { downloadFile, filePathToKey } from './storage'
 
 // PRIVACY NOTE: Document content is sent to OpenAI/Anthropic for classification.
 // Both providers' API terms prohibit using API inputs for training.
@@ -187,7 +187,8 @@ export async function classifyDocument(
       return
     }
 
-    const fileBuffer = await readFile(filePath)
+    const key = filePathToKey(filePath)
+    const fileBuffer = await downloadFile(key)
     const base64 = fileBuffer.toString('base64')
     const mimeType = getMimeType(ext)
 

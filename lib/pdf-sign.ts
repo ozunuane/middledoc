@@ -1,17 +1,14 @@
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib'
-import { readFile, writeFile, mkdir } from 'fs/promises'
-import path from 'path'
 import { createHash } from 'crypto'
 
 export async function embedSignatureInPdf(
-  originalPdfPath: string,
+  pdfBuffer: Buffer,
   signatureBase64: string,
   signerName: string,
-  outputPath: string
-): Promise<void> {
-  const pdfBytes = await readFile(originalPdfPath)
-  const originalHash = createHash('sha256').update(pdfBytes).digest('hex')
-  const pdfDoc = await PDFDocument.load(pdfBytes)
+  originalFileName?: string
+): Promise<Buffer> {
+  const originalHash = createHash('sha256').update(pdfBuffer).digest('hex')
+  const pdfDoc = await PDFDocument.load(pdfBuffer)
 
   // Decode signature image
   const sigImageBytes = Buffer.from(
@@ -93,7 +90,7 @@ export async function embedSignatureInPdf(
     color: rgb(0.1, 0.1, 0.1),
   })
   y -= 30
-  auditPage.drawText(`Document: ${path.basename(originalPdfPath)}`, {
+  auditPage.drawText(`Document: ${originalFileName || 'document.pdf'}`, {
     x: 50,
     y,
     size: 10,
@@ -138,9 +135,7 @@ export async function embedSignatureInPdf(
     color: rgb(0.3, 0.3, 0.3),
   })
 
-  // Save
-  const outputDir = path.dirname(outputPath)
-  await mkdir(outputDir, { recursive: true })
+  // Save and return buffer
   const signedBytes = await pdfDoc.save()
-  await writeFile(outputPath, signedBytes)
+  return Buffer.from(signedBytes)
 }

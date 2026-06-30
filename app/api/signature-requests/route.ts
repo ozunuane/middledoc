@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withAuth } from '@/lib/middleware'
 import { query } from '@/lib/db'
-import { writeFile, mkdir } from 'fs/promises'
 import path from 'path'
 import { randomUUID } from 'crypto'
 import { getAccessibleClientIds, getUserTeamInfo, resolveOwnerAccountantId } from '@/lib/access'
+import { uploadFile } from '@/lib/storage'
 
-const UPLOADS_BASE = '/app/uploads'
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10 MB
 
 export async function POST(request: NextRequest) {
@@ -73,25 +72,21 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
       }
 
-      // Save the PDF to disk
+      // Save the PDF to storage
       const fileUuid = randomUUID()
       const safeFileName = path.basename(file.name).replace(/[^a-zA-Z0-9._-]/g, '_')
       const fileName = `${fileUuid}_${safeFileName}`
-      const sigDir = path.join(UPLOADS_BASE, 'signatures', String(requestId))
-      const absolutePath = path.join(sigDir, fileName)
-      const relativePath = path.join('signatures', String(requestId), fileName)
-
-      await mkdir(sigDir, { recursive: true })
+      const storageKey = `signatures/${requestId}/${fileName}`
 
       const buffer = Buffer.from(await file.arrayBuffer())
-      await writeFile(absolutePath, buffer)
+      await uploadFile(storageKey, buffer, 'application/pdf')
 
       // Insert signature request record
       const insertResult = await query(
         `INSERT INTO signature_requests (request_id, original_file_name, original_file_path)
          VALUES ($1, $2, $3)
          RETURNING id, request_id, original_file_name, status, created_at`,
-        [requestId, file.name, relativePath]
+        [requestId, file.name, storageKey]
       )
 
       return NextResponse.json(insertResult.rows[0], { status: 201 })

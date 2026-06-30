@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { withAuth } from '@/lib/middleware'
 import { getOne } from '@/lib/db'
 import { getUserTeamInfo, resolveOwnerAccountantId } from '@/lib/access'
-import { readFile } from 'fs/promises'
+import { downloadFile, isR2Configured, keyToFilePath, filePathToKey } from '@/lib/storage'
 import path from 'path'
 
 export async function GET(
@@ -29,14 +29,6 @@ export async function GET(
     if (!file) return NextResponse.json({ error: 'File not found' }, { status: 404 })
 
     try {
-      const UPLOADS_BASE = process.env.FILE_UPLOAD_DIR || '/app/uploads'
-      const filePath = path.resolve(file.file_path)
-      const uploadsBase = path.resolve(UPLOADS_BASE)
-      if (!filePath.startsWith(uploadsBase)) {
-        return NextResponse.json({ error: 'Invalid file path' }, { status: 400 })
-      }
-      const buffer = await readFile(filePath)
-
       const ext = path.extname(file.file_name).toLowerCase()
       const mimeTypes: Record<string, string> = {
         '.pdf': 'application/pdf',
@@ -50,14 +42,33 @@ export async function GET(
       }
 
       const safeName = file.file_name.replace(/["\r\n\\]/g, '_')
-      return new NextResponse(buffer, {
-        headers: {
-          'Content-Type': mimeTypes[ext] || 'application/octet-stream',
-          'Content-Disposition': `attachment; filename="${safeName}"`,
-          'Content-Length': String(buffer.length),
-          'X-Content-Type-Options': 'nosniff',
-        },
-      })
+      const headers = {
+        'Content-Type': mimeTypes[ext] || 'application/octet-stream',
+        'Content-Disposition': `attachment; filename="${safeName}"`,
+        'X-Content-Type-Options': 'nosniff',
+      }
+
+      // Normalize the key (handles both old full-path and new key-only formats)
+      const key = filePathToKey(file.file_path)
+
+      if (isR2Configured()) {
+        const buffer = await downloadFile(key)
+        return new NextResponse(buffer as unknown as BodyInit, {
+          headers: { ...headers, 'Content-Length': String(buffer.length) },
+        })
+      } else {
+        // Local: check path traversal then read
+        const LOCAL_UPLOAD_DIR = process.env.FILE_UPLOAD_DIR || '/app/uploads'
+        const filePath = path.resolve(keyToFilePath(key))
+        const uploadsBase = path.resolve(LOCAL_UPLOAD_DIR)
+        if (!filePath.startsWith(uploadsBase)) {
+          return NextResponse.json({ error: 'Invalid file path' }, { status: 400 })
+        }
+        const buffer = await downloadFile(key)
+        return new NextResponse(buffer as unknown as BodyInit, {
+          headers: { ...headers, 'Content-Length': String(buffer.length) },
+        })
+      }
     } catch {
       return NextResponse.json({ error: 'File not found on disk' }, { status: 404 })
     }

@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { query, getOne } from '@/lib/db'
-import { writeFile, mkdir, rename } from 'fs/promises'
 import path from 'path'
 import { randomUUID } from 'crypto'
 import { checkStorageLimit } from '@/lib/plan-enforcement'
 import { classifyDocument } from '@/lib/ai-classify'
 import { sendPushToAccountant } from '@/lib/web-push-service'
+import { uploadFile } from '@/lib/storage'
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10 MB
-const UPLOADS_BASE = '/app/uploads'
 
 export async function POST(
   request: NextRequest,
@@ -63,7 +62,7 @@ export async function POST(
 
     const ALLOWED_EXTENSIONS = ['.pdf', '.jpg', '.jpeg', '.png', '.gif', '.webp', '.doc', '.docx', '.xls', '.xlsx', '.csv', '.txt']
 
-    // Save file to filesystem
+    // Save file
     const fileUuid = randomUUID()
     const safeFileName = path.basename(file.name).replace(/[^a-zA-Z0-9._-]/g, '_')
 
@@ -75,28 +74,20 @@ export async function POST(
     if (file.type && !ALLOWED_TYPES.includes(file.type)) {
       return NextResponse.json({ error: 'File MIME type is not allowed' }, { status: 400 })
     }
-    const relativeDir = String(requestId)
-    const fileName = `${fileUuid}_${safeFileName}`
-    const absoluteDir = path.join(UPLOADS_BASE, relativeDir)
-    const absolutePath = path.join(absoluteDir, fileName)
-    const relativePath = path.join(relativeDir, fileName)
 
-    await mkdir(absoluteDir, { recursive: true })
+    const fileName = `${fileUuid}_${safeFileName}`
+    const storageKey = `${requestId}/${fileName}`
 
     const buffer = Buffer.from(await file.arrayBuffer())
-    const tempPath = absolutePath + '.tmp'
-    await writeFile(tempPath, buffer)
+    await uploadFile(storageKey, buffer, file.type || undefined)
 
     // Insert record — trigger auto-updates request status to 'received'
     const insertResult = await query(
       `INSERT INTO document_uploads (request_id, client_id, file_name, file_path, file_size)
        VALUES ($1, $2, $3, $4, $5)
        RETURNING id, file_name, file_size, uploaded_at`,
-      [requestId, clientId, file.name, relativePath, file.size]
+      [requestId, clientId, file.name, storageKey, file.size]
     )
-
-    // Only move to final location if DB insert succeeded
-    await rename(tempPath, absolutePath)
 
     // Async AI classification (non-blocking)
     const requestData = await getOne<{ checklist_items: string[] }>(
@@ -106,7 +97,7 @@ export async function POST(
 
     void classifyDocument(
       insertResult.rows[0].id,
-      absolutePath,
+      storageKey,
       file.name,
       requestData?.checklist_items || []
     )

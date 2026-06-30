@@ -2,10 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { query, getOne } from '@/lib/db'
 import { embedSignatureInPdf } from '@/lib/pdf-sign'
 import { randomUUID } from 'crypto'
-import path from 'path'
-import { readFile } from 'fs/promises'
-
-const UPLOADS_BASE = '/app/uploads'
+import { downloadFile, uploadFile, filePathToKey } from '@/lib/storage'
 
 export async function GET(
   request: NextRequest,
@@ -56,10 +53,10 @@ export async function GET(
         return NextResponse.json({ error: 'Not found' }, { status: 404 })
       }
 
-      const filePath = path.join(UPLOADS_BASE, sigResult.rows[0].original_file_path)
-      const fileBuffer = await readFile(filePath)
+      const key = filePathToKey(sigResult.rows[0].original_file_path)
+      const fileBuffer = await downloadFile(key)
 
-      return new NextResponse(fileBuffer, {
+      return new NextResponse(fileBuffer as unknown as BodyInit, {
         status: 200,
         headers: {
           'Content-Type': 'application/pdf',
@@ -141,12 +138,12 @@ export async function POST(
       return NextResponse.json({ error: 'Document has already been signed' }, { status: 400 })
     }
 
-    // Build paths
-    const originalPath = path.join(UPLOADS_BASE, sigReq.original_file_path)
+    // Download original PDF, sign it, upload signed version
+    const originalKey = filePathToKey(sigReq.original_file_path)
+    const pdfBuffer = await downloadFile(originalKey)
+
     const signedFileName = `signed_${randomUUID()}.pdf`
-    const signedRelDir = path.join('signatures', String(requestId), 'signed')
-    const signedRelPath = path.join(signedRelDir, signedFileName)
-    const signedAbsPath = path.join(UPLOADS_BASE, signedRelPath)
+    const signedStorageKey = `signatures/${requestId}/signed/${signedFileName}`
 
     // Capture IP and user agent
     const ip =
@@ -167,8 +164,11 @@ export async function POST(
     // Generate unique signature event ID
     const signatureEventId = randomUUID()
 
-    // Embed signature into PDF
-    await embedSignatureInPdf(originalPath, signature_data, signer_name.trim(), signedAbsPath)
+    // Embed signature into PDF (now works with buffers)
+    const signedBuffer = await embedSignatureInPdf(pdfBuffer, signature_data, signer_name.trim(), sigReq.original_file_name)
+
+    // Upload signed PDF
+    await uploadFile(signedStorageKey, signedBuffer, 'application/pdf')
 
     // Update signature request record
     await query(
@@ -182,7 +182,7 @@ export async function POST(
            signer_email = $5,
            signature_event_id = $6
        WHERE id = $7`,
-      [signedRelPath, signer_name.trim(), ip, userAgent, signerEmail, signatureEventId, signature_request_id]
+      [signedStorageKey, signer_name.trim(), ip, userAgent, signerEmail, signatureEventId, signature_request_id]
     )
 
     // Insert audit log entry
