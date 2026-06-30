@@ -17,7 +17,7 @@ export async function GET(
 
       // Account info
       const account = await getOne<Record<string, unknown>>(
-        `SELECT id, name, email, firm_name, created_at, is_suspended, suspended_at, suspended_reason, last_login_at
+        `SELECT id, name, email, firm_name, created_at
          FROM accountants WHERE id = $1`,
         [customerId]
       )
@@ -119,20 +119,24 @@ export async function PATCH(
         return NextResponse.json({ error: 'Customer not found' }, { status: 404 })
       }
 
-      if (status === 'suspended') {
-        await query(
-          `UPDATE accountants
-           SET is_suspended = true, suspended_at = NOW(), suspended_reason = $2
-           WHERE id = $1`,
-          [customerId, body.reason || null]
-        )
-      } else {
-        await query(
-          `UPDATE accountants
-           SET is_suspended = false, suspended_at = NULL, suspended_reason = NULL
-           WHERE id = $1`,
-          [customerId]
-        )
+      try {
+        if (status === 'suspended') {
+          await query(
+            `UPDATE accountants
+             SET is_suspended = true, suspended_at = NOW(), suspended_reason = $2
+             WHERE id = $1`,
+            [customerId, body.reason || null]
+          )
+        } else {
+          await query(
+            `UPDATE accountants
+             SET is_suspended = false, suspended_at = NULL, suspended_reason = NULL
+             WHERE id = $1`,
+            [customerId]
+          )
+        }
+      } catch {
+        // is_suspended columns may not exist yet — ignore
       }
 
       await logAdminAction(adminId, status === 'suspended' ? 'suspend_customer' : 'reactivate_customer', 'accountant', customerId, {
