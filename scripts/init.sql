@@ -25,6 +25,13 @@ CREATE TABLE IF NOT EXISTS accountants (
   created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Ensure all accountant columns exist (for upgrades)
+ALTER TABLE accountants ADD COLUMN IF NOT EXISTS firm_name VARCHAR(255);
+ALTER TABLE accountants ADD COLUMN IF NOT EXISTS is_suspended BOOLEAN DEFAULT false;
+ALTER TABLE accountants ADD COLUMN IF NOT EXISTS suspended_at TIMESTAMPTZ;
+ALTER TABLE accountants ADD COLUMN IF NOT EXISTS suspended_reason TEXT;
+ALTER TABLE accountants ADD COLUMN IF NOT EXISTS last_login_at TIMESTAMPTZ;
+
 -- Clients
 CREATE TABLE IF NOT EXISTS clients (
   id SERIAL PRIMARY KEY,
@@ -36,6 +43,10 @@ CREATE TABLE IF NOT EXISTS clients (
   created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
   UNIQUE(accountant_id, email)
 );
+
+-- Ensure all client columns exist (for upgrades)
+ALTER TABLE clients ADD COLUMN IF NOT EXISTS source VARCHAR(20) DEFAULT 'manual';
+ALTER TABLE clients ADD COLUMN IF NOT EXISTS company_name VARCHAR(255);
 
 -- Document Requests
 CREATE TABLE IF NOT EXISTS document_requests (
@@ -52,6 +63,9 @@ CREATE TABLE IF NOT EXISTS document_requests (
   updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Ensure all request columns exist (for upgrades)
+ALTER TABLE document_requests ADD COLUMN IF NOT EXISTS checklist_items TEXT[] DEFAULT '{}';
+
 -- Document Uploads
 CREATE TABLE IF NOT EXISTS document_uploads (
   id SERIAL PRIMARY KEY,
@@ -65,6 +79,11 @@ CREATE TABLE IF NOT EXISTS document_uploads (
   rejected_at TIMESTAMPTZ,
   uploaded_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Ensure all upload columns exist (for upgrades)
+ALTER TABLE document_uploads ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'uploaded';
+ALTER TABLE document_uploads ADD COLUMN IF NOT EXISTS rejection_reason TEXT;
+ALTER TABLE document_uploads ADD COLUMN IF NOT EXISTS rejected_at TIMESTAMPTZ;
 
 -- Email Reminders
 CREATE TABLE IF NOT EXISTS email_reminders (
@@ -352,6 +371,17 @@ CREATE TABLE IF NOT EXISTS plans (
   updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Ensure all plan columns exist (for upgrades from older schema)
+ALTER TABLE plans ADD COLUMN IF NOT EXISTS extra_seat_price_cents INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE plans ADD COLUMN IF NOT EXISTS storage_overage_price_cents INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE plans ADD COLUMN IF NOT EXISTS max_client_emails INTEGER NOT NULL DEFAULT 1;
+ALTER TABLE plans ADD COLUMN IF NOT EXISTS max_bcc_emails INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE plans ADD COLUMN IF NOT EXISTS max_request_templates INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE plans ADD COLUMN IF NOT EXISTS max_bulk_requests INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE plans ADD COLUMN IF NOT EXISTS stripe_product_id VARCHAR(255);
+ALTER TABLE plans ADD COLUMN IF NOT EXISTS stripe_monthly_price_id VARCHAR(255);
+ALTER TABLE plans ADD COLUMN IF NOT EXISTS stripe_annual_price_id VARCHAR(255);
+
 -- Seed default plans
 INSERT INTO plans (slug, display_name, description, monthly_price_cents, annual_price_cents,
   extra_seat_price_cents, storage_overage_price_cents,
@@ -401,6 +431,17 @@ CREATE TABLE IF NOT EXISTS subscriptions (
   created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Ensure all subscription columns exist (for upgrades)
+ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS payment_provider VARCHAR(20) DEFAULT 'stripe';
+ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS trial_start TIMESTAMPTZ;
+ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS trial_end TIMESTAMPTZ;
+ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS extra_seats INTEGER DEFAULT 0;
+ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS storage_used_bytes BIGINT DEFAULT 0;
+ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS stripe_customer_id VARCHAR(255);
+ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS stripe_subscription_id VARCHAR(255);
+ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS paystack_subscription_code VARCHAR(255);
+ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS paystack_customer_code VARCHAR(255);
 
 -- Client invoices (for document request payments)
 CREATE TABLE IF NOT EXISTS client_invoices (
@@ -814,30 +855,8 @@ CREATE TRIGGER trg_changelog_updated_at
   BEFORE UPDATE ON changelog_entries
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
--- ============================================================
--- BACKWARD COMPAT: add columns if upgrading from older schema
--- ============================================================
-
-ALTER TABLE accountants ADD COLUMN IF NOT EXISTS is_suspended BOOLEAN DEFAULT false;
-ALTER TABLE accountants ADD COLUMN IF NOT EXISTS suspended_at TIMESTAMPTZ;
-ALTER TABLE accountants ADD COLUMN IF NOT EXISTS suspended_reason TEXT;
-ALTER TABLE accountants ADD COLUMN IF NOT EXISTS last_login_at TIMESTAMPTZ;
-ALTER TABLE clients ADD COLUMN IF NOT EXISTS source VARCHAR(20) DEFAULT 'manual';
-ALTER TABLE clients ADD COLUMN IF NOT EXISTS company_name VARCHAR(255);
-ALTER TABLE document_requests ADD COLUMN IF NOT EXISTS checklist_items TEXT[] DEFAULT '{}';
-ALTER TABLE document_uploads ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'uploaded';
-ALTER TABLE document_uploads ADD COLUMN IF NOT EXISTS rejection_reason TEXT;
-ALTER TABLE document_uploads ADD COLUMN IF NOT EXISTS rejected_at TIMESTAMPTZ;
-ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS payment_provider VARCHAR(20) DEFAULT 'stripe';
-ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS paystack_subscription_code VARCHAR(255);
-ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS paystack_customer_code VARCHAR(255);
-ALTER TABLE admin_audit_log ADD COLUMN IF NOT EXISTS ip_address VARCHAR(45);
+-- Ensure signature columns exist (for upgrades)
 ALTER TABLE signature_requests ADD COLUMN IF NOT EXISTS signer_email VARCHAR(255);
 ALTER TABLE signature_requests ADD COLUMN IF NOT EXISTS signature_event_id UUID;
 ALTER TABLE signature_audit_log ADD COLUMN IF NOT EXISTS signature_event_id UUID;
-ALTER TABLE plans ADD COLUMN IF NOT EXISTS stripe_monthly_price_id VARCHAR(255);
-ALTER TABLE plans ADD COLUMN IF NOT EXISTS stripe_annual_price_id VARCHAR(255);
-ALTER TABLE plans ADD COLUMN IF NOT EXISTS max_client_emails INTEGER DEFAULT 0;
-ALTER TABLE plans ADD COLUMN IF NOT EXISTS max_bcc_emails INTEGER DEFAULT 0;
-ALTER TABLE plans ADD COLUMN IF NOT EXISTS max_request_templates INTEGER DEFAULT 0;
-ALTER TABLE plans ADD COLUMN IF NOT EXISTS max_bulk_requests INTEGER DEFAULT 0;
+ALTER TABLE admin_audit_log ADD COLUMN IF NOT EXISTS ip_address VARCHAR(45);
