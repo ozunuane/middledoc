@@ -301,7 +301,7 @@ if [ -n "$REQUEST_ID" ]; then
   check "GET /api/signature-requests?request_id=..." "$R" 200
   BODY=$(cat /tmp/qa_body)
   # Should return an empty array (no signatures yet)
-  check_contains "Signature requests returns array" "$BODY" "["
+  check_contains "Signature requests returns array" "$BODY" '\['
 fi
 
 # POST signature request without file → 400
@@ -322,7 +322,7 @@ if [ -n "$SHARE_TOKEN" ]; then
   R=$(curl -s -o /tmp/qa_body -w "%{http_code}" "$BASE/api/portal-sign/$SHARE_TOKEN")
   check "GET /api/portal-sign/:shareToken" "$R" 200
   BODY=$(cat /tmp/qa_body)
-  check_contains "Portal-sign returns array" "$BODY" "["
+  check_contains "Portal-sign returns array" "$BODY" '\['
 
   # POST portal-sign without required fields → 400
   R=$(curl -s -o /tmp/qa_body -w "%{http_code}" -X POST "$BASE/api/portal-sign/$SHARE_TOKEN" \

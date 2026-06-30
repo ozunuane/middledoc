@@ -840,6 +840,11 @@ CREATE TRIGGER trg_subscriptions_updated_at
   BEFORE UPDATE ON subscriptions
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
+-- Ensure super_admins has updated_at before adding trigger
+ALTER TABLE super_admins ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE super_admins ADD COLUMN IF NOT EXISTS totp_secret VARCHAR(255);
+ALTER TABLE super_admins ADD COLUMN IF NOT EXISTS totp_verified BOOLEAN DEFAULT false;
+
 DROP TRIGGER IF EXISTS trg_super_admins_updated_at ON super_admins;
 CREATE TRIGGER trg_super_admins_updated_at
   BEFORE UPDATE ON super_admins
