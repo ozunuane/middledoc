@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
 
   const client = new pg.Client({
     connectionString: dbUrl,
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED !== 'false' } : false,
+    ssl: process.env.DB_SSL_REJECT_UNAUTHORIZED === 'false' ? { rejectUnauthorized: false } : (dbUrl.includes('.render.com') ? { rejectUnauthorized: false } : false),
   })
 
   const results: { file: string; status: string }[] = []
