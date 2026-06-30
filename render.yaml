@@ -1,0 +1,130 @@
+# Render Blueprint — MiddleDoc
+# Deploy: connect your GitHub repo at dashboard.render.com
+# This file auto-configures all services.
+
+services:
+  # Next.js Web Service
+  - type: web
+    name: middledoc
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: starter # $7/mo — upgrade to standard ($25/mo) when needed
+    region: ohio # us-east, closest to most US accountants
+    healthCheckPath: /api/auth/me
+    autoDeploy: true
+    envVars:
+      # Database (auto-set by Render when linked)
+      - key: DATABASE_URL
+        fromDatabase:
+          name: middledoc-db
+          property: connectionString
+
+      # Auth
+      - key: NEXTAUTH_SECRET
+        generateValue: true
+      - key: NEXTAUTH_URL
+        sync: false # set manually to your custom domain
+      - key: ADMIN_SECRET
+        generateValue: true
+
+      # Payments
+      - key: PAYSTACK_SECRET_KEY
+        sync: false
+      - key: PAYSTACK_PUBLIC_KEY
+        sync: false
+      - key: PAYSTACK_WEBHOOK_SECRET
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_PUBLISHABLE_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: PAYMENT_PROVIDER
+        value: auto
+
+      # Email
+      - key: SENDGRID_API_KEY
+        sync: false
+      - key: FROM_EMAIL
+        value: noreply@middledoc.app
+
+      # AI Classification
+      - key: AI_PROVIDER
+        value: openai
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+
+      # QuickBooks
+      - key: QBO_CLIENT_ID
+        sync: false
+      - key: QBO_CLIENT_SECRET
+        sync: false
+      - key: QBO_REDIRECT_URI
+        sync: false
+      - key: QBO_ENCRYPTION_KEY
+        generateValue: true
+      - key: QBO_ENVIRONMENT
+        value: sandbox
+
+      # Push Notifications
+      - key: VAPID_PUBLIC_KEY
+        sync: false
+      - key: VAPID_PRIVATE_KEY
+        sync: false
+
+      # Cron
+      - key: CRON_SECRET
+        generateValue: true
+
+      # App
+      - key: NODE_ENV
+        value: production
+      - key: FILE_UPLOAD_DIR
+        value: /app/uploads
+
+    disk:
+      name: uploads
+      mountPath: /app/uploads
+      sizeGB: 10 # $2.50/mo — increase as needed
+
+  # Cron: Overdue detection (daily at 6am UTC)
+  - type: cron
+    name: middledoc-overdue
+    runtime: image
+    schedule: "0 6 * * *"
+    dockerCommand: >
+      wget -qO- --header="Authorization: Bearer $CRON_SECRET"
+      http://middledoc:3000/api/cron/overdue || true
+    envVars:
+      - key: CRON_SECRET
+        fromService:
+          name: middledoc
+          type: web
+          envVarKey: CRON_SECRET
+
+  # Cron: Auto reminders (daily at 9am UTC / 5am EST)
+  - type: cron
+    name: middledoc-reminders
+    runtime: image
+    schedule: "0 9 * * *"
+    dockerCommand: >
+      wget -qO- --header="Authorization: Bearer $CRON_SECRET"
+      http://middledoc:3000/api/cron/reminders || true
+    envVars:
+      - key: CRON_SECRET
+        fromService:
+          name: middledoc
+          type: web
+          envVarKey: CRON_SECRET
+
+databases:
+  # Managed PostgreSQL
+  - name: middledoc-db
+    plan: starter # $7/mo, 1GB RAM, 1GB storage — upgrade to standard ($20/mo) when needed
+    region: ohio
+    databaseName: middledoc
+    user: middledoc
+    postgresMajorVersion: "15"
