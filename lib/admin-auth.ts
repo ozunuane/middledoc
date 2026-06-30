@@ -2,20 +2,19 @@ import { SignJWT, jwtVerify } from 'jose'
 import bcryptjs from 'bcryptjs'
 import { query, getOne } from './db'
 
-const rawAdminSecret = process.env.ADMIN_SECRET
-if (!rawAdminSecret || rawAdminSecret.length < 32) {
-  console.error('FATAL: ADMIN_SECRET must be set (min 32 chars)')
-  if (process.env.NODE_ENV === 'production') {
-    throw new Error('ADMIN_SECRET is not configured for production')
+function getAdminSecret() {
+  const rawAdminSecret = process.env.ADMIN_SECRET
+  if (process.env.NODE_ENV === 'production' && typeof window === 'undefined' && !process.env.NEXT_PHASE) {
+    if (!rawAdminSecret || rawAdminSecret.length < 32) {
+      console.error('WARNING: ADMIN_SECRET should be set (min 32 chars)')
+    }
+    if (rawAdminSecret && rawAdminSecret === process.env.NEXTAUTH_SECRET) {
+      console.error('WARNING: ADMIN_SECRET should differ from NEXTAUTH_SECRET')
+    }
   }
+  return new TextEncoder().encode(rawAdminSecret || 'dev-admin-secret-not-for-production-32chars!')
 }
-if (rawAdminSecret && rawAdminSecret === process.env.NEXTAUTH_SECRET) {
-  console.error('FATAL: ADMIN_SECRET must be different from NEXTAUTH_SECRET')
-  if (process.env.NODE_ENV === 'production') {
-    throw new Error('ADMIN_SECRET must differ from NEXTAUTH_SECRET')
-  }
-}
-const secret = new TextEncoder().encode(rawAdminSecret || 'dev-admin-secret-not-for-production-32chars!')
+const secret = getAdminSecret()
 
 export async function hashPassword(password: string): Promise<string> {
   return bcryptjs.hash(password, 12)

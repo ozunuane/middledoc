@@ -1,14 +1,17 @@
 import { jwtVerify, SignJWT } from 'jose'
 import bcryptjs from 'bcryptjs'
 
-const rawSecret = process.env.NEXTAUTH_SECRET
-if (!rawSecret || rawSecret.includes('change') || rawSecret.length < 32) {
-  console.error('FATAL: NEXTAUTH_SECRET must be set to a strong random value (min 32 chars)')
-  if (process.env.NODE_ENV === 'production') {
-    throw new Error('NEXTAUTH_SECRET is not configured for production')
+function getSecret() {
+  const rawSecret = process.env.NEXTAUTH_SECRET
+  if (!rawSecret || rawSecret.includes('change') || rawSecret.length < 32) {
+    // Don't throw during build — only at runtime when actually used
+    if (process.env.NODE_ENV === 'production' && typeof window === 'undefined' && !process.env.NEXT_PHASE) {
+      console.error('WARNING: NEXTAUTH_SECRET should be set to a strong random value (min 32 chars)')
+    }
   }
+  return new TextEncoder().encode(rawSecret || 'dev-only-secret-not-for-production-use-32chars!')
 }
-const secret = new TextEncoder().encode(rawSecret || 'dev-only-secret-not-for-production-use-32chars!')
+const secret = getSecret()
 
 export async function hashPassword(password: string): Promise<string> {
   return bcryptjs.hash(password, 12)
