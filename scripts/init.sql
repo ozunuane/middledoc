@@ -259,9 +259,11 @@ CREATE TABLE IF NOT EXISTS signature_requests (
   signed_file_path VARCHAR(500),
   status VARCHAR(20) DEFAULT 'pending',
   signer_name VARCHAR(255),
+  signer_email VARCHAR(255),
   signed_at TIMESTAMPTZ,
   signer_ip VARCHAR(45),
   signer_user_agent TEXT,
+  signature_event_id UUID,
   created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -271,6 +273,7 @@ CREATE TABLE IF NOT EXISTS signature_audit_log (
   event VARCHAR(50) NOT NULL,
   ip_address VARCHAR(45),
   user_agent TEXT,
+  signature_event_id UUID,
   created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -829,6 +832,9 @@ ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS payment_provider VARCHAR(20) 
 ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS paystack_subscription_code VARCHAR(255);
 ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS paystack_customer_code VARCHAR(255);
 ALTER TABLE admin_audit_log ADD COLUMN IF NOT EXISTS ip_address VARCHAR(45);
+ALTER TABLE signature_requests ADD COLUMN IF NOT EXISTS signer_email VARCHAR(255);
+ALTER TABLE signature_requests ADD COLUMN IF NOT EXISTS signature_event_id UUID;
+ALTER TABLE signature_audit_log ADD COLUMN IF NOT EXISTS signature_event_id UUID;
 ALTER TABLE plans ADD COLUMN IF NOT EXISTS stripe_monthly_price_id VARCHAR(255);
 ALTER TABLE plans ADD COLUMN IF NOT EXISTS stripe_annual_price_id VARCHAR(255);
 ALTER TABLE plans ADD COLUMN IF NOT EXISTS max_client_emails INTEGER DEFAULT 0;

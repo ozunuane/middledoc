@@ -292,7 +292,58 @@ check "GET /api/admin/dashboard (no auth) → 401" "$R" 401
 R=$(curl -s -o /tmp/qa_body -w "%{http_code}" "$BASE/api/billing/subscription")
 check "GET /api/billing/subscription (no auth) → 401" "$R" 401
 
-# ─── 20. CLEANUP ───
+# ─── 20. E-SIGNATURE ENDPOINTS ───
+echo "▸ Signature endpoints..."
+
+# GET signature requests (requires request_id param)
+if [ -n "$REQUEST_ID" ]; then
+  R=$(curl -s -b /tmp/qa_cookies -o /tmp/qa_body -w "%{http_code}" "$BASE/api/signature-requests?request_id=$REQUEST_ID")
+  check "GET /api/signature-requests?request_id=..." "$R" 200
+  BODY=$(cat /tmp/qa_body)
+  # Should return an empty array (no signatures yet)
+  check_contains "Signature requests returns array" "$BODY" "["
+fi
+
+# POST signature request without file → 400
+R=$(curl -s -b /tmp/qa_cookies -o /tmp/qa_body -w "%{http_code}" -X POST "$BASE/api/signature-requests" \
+  -H "Content-Type: application/json" \
+  -d '{}')
+# Multipart expected, so this should return 400 or 500
+if [ "$R" -eq 400 ] || [ "$R" -eq 500 ]; then
+  PASS=$((PASS + 1))
+  RESULTS="${RESULTS}PASS  POST /api/signature-requests (no file → ${R})\n"
+else
+  FAIL=$((FAIL + 1))
+  RESULTS="${RESULTS}FAIL  POST /api/signature-requests (no file) — expected 400/500, got ${R}\n"
+fi
+
+# GET portal-sign (via share token)
+if [ -n "$SHARE_TOKEN" ]; then
+  R=$(curl -s -o /tmp/qa_body -w "%{http_code}" "$BASE/api/portal-sign/$SHARE_TOKEN")
+  check "GET /api/portal-sign/:shareToken" "$R" 200
+  BODY=$(cat /tmp/qa_body)
+  check_contains "Portal-sign returns array" "$BODY" "["
+
+  # POST portal-sign without required fields → 400
+  R=$(curl -s -o /tmp/qa_body -w "%{http_code}" -X POST "$BASE/api/portal-sign/$SHARE_TOKEN" \
+    -H "Content-Type: application/json" \
+    -d '{}')
+  check "POST /api/portal-sign (missing fields → 400)" "$R" 400
+fi
+
+# GET signature-requests without auth → 401
+R=$(curl -s -o /tmp/qa_body -w "%{http_code}" "$BASE/api/signature-requests?request_id=1")
+check "GET /api/signature-requests (no auth) → 401" "$R" 401
+
+# GET portal-sign with invalid token → 404
+R=$(curl -s -o /tmp/qa_body -w "%{http_code}" "$BASE/api/portal-sign/not-a-valid-uuid")
+check "GET /api/portal-sign (invalid token) → 404" "$R" 404
+
+# GET portal-sign with nonexistent UUID → 404
+R=$(curl -s -o /tmp/qa_body -w "%{http_code}" "$BASE/api/portal-sign/00000000-0000-0000-0000-000000000000")
+check "GET /api/portal-sign (nonexistent) → 404" "$R" 404
+
+# ─── 21. CLEANUP ───
 echo "▸ Cleanup..."
 
 # Delete the request first (cascade will handle uploads)
