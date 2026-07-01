@@ -401,7 +401,7 @@ check "POST /api/admin/auth/logout" "$R" 200
 # ─── FRONTEND PAGES ───
 echo "▸ Frontend pages..."
 
-for path in "/" "/auth/login" "/auth/signup" "/admin/login"; do
+for path in "/" "/auth/login" "/auth/signup" "/admin/login" "/for/accountants" "/for/law-firms" "/for/hr-teams" "/for/real-estate" "/for/healthcare" "/for/enterprise"; do
   R=$(curl -s -o /dev/null -w "%{http_code}" "$BASE$path")
   check "GET $path" "$R" 200
 done

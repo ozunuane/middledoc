@@ -662,24 +662,36 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="bg-white border-t border-neutral-200 px-6 md:px-12 py-10">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-          <div className="flex items-center gap-3">
-            <div className="w-[26px] h-[26px] rounded-[6px] bg-neutral-900 flex items-center justify-center">
-              <div className="w-[9px] h-[9px] rounded-sm bg-primary-500"></div>
+        <div className="max-w-7xl mx-auto flex flex-col gap-8">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            <div className="flex items-center gap-3">
+              <div className="w-[26px] h-[26px] rounded-[6px] bg-neutral-900 flex items-center justify-center">
+                <div className="w-[9px] h-[9px] rounded-sm bg-primary-500"></div>
+              </div>
+              <span className="text-sm font-semibold text-neutral-900">MiddleDoc</span>
             </div>
-            <span className="text-sm font-semibold text-neutral-900">MiddleDoc</span>
+            <div className="flex flex-wrap gap-6">
+              <Link href="/for/accountants" className="text-[13px] text-neutral-500 hover:text-neutral-700 transition">For Accountants</Link>
+              <Link href="/for/law-firms" className="text-[13px] text-neutral-500 hover:text-neutral-700 transition">For Law Firms</Link>
+              <Link href="/for/hr-teams" className="text-[13px] text-neutral-500 hover:text-neutral-700 transition">For HR Teams</Link>
+              <Link href="/for/real-estate" className="text-[13px] text-neutral-500 hover:text-neutral-700 transition">For Real Estate</Link>
+              <Link href="/for/healthcare" className="text-[13px] text-neutral-500 hover:text-neutral-700 transition">For Healthcare</Link>
+              <Link href="/for/enterprise" className="text-[13px] text-neutral-500 hover:text-neutral-700 transition">Enterprise</Link>
+            </div>
           </div>
-          <div className="flex flex-wrap gap-6">
-            <Link href="/for/accountants" className="text-[13px] text-neutral-500 hover:text-neutral-700 transition">For Accountants</Link>
-            <Link href="/for/law-firms" className="text-[13px] text-neutral-500 hover:text-neutral-700 transition">For Law Firms</Link>
-            <Link href="/for/hr-teams" className="text-[13px] text-neutral-500 hover:text-neutral-700 transition">For HR Teams</Link>
-            <Link href="/for/real-estate" className="text-[13px] text-neutral-500 hover:text-neutral-700 transition">For Real Estate</Link>
-            <Link href="/for/healthcare" className="text-[13px] text-neutral-500 hover:text-neutral-700 transition">For Healthcare</Link>
-            <Link href="/for/enterprise" className="text-[13px] text-neutral-500 hover:text-neutral-700 transition">Enterprise</Link>
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-t border-neutral-100 pt-6">
+            <div className="flex flex-wrap gap-5">
+              <Link href="/legal/privacy" className="text-[12px] text-neutral-400 hover:text-neutral-600 transition">Privacy Policy</Link>
+              <Link href="/legal/terms" className="text-[12px] text-neutral-400 hover:text-neutral-600 transition">Terms of Service</Link>
+              <Link href="/legal/cookies" className="text-[12px] text-neutral-400 hover:text-neutral-600 transition">Cookie Policy</Link>
+              <Link href="/legal/acceptable-use" className="text-[12px] text-neutral-400 hover:text-neutral-600 transition">Acceptable Use</Link>
+              <Link href="/legal/dpa" className="text-[12px] text-neutral-400 hover:text-neutral-600 transition">DPA</Link>
+              <Link href="/legal/security" className="text-[12px] text-neutral-400 hover:text-neutral-600 transition">Security</Link>
+            </div>
+            <p className="text-[12px] text-neutral-400">
+              &copy; {new Date().getFullYear()} MiddleDoc. All rights reserved.
+            </p>
           </div>
-          <p className="text-[12px] text-neutral-400">
-            &copy; {new Date().getFullYear()} MiddleDoc. HIPAA compliant. SOC 2 Type II.
-          </p>
         </div>
       </footer>
     </div>
