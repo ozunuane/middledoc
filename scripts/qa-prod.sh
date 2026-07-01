@@ -343,7 +343,42 @@ check "GET /api/portal-sign (invalid token) → 404" "$R" 404
 R=$(curl -s -o /tmp/qa_body -w "%{http_code}" "$BASE/api/portal-sign/00000000-0000-0000-0000-000000000000")
 check "GET /api/portal-sign (nonexistent) → 404" "$R" 404
 
-# ─── 21. CLEANUP ───
+# ─── 21. AI CLASSIFICATION ENDPOINTS ───
+echo "▸ AI classification endpoints..."
+
+# GET classifications (requires request_id)
+if [ -n "$REQUEST_ID" ]; then
+  R=$(curl -s -b /tmp/qa_cookies -o /tmp/qa_body -w "%{http_code}" "$BASE/api/classifications?request_id=$REQUEST_ID")
+  check "GET /api/classifications?request_id=..." "$R" 200
+fi
+
+# GET classifications without request_id → 400
+R=$(curl -s -b /tmp/qa_cookies -o /tmp/qa_body -w "%{http_code}" "$BASE/api/classifications")
+check "GET /api/classifications (no request_id → 400)" "$R" 400
+
+# GET classifications without auth → 401
+R=$(curl -s -o /tmp/qa_body -w "%{http_code}" "$BASE/api/classifications?request_id=1")
+check "GET /api/classifications (no auth) → 401" "$R" 401
+
+# POST reprocess without upload_id → 400
+R=$(curl -s -b /tmp/qa_cookies -o /tmp/qa_body -w "%{http_code}" -X POST "$BASE/api/classifications/reprocess" \
+  -H "Content-Type: application/json" \
+  -d '{}')
+check "POST /api/classifications/reprocess (no upload_id → 400)" "$R" 400
+
+# POST reprocess without auth → 401
+R=$(curl -s -o /tmp/qa_body -w "%{http_code}" -X POST "$BASE/api/classifications/reprocess" \
+  -H "Content-Type: application/json" \
+  -d '{"upload_id":1}')
+check "POST /api/classifications/reprocess (no auth) → 401" "$R" 401
+
+# PATCH classification without auth → 401
+R=$(curl -s -o /tmp/qa_body -w "%{http_code}" -X PATCH "$BASE/api/classifications" \
+  -H "Content-Type: application/json" \
+  -d '{"upload_id":1,"override_category":"w2"}')
+check "PATCH /api/classifications (no auth) → 401" "$R" 401
+
+# ─── 22. CLEANUP ───
 echo "▸ Cleanup..."
 
 # Delete the request first (cascade will handle uploads)
